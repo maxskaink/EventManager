@@ -6,11 +6,6 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
     public function up(): void
     {
-        // Usuario -> Perfil
-        Schema::table('Perfil', function (Blueprint $table) {
-            $table->foreign('id_usuario')->references('id')->on('Usuario')->onDelete('cascade');
-        });
-
         // Usuario -> Certificado
         Schema::table('Certificado', function (Blueprint $table) {
             $table->foreign('id_usuario')->references('id')->on('Usuario');
@@ -91,8 +86,6 @@ return new class extends Migration {
         Schema::table('Certificado', function (Blueprint $table) {
             $table->dropForeign(['id_usuario']);
         });
-        Schema::table('Perfil', function (Blueprint $table) {
-            $table->dropForeign(['id_usuario']);
-        });
+
     }
 };

@@ -1,23 +1,40 @@
-version: '3.9'
-
 services:
-  postgres:
-    image: postgres:16
-    container_name: postgres_laravel
+  app:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: laravel_app
+    working_dir: /var/www/html
+    volumes:
+      - ./:/var/www/html:z
     ports:
-      - "5432:5432"
+      - "8000:8000"
     environment:
+      - APP_ENV=local
+      - APP_DEBUG=true
+      - DB_CONNECTION=pgsql
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_DATABASE=EventManager
+      - DB_USERNAME=laravel_user
+      - DB_PASSWORD=laravel_password
+      - WWWUSER=1000
+    depends_on:
+      - db
+    command: bash -c "composer install && php artisan migrate && php artisan serve --host=0.0.0.0 --port=8000"
+
+  db:
+    image: postgres:15
+    container_name: postgres_db
+    restart: always
+    environment:
+      POSTGRES_DB: EventManager
       POSTGRES_USER: laravel_user
       POSTGRES_PASSWORD: laravel_password
-      POSTGRES_DB: EventManager
+    ports:
+      - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-    networks:
-      - laravel_network
+      - pgdata:/var/lib/postgresql/data
 
 volumes:
-  postgres_data:
-
-networks:
-  laravel_network:
-    driver: bridge
+  pgdata:

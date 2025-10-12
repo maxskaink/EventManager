@@ -10,7 +10,7 @@ return new class extends Migration
         Schema::create('Usuario', function (Blueprint $table) {
             $table->id();
             $table->string('correo', 50)->unique();
-            $table->string('rol', 50)->default('interesado'); //TODO colocar solo los roles validos
+            $table->enum('rol', ["interesado", "integrante", "coordinador", "mentor"])->default('interesado');
             $table->date('fecha_creacion');
             $table->timestamp('ultimo_inicio_sesion');
             $table->boolean('eliminado')->default(false);
