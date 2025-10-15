@@ -63,6 +63,7 @@ class AuthController extends Controller
                         'name' => $googleUser->getName(),
                         'google_id' => $googleUser->getId(),
                         'avatar' => $googleUser->getAvatar(),
+                        'role' => 'interested'
                     ]
                 );
 
