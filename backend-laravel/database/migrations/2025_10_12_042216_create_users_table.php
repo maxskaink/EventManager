@@ -17,13 +17,20 @@ return new class extends Migration
             $table->string('avatar')->nullable();
             $table->enum('role', ['interested', 'member', 'coordinator', 'mentor'])->default('interested');
             $table->timestamp('last_login_at')->nullable();
-            $table->softDeletes(); // agrega deleted_at en lugar de un boolean
+            $table->softDeletes();
             $table->rememberToken();
             $table->timestamps();
         });
 
-        #Could add auth with sessions y password reset tokens , but its just google auth true?
-
+        #Could add auth with  password reset tokens , but its just google auth true?
+        Schema::create('sessions', function (Blueprint $table) {
+            $table->string('id')->primary();
+            $table->foreignId('user_id')->nullable()->index();
+            $table->string('ip_address', 45)->nullable();
+            $table->text('user_agent')->nullable();
+            $table->longText('payload');
+            $table->integer('last_activity')->index();
+        });
     }
 
     public function down(): void {
