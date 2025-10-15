@@ -1,4 +1,5 @@
 <?php
+
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -6,86 +7,92 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
     public function up(): void
     {
-        // Usuario -> Certificado
-        Schema::table('Certificado', function (Blueprint $table) {
-            $table->foreign('id_usuario')->references('id')->on('Usuario');
+        // Certificate → User
+        Schema::table('certificates', function (Blueprint $table) {
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
 
-        // Perfil -> Interes
-        Schema::table('Interes', function (Blueprint $table) {
-            $table->foreign('id_usuario')->references('id_usuario')->on('Perfil');
+        // Interest → Profile
+        Schema::table('interests', function (Blueprint $table) {
+            $table->foreign('user_id')->references('id')->on('profiles')->onDelete('cascade');
         });
 
-        // Usuario -> Participacion
-        Schema::table('Participacion', function (Blueprint $table) {
-            $table->foreign('id_usuario')->references('id')->on('Usuario');
+        // Participation → User
+        Schema::table('participations', function (Blueprint $table) {
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
 
-        // Evento -> Participacion
-        Schema::table('Participacion', function (Blueprint $table) {
-            $table->foreign('id_evento')->references('id_evento')->on('Evento');
+        // Participation → Event
+        Schema::table('participations', function (Blueprint $table) {
+            $table->foreign('event_id')->references('id')->on('events')->onDelete('cascade');
         });
 
-        // Publicacion -> Interes_publicacion
-        Schema::table('Interes_publicacion', function (Blueprint $table) {
-            $table->foreign('id_publicacion')->references('id')->on('Publicacion');
+        // InterestPublication → Publication
+        Schema::table('publication_interests', function (Blueprint $table) {
+            $table->foreign('publication_id')->references('id')->on('publications')->onDelete('cascade');
         });
 
-        // Perfil -> Publicacion (autor_id)
-        Schema::table('Publicacion', function (Blueprint $table) {
-            $table->foreign('autor_id')->references('id_usuario')->on('Perfil');
+        // Publication → Profile (author_id)
+        Schema::table('publications', function (Blueprint $table) {
+            $table->foreign('author_id')->references('id')->on('profiles')->onDelete('cascade');
         });
 
-        // Publicacion -> Acceso_publicacion
-        Schema::table('Acceso_publicacion', function (Blueprint $table) {
-            $table->foreign('id_publicacion')->references('id')->on('Publicacion');
+        // AccessPublication → Publication
+        Schema::table('publication_accesses', function (Blueprint $table) {
+            $table->foreign('publication_id')->references('id')->on('publications')->onDelete('cascade');
         });
 
-        // Perfil -> Acceso_publicacion
-        Schema::table('Acceso_publicacion', function (Blueprint $table) {
-            $table->foreign('id_perfil')->references('id_usuario')->on('Perfil');
+        // AccessPublication → Profile
+        Schema::table('publication_accesses', function (Blueprint $table) {
+            $table->foreign('profile_id')->references('id')->on('profiles')->onDelete('cascade');
         });
 
-        // Usuario -> Articulo
-        Schema::table('Articulo', function (Blueprint $table) {
-            $table->foreign('id_usuario')->references('id')->on('Usuario');
+        // Article → User
+        Schema::table('articles', function (Blueprint $table) {
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
 
-        // Perfil -> Notificacion
-        Schema::table('Notificacion', function (Blueprint $table) {
-            $table->foreign('id_perfil')->references('id_usuario')->on('Perfil');
+        // Notification → Profile
+        Schema::table('notifications', function (Blueprint $table) {
+            $table->foreign('profile_id')->references('id')->on('profiles')->onDelete('cascade');
         });
     }
 
     public function down(): void
     {
-        // Elimina las claves foráneas en orden inverso
-        Schema::table('Notificacion', function (Blueprint $table) {
-            $table->dropForeign(['id_perfil']);
-        });
-        Schema::table('Articulo', function (Blueprint $table) {
-            $table->dropForeign(['id_usuario']);
-        });
-        Schema::table('Acceso_publicacion', function (Blueprint $table) {
-            $table->dropForeign(['id_perfil']);
-            $table->dropForeign(['id_publicacion']);
-        });
-        Schema::table('Publicacion', function (Blueprint $table) {
-            $table->dropForeign(['autor_id']);
-        });
-        Schema::table('Interes_publicacion', function (Blueprint $table) {
-            $table->dropForeign(['id_publicacion']);
-        });
-        Schema::table('Participacion', function (Blueprint $table) {
-            $table->dropForeign(['id_evento']);
-            $table->dropForeign(['id_usuario']);
-        });
-        Schema::table('Interes', function (Blueprint $table) {
-            $table->dropForeign(['id_usuario']);
-        });
-        Schema::table('Certificado', function (Blueprint $table) {
-            $table->dropForeign(['id_usuario']);
+        // Drop foreign keys in reverse order
+        Schema::table('notifications', function (Blueprint $table) {
+            $table->dropForeign(['profile_id']);
         });
 
+        Schema::table('articles', function (Blueprint $table) {
+            $table->dropForeign(['user_id']);
+        });
+
+        Schema::table('publication_accesses', function (Blueprint $table) {
+            $table->dropForeign(['profile_id']);
+            $table->dropForeign(['publication_id']);
+        });
+
+        Schema::table('publications', function (Blueprint $table) {
+            $table->dropForeign(['author_id']);
+        });
+
+        Schema::table('interest_publications', function (Blueprint $table) {
+            $table->dropForeign(['publication_id']);
+        });
+
+        Schema::table('participations', function (Blueprint $table) {
+            $table->dropForeign(['event_id']);
+            $table->dropForeign(['user_id']);
+        });
+
+        Schema::table('interests', function (Blueprint $table) {
+            $table->dropForeign(['user_id']);
+        });
+
+        Schema::table('certificates', function (Blueprint $table) {
+            $table->dropForeign(['user_id']);
+        });
     }
 };

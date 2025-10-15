@@ -7,14 +7,15 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     public function up(): void {
-        Schema::create('Acceso_publicacion', function (Blueprint $table) {
-            $table->id();
-            $table->unsignedBigInteger('id_perfil');
-            $table->unsignedBigInteger('id_publicacion');
+        Schema::create('publication_interests', function (Blueprint $table) {
+            $table->id('interest_id');
+            $table->unsignedBigInteger('publication_id');
+            $table->string('interest');
             $table->timestamps();
         });
     }
+
     public function down(): void {
-        Schema::dropIfExists('Acceso_publicacion');
+        Schema::dropIfExists('publication_interests');
     }
 };
