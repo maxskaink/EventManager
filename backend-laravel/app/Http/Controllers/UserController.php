@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Exceptions\InvalidRoleException;
+use App\Http\Requests\ToggleRoleRequest;
 use App\Models\User;
 use App\Services\UserService;
 use Illuminate\Http\JsonResponse;
@@ -19,21 +20,19 @@ class UserController extends Controller
     }
 
 
-    public function toggleRole(Request $request): JsonResponse
+    public function toggleRole(ToggleRoleRequest $request): JsonResponse
     {
-        /** @var User|null $user */
-        $user = Auth::user();
+        $data = $request->validated();
 
-        if (!$user) {
-            return response()->json(['error' => 'Unauthenticated'], 401);
-        }
+        $userId = $data['user_id'];
+        $newRole = $data['new_role'];
 
-        $newRole = $request->input('new_role');
-
-        $updatedRole = $this->userService->toggleRole($newRole);
+        $updatedRole = $this->userService->toggleRole($userId, $newRole);
 
         return response()->json([
             'message' => "Role changed successfully to {$updatedRole}"
         ]);
     }
+
+
 }

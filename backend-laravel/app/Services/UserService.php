@@ -11,26 +11,19 @@ class UserService
     /**
      * Toggle the user's role between 'interested' and 'organizer'.
      *
+     * @param int $userID ID of the user to toggle.
      * @param string $newRole Role to set for the user.
      * @return string The new role of the user.
-     * @throws InvalidRoleException If the user is not a mentor.
      */
-    public function toggleRole(string $newRole): string
+    public function toggleRole(int $userID, string $newRole): string
     {
-        /** @var User|null $user */
-        $user = auth()->user();
+        $user = User::query()->findOrFail($userID);
 
-        if ($user->getRoleAttribute() != 'mentor') {
-            throw new InvalidRoleException('Invalid role to perform this action.');
-        }
+        $user->role = $newRole;
 
-        if (!in_array($newRole, ['interested', 'member', 'coordinator','mentor']) ) {
-            throw new InvalidArgumentException('Invalid role provided.');
-        }
-
-        $user->setRoleAttribute($newRole);
         $user->save();
 
         return $newRole;
     }
+
 }
