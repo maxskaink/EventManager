@@ -2,116 +2,54 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
-use GuzzleHttp\Exception\ClientException;
+use App\Services\AuthService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
-use Laravel\Socialite\Contracts\User as SocialiteUser;
-use Laravel\Socialite\Facades\Socialite;
-use Laravel\Socialite\Two\GoogleProvider;
 
 class AuthController extends Controller
 {
-    //use stateless() since we are using this Laravel app as API and we are not keeping state at any time.
+    protected AuthService $authService;
+
+    public function __construct(AuthService $authService)
+    {
+        $this->authService = $authService;
+    }
+
     public function redirectToAuth(): JsonResponse
     {
-        /** @var GoogleProvider $googleProvider */
-        $googleProvider = Socialite::driver('google');
+        $url = $this->authService->getGoogleAuthUrl();
 
-        return response()->json([
-            'url' => $googleProvider
-                ->stateless()
-                ->redirect()
-                ->getTargetUrl(),
-        ]);
-
+        return response()->json(['url' => $url]);
     }
 
     public function handleGoogleCallback(Request $request): JsonResponse
     {
+        $code = $request->input('code');
+
+        if (!$code) {
+            return response()->json(['error' => 'Missing authorization code'], 422);
+        }
+
         try {
-            $code = $request->input('code');
-            if (!$code) {
-                return response()->json(['error' => 'Missing authorization code'], 422);
-            }
-            /** @var GoogleProvider $googleProvider */
-            $googleProvider = Socialite::driver('google');
-
-            $tokenResponse = Http::asForm()->post('https://oauth2.googleapis.com/token', [
-                'code' => $code,
-                'client_id' => env('GOOGLE_CLIENT_ID'),
-                'client_secret' => env('GOOGLE_CLIENT_SECRET'),
-                'redirect_uri' => env('GOOGLE_REDIRECT_URI'),
-                'grant_type' => 'authorization_code',
-            ]);
-
-            $accessToken = $tokenResponse->json()['access_token'];
-
-            /** @var GoogleProvider $googleProvider */
-            $googleProvider = Socialite::driver('google');
-
-            $googleUser = $googleProvider->stateless()->userFromToken($accessToken);
-
-            $user = User::query()
-                ->firstOrCreate(
-                    [
-                        'email' => $googleUser->getEmail(),
-                    ],
-                    [
-                        'email_verified_at' => now(),
-                        'name' => $googleUser->getName(),
-                        'google_id' => $googleUser->getId(),
-                        'avatar' => $googleUser->getAvatar(),
-                        'role' => 'interested'
-                    ]
-                );
-
-            // Crear token de Sanctum
-            $token = $user->createToken('access_token')->plainTextToken;
-
-            return response()->json([
-                'user' => $user,
-                'access_token' => $token,
-            ]);
+            $data = $this->authService->handleGoogleCallback($code);
+            return response()->json($data);
         } catch (\Exception $e) {
-            return response()->json([
-                'error' => $e->getMessage(),
-            ], 422);
+            return response()->json(['error' => $e->getMessage()], 422);
         }
     }
 
-    #TEST METHOD NOT FULLY ENDED
     public function user(): JsonResponse
     {
-        return response()->json([
-            'user' => auth()->user(),
-        ]);
+        return response()->json(['user' => auth()->user()]);
     }
 
-    #NOT FULLY ENDED
     public function logout(Request $request): JsonResponse
     {
-        /** @var User|null $user */
-        $user = $request->user();
-
-        if (!$user) {
-            return response()->json([
-                'error' => 'User not authenticated',
-            ], 401);
+        try {
+            $this->authService->logout($request->user());
+            return response()->json(['message' => 'Logged out successfully']);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 401);
         }
-
-        $token = $user->currentAccessToken();
-
-        // Only delete if it's a personal access token (not a transient one)
-        if ($token && method_exists($token, 'delete')) {
-            $token->delete();
-        }
-
-        return response()->json([
-            'message' => 'Logged out successfully',
-        ]);
     }
-
-
 }

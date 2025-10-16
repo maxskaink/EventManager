@@ -7,7 +7,8 @@ use Illuminate\Console\Command;
 
 class GenerateAuthToken extends Command
 {
-    protected $signature = 'auth:token {email?}';
+    // Agregamos el parámetro opcional --role
+    protected $signature = 'auth:token {email?} {--role=interested}';
 
     protected $description = 'Generate a Sanctum token for testing';
 
@@ -19,6 +20,7 @@ class GenerateAuthToken extends Command
         }
 
         $email = $this->argument('email') ?? 'test@example.com';
+        $role = $this->option('role'); // Obtenemos el rol
 
         $user = User::query()
             ->firstOrCreate(
@@ -28,7 +30,7 @@ class GenerateAuthToken extends Command
                     'name' => 'Test User',
                     'google_id' => 'dev_' . uniqid(),
                     'avatar' => 'https://via.placeholder.com/150',
-                    'role' => 'interested'
+                    'role' => $role, // Asignamos el rol dinámicamente
                 ]
             );
 

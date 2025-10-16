@@ -2,16 +2,14 @@
 
 namespace App\Exceptions;
 
-use Illuminate\Auth\AuthenticationException;
 use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
-use Laravel\Sanctum\Exceptions\MissingAbilityException;
-use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
-use Illuminate\Support\Facades\Log;
-use \Illuminate\Http\JsonResponse;
-use \Symfony\Component\HttpFoundation\Response;
-
+use Illuminate\Http\JsonResponse;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Throwable;
+use InvalidArgumentException;
+
 
 class Handler extends ExceptionHandler
 {
@@ -20,7 +18,10 @@ class Handler extends ExceptionHandler
      *
      * @var array<int, class-string<Throwable>>
      */
-    protected $dontReport = [];
+    protected $dontReport = [
+        InvalidArgumentException::class,
+        InvalidRoleException::class,
+    ];
 
     /**
      * A list of the inputs that are never flashed for validation exceptions.
@@ -38,83 +39,55 @@ class Handler extends ExceptionHandler
      */
     public function register(): void
     {
-        $this->reportable(function (Throwable $e) {
-            //
-        });
-        
-        // Ensure AuthenticationException always returns JSON for API requests
-        $this->renderable(function (AuthenticationException $e, $request) {
-            Log::debug('Handler::renderable AuthenticationException', [
-                'path' => $request->path(),
-                'expectsJson' => $request->expectsJson(),
-                'is_api' => $request->is('api/*'),
-            ]);
+        // Invalid role to perform action
+        $this->renderable(function (InvalidRoleException $e, $request): JsonResponse {
             return response()->json([
-                'error' => 'Unauthenticated.',
-                'message' => 'Invalid or expired token.'
+                'error' => true,
+                'message' => $e->getMessage(),
+            ], 400);
+        });
+
+
+        // Invalid argument
+        $this->renderable(function (\InvalidArgumentException $e, $request): JsonResponse {
+            return response()->json([
+                'error' => true,
+                'message' => $e->getMessage(),
+            ], 400);
+        });
+
+        // Unauthenticated (no token or invalid session)
+        $this->renderable(function (AuthenticationException $e, $request): JsonResponse {
+            return response()->json([
+                'error' => true,
+                'message' => 'Unauthenticated.',
             ], 401);
         });
-    }
 
-    /**
-     * Convert an authentication exception into a response.
-     * This prevents Laravel from trying to redirect to 'login' route
-     */
-
-    public function unauthenticated($request, \Illuminate\Auth\AuthenticationException $exception)
-    {
-        // Log call to unauthenticated so we can trace why login redirect may occur
-        Log::debug('Handler::unauthenticated called', [
-            'path' => $request->path(),
-            'method' => $request->method(),
-            'expectsJson' => $request->expectsJson(),
-            'is_api' => $request->is('api/*'),
-            'headers' => [
-                'accept' => $request->header('Accept'),
-                'authorization' => $request->header('Authorization'),
-            ],
-        ]);
-
-        // Always return JSON for unauthenticated requests (API-only)
-        return response()->json([
-            'error' => 'Unauthenticated.',
-            'message' => 'Invalid or expired token.'
-        ], 401);
-    }
-
-    /**
-     * Customize the response for specific exceptions.
-     * @throws Throwable
-     */
-    public function render($request, Throwable $exception): JsonResponse|Response
-    {
-        // Invalid or expired Sanctum token
-        if ($exception instanceof AuthenticationException) {
-            return $this->unauthenticated($request, $exception);
-        }
-
-        // Handle AccessDeniedHttpException (thrown by Sanctum for invalid tokens)
-        if ($exception instanceof AccessDeniedHttpException) {
+        // Authorization issues (policy/gate rejections)
+        $this->renderable(function (AuthorizationException $e, $request): JsonResponse {
             return response()->json([
-                'error' => 'Invalid or expired token',
-            ], 401);
-        }
-
-        // Token exists but lacks permissions
-        if ($exception instanceof MissingAbilityException) {
-            return response()->json([
-                'error' => 'You are not authorized to perform this action',
+                'error' => true,
+                'message' => 'You are not authorized to perform this action.',
             ], 403);
-        }
+        });
 
-        // General authorization exceptions
-        if ($exception instanceof AuthorizationException) {
+        // Route not found or invalid endpoint
+        $this->renderable(function (NotFoundHttpException $e, $request): JsonResponse {
             return response()->json([
-                'error' => 'Unauthorized action',
-            ], 403);
-        }
+                'error' => true,
+                'message' => 'Resource not found.',
+            ], 404);
+        });
 
-        // Fallback to Laravel default behavior
-        return parent::render($request, $exception);
+        // Fallback for unhandled exceptions
+        $this->renderable(function (Throwable $e, $request): JsonResponse {
+            return response()->json([
+                'error' => true,
+                'message' => config('app.debug')
+                    ? $e->getMessage()
+                    : 'An unexpected error occurred.',
+            ], 500);
+        });
     }
 }
