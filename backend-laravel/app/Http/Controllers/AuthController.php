@@ -90,17 +90,28 @@ class AuthController extends Controller
     }
 
     #NOT FULLY ENDED
-    public function logout(): JsonResponse
+    public function logout(Request $request): JsonResponse
     {
-        /** @var User $user */
-        $user = auth()->user();
+        /** @var User|null $user */
+        $user = $request->user();
 
-        // Eliminar el token actual
-        $user->currentAccessToken()->can('delete');
+        if (!$user) {
+            return response()->json([
+                'error' => 'User not authenticated',
+            ], 401);
+        }
+
+        $token = $user->currentAccessToken();
+
+        // Only delete if it's a personal access token (not a transient one)
+        if ($token && method_exists($token, 'delete')) {
+            $token->delete();
+        }
 
         return response()->json([
             'message' => 'Logged out successfully',
         ]);
     }
+
 
 }
