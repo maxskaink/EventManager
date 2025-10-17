@@ -1,0 +1,231 @@
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --font-size: 14px;
+  /* Fondo general - gris claro para que los cards "floten" */
+  --background: #F6F6F6;
+  /* Texto primario - gris oscuro */
+  --foreground: #333333;
+  /* Cards - fondo blanco */
+  --card: #ffffff;
+  --card-foreground: #333333;
+  /* Popovers */
+  --popover: #ffffff;
+  --popover-foreground: #333333;
+  /* Color principal - azul petróleo para marca, header, sidebar, botones primarios */
+  --primary: #013950;
+  --primary-foreground: #ffffff;
+  /* Color secundario - azul claro para botones secundarios y acentos */
+  --secondary: #4BA3C3;
+  --secondary-foreground: #ffffff;
+  /* Muted - gris claro para fondos sutiles */
+  --muted: #F6F6F6;
+  /* Texto secundario - gris medio */
+  --muted-foreground: #666666;
+  /* Accent - azul claro para hover y detalles */
+  --accent: #4BA3C3;
+  --accent-foreground: #ffffff;
+  /* Destructive - coral para alertas, errores, eliminar */
+  --destructive: #FF5E5B;
+  --destructive-foreground: #ffffff;
+  /* Bordes - gris claro */
+  --border: #CCCCCC;
+  --input: transparent;
+  --input-background: #ffffff;
+  --switch-background: #CCCCCC;
+  /* Nuevos tokens personalizados */
+  --decorative: #764134; /* Marrón para detalles elegantes */
+  --coral-primary: #FF5E5B; /* Coral para alertas */
+  --blue-light: #4BA3C3; /* Azul claro para acentos */
+  --blue-dark: #013950; /* Azul petróleo principal */
+  --text-primary: #333333; /* Texto principal */
+  --text-secondary: #666666; /* Texto secundario */
+  --border-light: #CCCCCC; /* Bordes y elementos deshabilitados */
+  
+  --font-weight-medium: 500;
+  --font-weight-normal: 400;
+  --ring: #4BA3C3;
+  --chart-1: #013950;
+  --chart-2: #4BA3C3;
+  --chart-3: #FF5E5B;
+  --chart-4: #764134;
+  --chart-5: #666666;
+  --radius: 0.625rem;
+  /* Sidebar - azul petróleo */
+  --sidebar: #013950;
+  --sidebar-foreground: #ffffff;
+  --sidebar-primary: #4BA3C3;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #4BA3C3;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #4BA3C3;
+  --sidebar-ring: #4BA3C3;
+}
+
+.dark {
+  /* Modo oscuro - adaptando la paleta */
+  --background: #1a1a1a;
+  --foreground: #ffffff;
+  --card: #2a2a2a;
+  --card-foreground: #ffffff;
+  --popover: #2a2a2a;
+  --popover-foreground: #ffffff;
+  /* Mantenemos el azul petróleo como primary en dark mode */
+  --primary: #4BA3C3;
+  --primary-foreground: #ffffff;
+  --secondary: #013950;
+  --secondary-foreground: #ffffff;
+  --muted: #2a2a2a;
+  --muted-foreground: #999999;
+  --accent: #4BA3C3;
+  --accent-foreground: #ffffff;
+  --destructive: #FF5E5B;
+  --destructive-foreground: #ffffff;
+  --border: #404040;
+  --input: #2a2a2a;
+  --ring: #4BA3C3;
+  /* Tokens personalizados para dark mode */
+  --decorative: #764134;
+  --coral-primary: #FF5E5B;
+  --blue-light: #4BA3C3;
+  --blue-dark: #013950;
+  --text-primary: #ffffff;
+  --text-secondary: #cccccc;
+  --border-light: #404040;
+  
+  --font-weight-medium: 500;
+  --font-weight-normal: 400;
+  --chart-1: #4BA3C3;
+  --chart-2: #013950;
+  --chart-3: #FF5E5B;
+  --chart-4: #764134;
+  --chart-5: #999999;
+  /* Sidebar dark mode */
+  --sidebar: #013950;
+  --sidebar-foreground: #ffffff;
+  --sidebar-primary: #4BA3C3;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #4BA3C3;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #4BA3C3;
+  --sidebar-ring: #4BA3C3;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-input-background: var(--input-background);
+  --color-switch-background: var(--switch-background);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  /* Nuevos tokens de color personalizados */
+  --color-decorative: var(--decorative);
+  --color-coral-primary: var(--coral-primary);
+  --color-blue-light: var(--blue-light);
+  --color-blue-dark: var(--blue-dark);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-border-light: var(--border-light);
+  
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/**
+ * Base typography. This is not applied to elements which have an ancestor with a Tailwind text class.
+ */
+@layer base {
+  :where(:not(:has([class*=" text-"]), :not(:has([class^="text-"])))) {
+    h1 {
+      font-size: var(--text-2xl);
+      font-weight: var(--font-weight-medium);
+      line-height: 1.5;
+    }
+
+    h2 {
+      font-size: var(--text-xl);
+      font-weight: var(--font-weight-medium);
+      line-height: 1.5;
+    }
+
+    h3 {
+      font-size: var(--text-lg);
+      font-weight: var(--font-weight-medium);
+      line-height: 1.5;
+    }
+
+    h4 {
+      font-size: var(--text-base);
+      font-weight: var(--font-weight-medium);
+      line-height: 1.5;
+    }
+
+    p {
+      font-size: var(--text-base);
+      font-weight: var(--font-weight-normal);
+      line-height: 1.5;
+    }
+
+    label {
+      font-size: var(--text-base);
+      font-weight: var(--font-weight-medium);
+      line-height: 1.5;
+    }
+
+    button {
+      font-size: var(--text-base);
+      font-weight: var(--font-weight-medium);
+      line-height: 1.5;
+    }
+
+    input {
+      font-size: var(--text-base);
+      font-weight: var(--font-weight-normal);
+      line-height: 1.5;
+    }
+  }
+}
+
+html {
+  font-size: var(--font-size);
+}
