@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\EventController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UserController;
 
@@ -16,4 +17,7 @@ Route::middleware('auth:sanctum')->get('logout', [AuthController::class, 'logout
 Route::middleware('auth:sanctum')->post('toggle-role', [UserController::class, 'toggleRole']);
 
 #Profile Routes
-Route::middleware('auth:sanctum')->put('update-profile', [ProfileController::class, 'updateProfile']);
+Route::middleware('auth:sanctum')->put('profile', [ProfileController::class, 'updateProfile']);
+
+#Event Routes
+Route::middleware('auth:sanctum')->post('event', [EventController::class, 'addEvent']);
