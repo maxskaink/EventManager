@@ -7,6 +7,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\AddEventRequest;
 use App\Models\User;
 use App\Services\EventService;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 
@@ -21,10 +22,6 @@ class EventController extends Controller
 
     public function addEvent(AddEventRequest $request): JsonResponse
     {
-
-        /** @var User|null $authUser */
-        $authUser = Auth::user();
-
         $data = $request->validated();
 
         $newEvent = $this->eventService->addEvent($data);
@@ -32,6 +29,30 @@ class EventController extends Controller
         return response()->json([
             'message' => "Event created successfully to {$newEvent}"
         ]);
+    }
+
+    /**
+     * @throws AuthorizationException
+     */
+    public function listAllEvents(): JsonResponse
+    {
+        return response()->json($this->eventService->listAllEvents());
+    }
+
+    /**
+     * @throws AuthorizationException
+     */
+    public function listUpcomingEvents(): JsonResponse
+    {
+        return response()->json($this->eventService->listUpcomingEvents());
+    }
+
+    /**
+     * @throws AuthorizationException
+     */
+    public function listPastEvents(): JsonResponse
+    {
+        return response()->json($this->eventService->listPastEvents());
     }
 
 }
