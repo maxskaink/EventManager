@@ -14,7 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
-import { useApp } from "../AppContext";
+import { useApp } from "../context/AppContext";
 import { BNavBarMentor } from "../ui/b-navbar-mentor";
 import { BNavBarCoordinator } from "../ui/b-navbar-coordinator";
 import {
@@ -30,9 +30,11 @@ import {
   LineChart,
   UserCheck,
 } from "lucide-react";
+import { useNavigate } from "react-router";
 
 export function ReportsScreen() {
-  const { setCurrentView, events, user } = useApp();
+  const { user } = useApp();
+  const navigate = useNavigate()
   const [reportType, setReportType] = useState("participation");
   const [timeFilter, setTimeFilter] = useState("all");
 
@@ -125,7 +127,7 @@ export function ReportsScreen() {
             variant="ghost"
             size="icon"
             onClick={() =>
-              setCurrentView("dashboard-coordinator")
+              navigate("/dashboard-coordinator")
             }
           >
             <ArrowLeft className="h-5 w-5" />

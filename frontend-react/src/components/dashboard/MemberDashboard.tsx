@@ -4,12 +4,14 @@ import { Card, CardContent, CardHeader } from '../ui/card';
 import { Badge } from '../ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { BNavBarMember } from "../ui/b-navbar-member"
-import { useApp } from '../AppContext';
+import { useApp } from '../context/AppContext';
 import { Calendar, Clock, Users, MapPin, Award, Bell, Home, CalendarDays, User } from 'lucide-react';
 import { ImageWithFallback } from '../figma/ImageWithFallback';
+import { useNavigate } from 'react-router';
 
 export function MemberDashboard() {
-  const { user, events, certificates, notifications, setCurrentView } = useApp();
+  const { user, events, certificates, notifications } = useApp();
+  const navigate = useNavigate()
 
   const recommendedEvents = events
     .filter(event => event.status === 'upcoming')
@@ -38,7 +40,7 @@ export function MemberDashboard() {
           <Button 
             variant="ghost" 
             size="icon"
-            onClick={() => setCurrentView('notifications')}
+            onClick={() => navigate('/notifications')}
             className="relative"
           >
             <Bell className="h-5 w-5" />
@@ -58,7 +60,7 @@ export function MemberDashboard() {
             <h2>Eventos para ti</h2>
             <Button 
               variant="outline" 
-              onClick={() => setCurrentView('events')}
+              onClick={() => navigate('/events')}
             >
               Ver todos
             </Button>
@@ -98,7 +100,7 @@ export function MemberDashboard() {
 
                     <Button 
                       className="w-full"
-                      onClick={() => setCurrentView(`event-detail-${event.id}`)}
+                      onClick={() => navigate(`/event-detail-${event.id}`)}
                     >
                       Inscribirme
                     </Button>
@@ -115,7 +117,7 @@ export function MemberDashboard() {
                 <Button 
                   variant="outline" 
                   className="mt-4"
-                  onClick={() => setCurrentView('profile')}
+                  onClick={() => navigate('/profile')}
                 >
                   Actualizar intereses
                 </Button>
@@ -130,7 +132,7 @@ export function MemberDashboard() {
             <h2>Mis Certificados</h2>
             <Button 
               variant="outline" 
-              onClick={() => setCurrentView('certificates')}
+              onClick={() => navigate('/certificates')}
             >
               Ver todos
             </Button>

@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader } from '../ui/card';
 import { Badge } from '../ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { BNavBarCoordinator } from "../ui/b-navbar-coordinator"
-import { useApp } from '../AppContext';
+import { useApp } from '../context/AppContext';
 import { 
   Users, 
   Calendar, 
@@ -20,9 +20,11 @@ import {
   CalendarDays,
   User
 } from 'lucide-react';
+import { useNavigate } from 'react-router';
 
 export function CoordinatorDashboard() {
-  const { user, events, setCurrentView } = useApp();
+  const { user, events } = useApp();
+  const navigate = useNavigate()
 
   const totalEvents = events.length;
   const totalEnrolled = events.reduce((sum, event) => sum + event.enrolled, 0);
@@ -96,7 +98,7 @@ export function CoordinatorDashboard() {
                 </p>
                 <Button 
                   className="w-full"
-                  onClick={() => setCurrentView('create-event')}
+                  onClick={() => navigate('/create-event')}
                 >
                   Crear Evento
                 </Button>
@@ -115,7 +117,7 @@ export function CoordinatorDashboard() {
                 </p>
                 <Button 
                   className="w-full"
-                  onClick={() => setCurrentView('create-publication')}
+                  onClick={() => navigate('/create-publication')}
                 >
                   Crear Publicación
                 </Button>
@@ -142,7 +144,7 @@ export function CoordinatorDashboard() {
                 <Button 
                   size="sm" 
                   variant="outline"
-                  onClick={() => setCurrentView('event-board')}
+                  onClick={() => navigate('/event-board')}
                 >
                   <Eye className="h-4 w-4" />
                 </Button>
@@ -163,7 +165,7 @@ export function CoordinatorDashboard() {
                 <Button 
                   size="sm" 
                   variant="outline"
-                  onClick={() => setCurrentView('reports')}
+                  onClick={() => navigate('/reports')}
                 >
                   <Eye className="h-4 w-4" />
                 </Button>
@@ -178,7 +180,7 @@ export function CoordinatorDashboard() {
             <h2>Próximos Eventos</h2>
             <Button 
               variant="outline" 
-              onClick={() => setCurrentView('events')}
+              onClick={() => navigate('/events')}
             >
               Gestionar todos
             </Button>
@@ -241,7 +243,7 @@ export function CoordinatorDashboard() {
                 <Button 
                   size="sm" 
                   variant="outline"
-                  onClick={() => setCurrentView('admin')}
+                  onClick={() => navigate('/admin')}
                 >
                   Abrir
                 </Button>

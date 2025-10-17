@@ -3,7 +3,7 @@ import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader } from "../ui/card";
 import { Badge } from "../ui/badge";
 import { BNavBarGuest } from "../ui/b-navbar-guest";
-import { useApp } from "../AppContext";
+import { useApp } from "../context/AppContext";
 import {
   Calendar,
   Clock,
@@ -15,9 +15,11 @@ import {
   LogOut,
 } from "lucide-react";
 import { ImageWithFallback } from "../figma/ImageWithFallback";
+import { useNavigate } from "react-router";
 
 export function GuestDashboard() {
-  const { user, events, setCurrentView } = useApp();
+  const { user, events } = useApp();
+  const navigate = useNavigate()
 
   const upcomingEvents = events
     .filter((event) => event.status === "upcoming")
@@ -41,7 +43,7 @@ export function GuestDashboard() {
             <h2>Eventos Recomendados</h2>
             <Button
               variant="outline"
-              onClick={() => setCurrentView("events")}
+              onClick={() => navigate("/events")}
             >
               Ver todos
             </Button>
@@ -118,7 +120,7 @@ export function GuestDashboard() {
                   <Button
                     className="w-full"
                     onClick={() =>
-                      setCurrentView(`event-detail-${event.id}`)
+                      navigate(`/event-detail-${event.id}`)
                     }
                   >
                     Ver detalle
@@ -142,7 +144,7 @@ export function GuestDashboard() {
                 recibir recomendaciones personalizadas.
               </p>
               <Button
-                onClick={() => setCurrentView("register")}
+                onClick={() => navigate("/register")}
               >
                 Registrarme como integrante
               </Button>

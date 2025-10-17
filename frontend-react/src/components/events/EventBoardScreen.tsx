@@ -14,7 +14,7 @@ import { BNavBarMentor } from "../ui/b-navbar-mentor";
 import { BNavBarMember } from "../ui/b-navbar-member";
 import { BNavBarCoordinator } from "../ui/b-navbar-coordinator";
 import { BNavBarGuest } from "../ui/b-navbar-guest";
-import { useApp } from "../AppContext";
+import { useApp } from "../context/AppContext";
 import {
   ArrowLeft,
   Plus,
@@ -22,7 +22,6 @@ import {
   Trash2,
   Eye,
   Search,
-  Filter,
   Users,
   Calendar,
   MapPin,
@@ -30,12 +29,13 @@ import {
   Settings,
   MoreVertical,
   Pin,
-  PinOff,
   Share,
 } from "lucide-react";
+import { useNavigate } from "react-router";
 
 export function EventBoardScreen() {
-  const { setCurrentView, content, user } = useApp();
+  const { content, user } = useApp();
+  const navigate = useNavigate()
   const [searchQuery, setSearchQuery] = useState("");
   const [filterCategory, setFilterCategory] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
@@ -153,7 +153,7 @@ export function EventBoardScreen() {
             variant="ghost"
             size="icon"
             onClick={() =>
-              setCurrentView("dashboard-coordinator")
+              navigate("/dashboard-coordinator")
             }
           >
             <ArrowLeft className="h-5 w-5" />
@@ -167,7 +167,7 @@ export function EventBoardScreen() {
           <div className="flex gap-2">
             <Button
               variant="secondary"
-              onClick={() => setCurrentView("create-event")}
+              onClick={() => navigate("/create-event")}
               className="gap-2"
             >
               <Plus className="h-4 w-4" />
@@ -175,7 +175,7 @@ export function EventBoardScreen() {
             </Button>
             <Button
               variant="secondary"
-              onClick={() => setCurrentView("create-publication")}
+              onClick={() => navigate("/create-publication")}
               className="gap-2"
             >
               <Plus className="h-4 w-4" />
@@ -603,14 +603,14 @@ export function EventBoardScreen() {
                 </p>
                 <div className="flex gap-2 justify-center">
                   <Button
-                    onClick={() => setCurrentView("create-event")}
+                    onClick={() => navigate("/create-event")}
                   >
                     <Plus className="h-4 w-4 mr-2" />
                     Crear Evento
                   </Button>
                   <Button
                     variant="outline"
-                    onClick={() => setCurrentView("create-publication")}
+                    onClick={() => navigate("/create-publication")}
                   >
                     <Plus className="h-4 w-4 mr-2" />
                     Crear Publicación

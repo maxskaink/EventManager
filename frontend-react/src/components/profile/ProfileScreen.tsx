@@ -16,7 +16,6 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "../ui/dialog";
 import {
   Select,
@@ -39,7 +38,7 @@ import { BNavBarMentor } from "../ui/b-navbar-mentor";
 import { BNavBarMember } from "../ui/b-navbar-member";
 import { BNavBarCoordinator } from "../ui/b-navbar-coordinator";
 import { BNavBarGuest } from "../ui/b-navbar-guest";
-import { useApp } from "../AppContext";
+import { useApp } from "../context/AppContext";
 import {
   ArrowLeft,
   Edit,
@@ -59,7 +58,8 @@ import {
   Clock,
   MapPinIcon,
 } from "lucide-react";
-import { toast } from "sonner@2.0.3";
+import { toast } from "sonner";
+import { useNavigate } from "react-router";
 
 interface ContactInfo {
   phone: string;
@@ -70,10 +70,9 @@ interface ContactInfo {
 }
 
 export function ProfileScreen() {
-  const { 
-    user, 
-    setCurrentView, 
-    certificates, 
+  const {
+    user,    
+    certificates,
     events,
     articles,
     userEventParticipations,
@@ -81,12 +80,13 @@ export function ProfileScreen() {
     deleteArticle,
     addUserEventParticipation,
     removeUserEventParticipation,
-    logout 
+    logout
   } = useApp();
   const [isEditing, setIsEditing] = useState(false);
   const [isEditingContact, setIsEditingContact] = useState(false);
   const [interests, setInterests] = useState(user?.interests?.join(", ") || "");
-  
+  const navigate = useNavigate()
+
   // Estados para artículos
   const [showAddArticle, setShowAddArticle] = useState(false);
   const [newArticle, setNewArticle] = useState({
@@ -97,7 +97,7 @@ export function ProfileScreen() {
     publicationUrl: "",
   });
   const [articleToDelete, setArticleToDelete] = useState<string | null>(null);
-  
+
   // Estados para eventos
   const [showAddEvent, setShowAddEvent] = useState(false);
   const [selectedEventId, setSelectedEventId] = useState("");
@@ -147,11 +147,11 @@ export function ProfileScreen() {
   const userCertificates = certificates.filter(cert => cert.userId === user?.id).length;
   const userArticles = articles.filter(article => article.userId === user?.id);
   const userParticipations = userEventParticipations.filter(p => p.userId === user?.id);
-  
+
   const participatedEvents = events.filter(event =>
     userParticipations.some(p => p.eventId === event.id)
   );
-  
+
   const availableEvents = events.filter(event =>
     !userParticipations.some(p => p.eventId === event.id)
   );
@@ -168,14 +168,14 @@ export function ProfileScreen() {
         return "Integrante";
     }
   };
-  
+
   // Handlers para artículos
   const handleAddArticle = () => {
     if (!newArticle.title || !newArticle.description || !newArticle.publicationDate || !newArticle.authors || !newArticle.publicationUrl) {
       toast.error("Por favor completa todos los campos");
       return;
     }
-    
+
     addArticle(newArticle);
     setNewArticle({
       title: "",
@@ -187,7 +187,7 @@ export function ProfileScreen() {
     setShowAddArticle(false);
     toast.success("Artículo agregado exitosamente");
   };
-  
+
   const handleDeleteArticle = () => {
     if (articleToDelete) {
       deleteArticle(articleToDelete);
@@ -195,20 +195,20 @@ export function ProfileScreen() {
       setArticleToDelete(null);
     }
   };
-  
+
   // Handlers para eventos
   const handleAddEventParticipation = () => {
     if (!selectedEventId) {
       toast.error("Por favor selecciona un evento");
       return;
     }
-    
+
     addUserEventParticipation(selectedEventId);
     setSelectedEventId("");
     setShowAddEvent(false);
     toast.success("Participación registrada exitosamente");
   };
-  
+
   const handleRemoveParticipation = () => {
     if (participationToDelete) {
       removeUserEventParticipation(participationToDelete);
@@ -216,7 +216,7 @@ export function ProfileScreen() {
       setParticipationToDelete(null);
     }
   };
-  
+
   const formatDate = (dateString: string): string => {
     return new Date(dateString).toLocaleDateString("es-ES", {
       year: "numeric",
@@ -233,7 +233,7 @@ export function ProfileScreen() {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => setCurrentView(getBackView())}
+            onClick={() => navigate("/" + getBackView())}
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
@@ -679,7 +679,7 @@ export function ProfileScreen() {
               <h2>Certificados Recientes</h2>
               <Button
                 variant="outline"
-                onClick={() => setCurrentView("certificates")}
+                onClick={() => navigate("/certificates")}
               >
                 Ver todos
               </Button>

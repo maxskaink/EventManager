@@ -6,7 +6,7 @@ import { Textarea } from '../ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Checkbox } from '../ui/checkbox';
 import { Badge } from '../ui/badge';
-import { useApp } from '../AppContext';
+import { useApp } from '../context/AppContext';
 import { 
   ArrowLeft, 
   Save, 
@@ -24,9 +24,11 @@ import {
   Italic,
   List
 } from 'lucide-react';
+import { useNavigate } from 'react-router';
 
 export function CreatePublicationScreen() {
-  const { setCurrentView, user } = useApp();
+  const navigate = useNavigate()
+  const { user } = useApp();
   
   const [formData, setFormData] = useState({
     title: '',
@@ -53,7 +55,7 @@ export function CreatePublicationScreen() {
   const handleSave = (status: 'draft' | 'published') => {
     console.log('Saving publication:', { ...formData, status });
     // Here would be the actual save logic
-    setCurrentView('publications');
+    navigate('/publications');
   };
 
   const getTypeIcon = (type: string) => {
@@ -162,7 +164,7 @@ export function CreatePublicationScreen() {
           <Button 
             variant="ghost" 
             size="icon"
-            onClick={() => setCurrentView('publications')}
+            onClick={() => navigate('/publications')}
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
@@ -387,7 +389,7 @@ export function CreatePublicationScreen() {
           <Card>
             <CardContent className="p-4">
               <div className="flex justify-between">
-                <Button variant="outline" onClick={() => setCurrentView('publications')}>
+                <Button variant="outline" onClick={() => navigate('/publications')}>
                   Cancelar
                 </Button>
                 
@@ -410,19 +412,19 @@ export function CreatePublicationScreen() {
       {/* Navigation Bar */}
       <div className="fixed bottom-0 left-0 right-0 bg-background border-t p-4">
         <div className="max-w-4xl mx-auto flex justify-around">
-          <Button variant="ghost" onClick={() => setCurrentView('dashboard-coordinator')}>
+          <Button variant="ghost" onClick={() => navigate('/dashboard-coordinator')}>
             Dashboard
           </Button>
-          <Button variant="ghost" onClick={() => setCurrentView('events')}>
+          <Button variant="ghost" onClick={() => navigate('/events')}>
             Eventos
           </Button>
-          <Button variant="ghost" onClick={() => setCurrentView('publications')}>
+          <Button variant="ghost" onClick={() => navigate('/publications')}>
             Publicaciones
           </Button>
-          <Button variant="ghost" onClick={() => setCurrentView('reports')}>
+          <Button variant="ghost" onClick={() => navigate('/reports')}>
             Reportes
           </Button>
-          <Button variant="ghost" onClick={() => setCurrentView('profile')}>
+          <Button variant="ghost" onClick={() => navigate('/profile')}>
             Perfil
           </Button>
         </div>

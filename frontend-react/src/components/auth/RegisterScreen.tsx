@@ -3,11 +3,11 @@ import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Card, CardContent, CardHeader } from '../ui/card';
 import { ImageWithFallback } from '../figma/ImageWithFallback';
-import { useApp } from '../AppContext';
 import { ArrowLeft } from 'lucide-react';
+import { useNavigate } from 'react-router';
 
 export function RegisterScreen() {
-  const { setCurrentView } = useApp();
+  const navigate = useNavigate()
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -17,7 +17,7 @@ export function RegisterScreen() {
   const handleSubmit = () => {
     // Mock registration
     console.log('Registering user:', formData);
-    setCurrentView('login');
+    navigate('/login');
   };
 
   const handleInputChange = (field: string, value: string) => {
@@ -34,7 +34,7 @@ export function RegisterScreen() {
             <Button 
               variant="ghost" 
               size="icon"
-              onClick={() => setCurrentView('login')}
+              onClick={() => navigate('/login')}
             >
               <ArrowLeft className="h-4 w-4" />
             </Button>
@@ -95,7 +95,7 @@ export function RegisterScreen() {
 
           <div className="text-center">
             <button 
-              onClick={() => setCurrentView('login')}
+              onClick={() => navigate('/login')}
               className="text-sm text-muted-foreground hover:text-foreground"
             >
               ¿Ya tienes cuenta? <span className="text-primary">Inicia sesión</span>

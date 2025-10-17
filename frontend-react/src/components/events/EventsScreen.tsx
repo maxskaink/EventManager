@@ -13,7 +13,7 @@ import {
   TabsList,
   TabsTrigger,
 } from "../ui/tabs";
-import { useApp } from "../AppContext";
+import { useApp } from "../context/AppContext";
 import {
   Calendar,
   Clock,
@@ -23,9 +23,11 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import { ImageWithFallback } from "../figma/ImageWithFallback";
+import { useNavigate } from "react-router";
 
 export function EventsScreen() {
-  const { user, events, setCurrentView } = useApp();
+  const { user, events } = useApp();
+  const navigate = useNavigate()
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] =
     useState("todos");
@@ -71,7 +73,7 @@ export function EventsScreen() {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => setCurrentView(getBackView())}
+            onClick={() => navigate("/" + getBackView())}
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
@@ -170,18 +172,16 @@ export function EventsScreen() {
 
                       <div className="space-y-2 text-sm">
                         <div
-                          className={`flex items-center gap-2 ${
-                            isEventComingSoon(event.date)
+                          className={`flex items-center gap-2 ${isEventComingSoon(event.date)
                               ? "text-coral-primary font-medium p-2 bg-coral-primary/10 rounded-lg border border-coral-primary/20"
                               : "text-muted-foreground"
-                          }`}
+                            }`}
                         >
                           <Calendar
-                            className={`h-4 w-4 ${
-                              isEventComingSoon(event.date)
+                            className={`h-4 w-4 ${isEventComingSoon(event.date)
                                 ? "text-coral-primary"
                                 : ""
-                            }`}
+                              }`}
                           />
                           <span>
                             {new Date(
@@ -225,8 +225,8 @@ export function EventsScreen() {
                           size="sm"
                           className="flex-1"
                           onClick={() =>
-                            setCurrentView(
-                              `event-detail-${event.id}`,
+                            navigate(
+                              `/event-detail-${event.id}`,
                             )
                           }
                         >

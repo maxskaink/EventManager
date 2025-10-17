@@ -18,7 +18,7 @@ import {
 import { BNavBarMentor } from "../ui/b-navbar-mentor";
 import { BNavBarCoordinator } from "../ui/b-navbar-coordinator";
 
-import { useApp } from "../AppContext";
+import { useApp } from "../context/AppContext";
 import {
   ArrowLeft,
   Plus,
@@ -33,6 +33,7 @@ import {
   Settings,
   Share,
 } from "lucide-react";
+import { useNavigate } from "react-router";
 
 interface Publication {
   id: string;
@@ -49,7 +50,8 @@ interface Publication {
 }
 
 export function PublicationsScreen() {
-  const { setCurrentView, user } = useApp();
+  const { user } = useApp();
+  const navigate = useNavigate()
   const [searchQuery, setSearchQuery] = useState("");
   const [filterType, setFilterType] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
@@ -210,7 +212,7 @@ export function PublicationsScreen() {
             variant="ghost"
             size="icon"
             onClick={() =>
-              setCurrentView("dashboard-coordinator")
+              navigate("/dashboard-coordinator")
             }
           >
             <ArrowLeft className="h-5 w-5" />
@@ -223,7 +225,7 @@ export function PublicationsScreen() {
           </div>
           <Button
             variant="secondary"
-            onClick={() => setCurrentView("create-publication")}
+            onClick={() => navigate("/create-publication")}
             className="gap-2"
           >
             <Plus className="h-4 w-4" />
@@ -478,7 +480,7 @@ export function PublicationsScreen() {
                 </p>
                 <Button
                   onClick={() =>
-                    setCurrentView("create-publication")
+                    navigate("/create-publication")
                   }
                 >
                   <Plus className="h-4 w-4 mr-2" />

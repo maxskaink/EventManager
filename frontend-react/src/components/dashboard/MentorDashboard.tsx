@@ -55,7 +55,7 @@ import {
   AlertDialogTrigger,
 } from "../ui/alert-dialog";
 import { ImageWithFallback } from "../figma/ImageWithFallback";
-import { useApp } from "../AppContext";
+import { useApp } from "../context/AppContext";
 import {
   Users,
   Settings,
@@ -78,6 +78,7 @@ import {
   User,
   Home,
 } from "lucide-react";
+import { useNavigate } from "react-router";
 
 // Mock data for mentor functionalities
 const mockUsers = [
@@ -147,7 +148,8 @@ const mockSubmissions = [
 ];
 
 export function MentorDashboard() {
-  const { user, setCurrentView, logout } = useApp();
+  const { user,  logout } = useApp();
+  const navigate = useNavigate()
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedRole, setSelectedRole] =
     useState<string>("all");
@@ -215,7 +217,7 @@ export function MentorDashboard() {
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => setCurrentView("notifications")}
+                onClick={() => navigate("/notifications")}
               >
                 <Bell className="h-5 w-5" />
               </Button>
@@ -605,7 +607,7 @@ export function MentorDashboard() {
                             variant="outline"
                             size="sm"
                             onClick={() =>
-                              setCurrentView("profile")
+                              navigate("/profile")
                             }
                           >
                             Ver Perfil Completo
@@ -797,7 +799,7 @@ export function MentorDashboard() {
                 <Button
                   variant="outline"
                   className="h-auto p-4 flex flex-col items-center gap-2"
-                  onClick={() => setCurrentView("event-board")}
+                  onClick={() => navigate("/event-board")}
                 >
                   <Calendar className="h-6 w-6" />
                   <span>Contenido del Semillero</span>
@@ -817,7 +819,7 @@ export function MentorDashboard() {
                 <Button
                   variant="outline"
                   className="h-auto p-4 flex flex-col items-center gap-2"
-                  onClick={() => setCurrentView("admin")}
+                  onClick={() => navigate("/admin")}
                 >
                   <Settings className="h-6 w-6" />
                   <span>Configuración Avanzada</span>

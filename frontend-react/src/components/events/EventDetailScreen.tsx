@@ -2,7 +2,7 @@ import React from "react";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader } from "../ui/card";
 import { Badge } from "../ui/badge";
-import { useApp } from "../AppContext";
+import { useApp } from "../context/AppContext";
 import {
   Calendar,
   Clock,
@@ -16,6 +16,7 @@ import { BNavBarMentor } from "../ui/b-navbar-mentor";
 import { BNavBarMember } from "../ui/b-navbar-member";
 import { BNavBarCoordinator } from "../ui/b-navbar-coordinator";
 import { BNavBarGuest } from "../ui/b-navbar-guest";
+import { useNavigate } from "react-router";
 
 interface EventDetailScreenProps {
   eventId: string;
@@ -24,8 +25,8 @@ interface EventDetailScreenProps {
 export function EventDetailScreen({
   eventId,
 }: EventDetailScreenProps) {
-  const { user, events, setCurrentView, registerEvent } =
-    useApp();
+  const { user, events, registerEvent } =useApp();
+  const navigate = useNavigate()
 
   const event = events.find((e) => e.id === eventId);
 
@@ -37,7 +38,7 @@ export function EventDetailScreen({
             <p className="text-muted-foreground mb-4">
               Evento no encontrado
             </p>
-            <Button onClick={() => setCurrentView("events")}>
+            <Button onClick={() => navigate("/events")}>
               Volver a eventos
             </Button>
           </CardContent>
@@ -66,7 +67,7 @@ export function EventDetailScreen({
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => setCurrentView("events")}
+            onClick={() => navigate("/events")}
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
@@ -204,7 +205,7 @@ export function EventDetailScreen({
                     Inicia sesión para inscribirte a este evento
                   </p>
                   <Button
-                    onClick={() => setCurrentView("login")}
+                    onClick={() => navigate("/login")}
                   >
                     Iniciar Sesión
                   </Button>

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useApp } from "../AppContext";
+import { useApp } from "../context/AppContext";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader } from "../ui/card";
 import { Input } from "../ui/input";
@@ -28,7 +28,8 @@ import {
   AlertCircle,
   Download,
 } from "lucide-react";
-import { toast } from "sonner@2.0.3";
+import { toast } from "sonner";
+import { useNavigate } from "react-router";
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const ALLOWED_FILE_TYPES = [
@@ -40,7 +41,8 @@ const ALLOWED_FILE_TYPES = [
 const ALLOWED_EXTENSIONS = [".pdf", ".jpg", ".jpeg", ".png"];
 
 export function CertificatesScreen() {
-  const { user, certificates, setCurrentView, addCertificate, deleteCertificate } = useApp();
+  const { user, certificates, addCertificate, deleteCertificate } = useApp();
+  const navigate = useNavigate()
   const [title, setTitle] = useState("");
   const [topic, setTopic] = useState("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -186,7 +188,7 @@ export function CertificatesScreen() {
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => setCurrentView(getBackView())}
+              onClick={() => navigate("/" + getBackView())}
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
@@ -220,7 +222,7 @@ export function CertificatesScreen() {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => setCurrentView(getBackView())}
+            onClick={() => navigate("/" + getBackView())}
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
