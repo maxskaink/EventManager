@@ -10,9 +10,9 @@ return new class extends Migration
         Schema::create('profiles', function (Blueprint $table) {
             $table->id(); // primary key
             $table->unsignedBigInteger('user_id');
-            $table->string('name');
+            $table->string('university')->nullable();
+            $table->string('academic_program')->nullable();;
             $table->string('phone')->nullable();
-            $table->string('avatar_url')->nullable();
             $table->timestamps();
         });
 

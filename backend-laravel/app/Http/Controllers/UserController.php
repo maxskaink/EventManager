@@ -2,12 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Exceptions\InvalidRoleException;
 use App\Http\Requests\ToggleRoleRequest;
 use App\Models\User;
 use App\Services\UserService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
@@ -22,6 +20,7 @@ class UserController extends Controller
 
     public function toggleRole(ToggleRoleRequest $request): JsonResponse
     {
+
         $data = $request->validated();
 
         $userId = $data['user_id'];
@@ -33,6 +32,7 @@ class UserController extends Controller
             'message' => "Role changed successfully to {$updatedRole}"
         ]);
     }
+
 
 
 }

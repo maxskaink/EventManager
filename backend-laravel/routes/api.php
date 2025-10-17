@@ -1,7 +1,9 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UserController;
+
 use Illuminate\Support\Facades\Route;
 
 #Auth Routes
@@ -12,3 +14,6 @@ Route::middleware('auth:sanctum')->get('logout', [AuthController::class, 'logout
 
 #User Routes
 Route::middleware('auth:sanctum')->post('toggle-role', [UserController::class, 'toggleRole']);
+
+#Profile Routes
+Route::middleware('auth:sanctum')->put('update-profile', [ProfileController::class, 'updateProfile']);

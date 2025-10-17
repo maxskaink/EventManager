@@ -4,7 +4,7 @@ namespace App\Services;
 
 use App\Exceptions\InvalidRoleException;
 use App\Models\User;
-use InvalidArgumentException;
+use Illuminate\Support\Facades\Auth;
 
 class UserService
 {
@@ -17,13 +17,20 @@ class UserService
      */
     public function toggleRole(int $userID, string $newRole): string
     {
+        /** @var User|null $authUser */
+        $authUser = Auth::user();
+
+        if ($authUser && $authUser->id === $userID) {
+            throw new InvalidRoleException('You cannot modify your own role.');
+        }
+
         $user = User::query()->findOrFail($userID);
 
         $user->role = $newRole;
-
         $user->save();
 
         return $newRole;
     }
+
 
 }
