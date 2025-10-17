@@ -3,13 +3,12 @@ import axios, { AxiosError } from "axios";
 // Create axios instance with base configuration
 const axiosInstance = axios.create({
     baseURL: import.meta.env.VITE_API_URL,
-    withCredentials: true, // Required for Laravel Sanctum/Session auth
+    withCredentials: false, // Changed to false to work with CORS *
     headers: {
-        'X-Requested-With': 'XMLHttpRequest', // Required for Laravel to detect AJAX requests
         'Content-Type': 'application/json',
-        'Accept': 'application/json',
+        'Accept': 'application/json'
     },
-    timeout: 10000, // 10 seconds
+    timeout: 10000 // 10 seconds
 });
 
 // Request interceptor
@@ -79,5 +78,14 @@ axiosInstance.interceptors.response.use(
         return Promise.reject(error);
     }
 );
+
+// Initialize CSRF protection
+export const initializeCsrf = async () => {
+    try {
+        await axiosInstance.get('/sanctum/csrf-cookie');
+    } catch (error) {
+        console.error('Failed to initialize CSRF protection:', error);
+    }
+};
 
 export default axiosInstance

@@ -4,21 +4,29 @@ import { Input } from "../ui/input";
 import { Card, CardContent, CardHeader } from "../ui/card";
 import { ImageWithFallback } from "../figma/ImageWithFallback";
 import { useNavigate } from "react-router";
+import axiosInstance from "../../services/api/axios-instance";
+import { AxiosError } from "axios";
 
-export function LoginScreen() {  
+export function LoginScreen() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-
-  const handleLogin = () => {
-    
+  const handleLogin = async () => {
+    try {
+      const res = await axiosInstance.get<{ url: string }>("/api/auth");
+      window.location.href = res.data.url;
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        console.log(error);
+        alert(error.message);
+        setError(error.message);
+      }
+    }
   };
 
-  const handleGuestLogin = () => {
-
-  };
+  const handleGuestLogin = () => {};
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
@@ -36,6 +44,7 @@ export function LoginScreen() {
         </CardHeader>
 
         <CardContent className="space-y-4">
+          {/*
           <div className="space-y-2">
             <label htmlFor="email">Correo electrónico</label>
             <Input
@@ -63,10 +72,15 @@ export function LoginScreen() {
           <Button onClick={handleLogin} className="w-full" disabled={!email || !password}>
             Iniciar sesión
           </Button>
-
+*/}
+          <Button onClick={handleLogin} className="w-full">
+            Iniciar sesión con Google
+          </Button>
+          {/*
           <Button variant="outline" onClick={handleGuestLogin} className="w-full">
             Ingresar como invitado
           </Button>
+          */}
 
           <div className="text-center">
             <button onClick={() => navigate("/forgot-password")} className="text-sm text-primary hover:underline">
