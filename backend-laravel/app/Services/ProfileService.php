@@ -25,4 +25,9 @@ class ProfileService
 
         return $profile;
     }
+
+    public function getProfile(int $userId): Profile
+    {
+        return Profile::query()->firstOrNew(['user_id' => $userId]);
+    }
 }
