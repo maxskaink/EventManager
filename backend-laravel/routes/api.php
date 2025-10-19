@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CertificateController;
 use App\Http\Controllers\EventController;
@@ -39,3 +40,10 @@ Route::middleware('auth:sanctum')->get('certificate/my', [CertificateController:
 Route::middleware('auth:sanctum')->get('certificate/user/{userId}', [CertificateController::class, 'listCertificatesByUser']);
 Route::middleware('auth:sanctum')->get('certificate/all', [CertificateController::class, 'listAllCertificates']);
 Route::middleware('auth:sanctum')->get('certificate/date-range', [CertificateController::class, 'listCertificatesByDateRange']);
+
+#Article Routes
+Route::middleware('auth:sanctum')->post('article', [ArticleController::class, 'addArticle']);
+Route::middleware('auth:sanctum')->get('article/my', [ArticleController::class, 'listMyArticles']);
+Route::middleware('auth:sanctum')->get('article/user/{userId}', [ArticleController::class, 'listArticlesByUser']);
+Route::middleware('auth:sanctum')->get('article/all', [ArticleController::class, 'listAllArticles']);
+Route::middleware('auth:sanctum')->get('article/date-range', [ArticleController::class, 'listArticlesByDateRange']);
