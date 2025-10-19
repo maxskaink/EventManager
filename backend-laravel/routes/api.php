@@ -35,3 +35,7 @@ Route::middleware('auth:sanctum')->get('event/past', [EventController::class, 'l
 
 #Certificate Routes
 Route::middleware('auth:sanctum')->post('certificate', [CertificateController::class, 'addCertificate']);
+Route::middleware('auth:sanctum')->get('certificate/my', [CertificateController::class, 'listMyCertificates']);
+Route::middleware('auth:sanctum')->get('certificate/user/{userId}', [CertificateController::class, 'listCertificatesByUser']);
+Route::middleware('auth:sanctum')->get('certificate/all', [CertificateController::class, 'listAllCertificates']);
+Route::middleware('auth:sanctum')->get('certificate/date-range', [CertificateController::class, 'listCertificatesByDateRange']);
