@@ -2,12 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\ToggleRoleRequest;
-use App\Models\User;
+use App\Http\Requests\User\ToggleRoleRequest;
 use App\Services\UserService;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {

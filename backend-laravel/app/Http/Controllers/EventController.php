@@ -4,12 +4,10 @@ namespace App\Http\Controllers;
 
 
 
-use App\Http\Requests\AddEventRequest;
-use App\Models\User;
+use App\Http\Requests\Event\AddEventRequest;
 use App\Services\EventService;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Auth;
 
 class EventController extends Controller
 {

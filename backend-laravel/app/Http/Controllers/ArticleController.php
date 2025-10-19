@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-use App\Http\Requests\AddArticleRequest;
-use App\Http\Requests\ListArticlesByDateRangeRequest;
+use App\Http\Requests\Article\AddArticleRequest;
+use App\Http\Requests\Article\ListArticlesByDateRangeRequest;
+use App\Http\Requests\Article\UpdateArticleRequest;
 use App\Services\ArticleService;
 use Illuminate\Http\JsonResponse;
 
@@ -28,7 +28,23 @@ class ArticleController extends Controller
         $newArticle = $this->articleService->addArticle($data);
 
         return response()->json([
-            'message' => "Article created successfully: {$newArticle}",
+            'message' => 'Article created successfully.',
+            'article' => $newArticle,
+        ]);
+    }
+
+    /**
+     * Update an existing article.
+     */
+    public function updateArticle(UpdateArticleRequest $request, int $articleId): JsonResponse
+    {
+        $data = $request->validated();
+
+        $updatedArticle = $this->articleService->updateArticle($articleId, $data);
+
+        return response()->json([
+            'message' => 'Article updated successfully.',
+            'article' => $updatedArticle,
         ]);
     }
 

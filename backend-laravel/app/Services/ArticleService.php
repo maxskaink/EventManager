@@ -65,6 +65,74 @@ class ArticleService
     }
 
     /**
+     * Update an existing article.
+     *
+     * @param int $articleId
+     * @param array $data
+     * @return Article
+     *
+     * @throws InvalidRoleException
+     * @throws ModelNotFoundException
+     * @throws DuplicatedResourceException
+     */
+    public function updateArticle(int $articleId, array $data): Article
+    {
+        /** @var User|null $authUser */
+        $authUser = Auth::user();
+
+        // Ensure the authenticated user exists
+        if (!$authUser) {
+            throw new InvalidRoleException('You must be logged in to update an article.');
+        }
+
+        // Find the article
+        $article = Article::query()->find($articleId);
+        if (!$article) {
+            throw new ModelNotFoundException('The specified article does not exist.');
+        }
+
+        // Only the article owner or a mentor can update it
+        if ($authUser->id !== $article->user_id && $authUser->role !== 'mentor') {
+            throw new InvalidRoleException('You are not allowed to update this article.');
+        }
+
+        // If user_id is being changed, verify permissions and existence
+        if (isset($data['user_id'])) {
+            $newUser = User::query()->find($data['user_id']);
+            if (!$newUser) {
+                throw new ModelNotFoundException('The specified user does not exist.');
+            }
+
+            // Only mentors can reassign articles to other users
+            if ($authUser->role !== 'mentor' && $data['user_id'] !== $authUser->id) {
+                throw new InvalidRoleException('You cannot assign this article to another user.');
+            }
+        }
+
+        // Check for duplicate title if it was modified
+        if (isset($data['title'])) {
+            $duplicate = Article::query()
+                ->where('user_id', $data['user_id'] ?? $article->user_id)
+                ->where('title', $data['title'])
+                ->where('id', '!=', $articleId)
+                ->first();
+
+            if ($duplicate) {
+                throw new DuplicatedResourceException(
+                    "An article titled '{$data['title']}' already exists for this user."
+                );
+            }
+        }
+
+        // Update fields safely
+        $article->fill($data);
+        $article->save();
+
+        return $article;
+    }
+
+
+    /**
      * Get all articles of the currently authenticated user.
      *
      * @return Collection<int, Article>

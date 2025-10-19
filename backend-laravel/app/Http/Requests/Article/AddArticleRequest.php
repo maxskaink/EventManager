@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\Article;
 
 use App\Models\User;
 use Illuminate\Contracts\Validation\ValidationRule;
@@ -13,11 +13,7 @@ class AddArticleRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        /** @var User|null $user */
-        $user = auth()->user();
-
-        // Only mentors, coordinators, or the user themselves can add articles
-        return $user && in_array($user->getRoleAttribute(), ['mentor', 'coordinator', 'user']);
+        return auth()->check();
     }
 
     /**

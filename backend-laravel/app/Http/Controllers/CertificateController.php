@@ -2,12 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-use App\Http\Requests\AddCertificateRequest;
-use App\Http\Requests\AddEventRequest;
-use App\Http\Requests\ListCertificatesByDateRangeRequest;
+use App\Http\Requests\Certificate\AddCertificateRequest;
+use App\Http\Requests\Certificate\ListCertificatesByDateRangeRequest;
+use App\Http\Requests\Certificate\UpdateCertificateRequest;
 use App\Services\CertificateService;
-use App\Services\EventService;
 use Illuminate\Http\JsonResponse;
 
 class CertificateController extends Controller
@@ -26,6 +24,21 @@ class CertificateController extends Controller
 
         return response()->json([
             'message' => "Certificate created successfully to {$newCertificate}"
+        ]);
+    }
+
+    /**
+     * Update an existing article.
+     */
+    public function updateCertificate(UpdateCertificateRequest $request, int $certificateId): JsonResponse
+    {
+        $data = $request->validated();
+
+        $updatedCertificate = $this->certificateService->updateCertificate($certificateId, $data);
+
+        return response()->json([
+            'message' => 'Certificate updated successfully.',
+            'article' => $updatedCertificate,
         ]);
     }
 

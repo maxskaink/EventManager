@@ -2,10 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Exceptions\InvalidRoleException;
-use App\Http\Controllers\Controller;
-use App\Http\Requests\UpdateProfileRequest;
-use App\Models\Profile;
+use App\Http\Requests\Profile\UpdateProfileRequest;
 use App\Models\User;
 use App\Services\ProfileService;
 use Illuminate\Http\JsonResponse;

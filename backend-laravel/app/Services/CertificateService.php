@@ -65,6 +65,74 @@ class CertificateService
     }
 
     /**
+     * Update an existing certificate.
+     *
+     * @param int $certificateId
+     * @param array $data
+     * @return Certificate
+     *
+     * @throws InvalidRoleException
+     * @throws ModelNotFoundException
+     * @throws DuplicatedResourceException
+     */
+    public function updateCertificate(int $certificateId, array $data): Certificate
+    {
+        /** @var User|null $authUser */
+        $authUser = Auth::user();
+
+        // Ensure the authenticated user exists
+        if (!$authUser) {
+            throw new InvalidRoleException('You must be logged in to update an certificate.');
+        }
+
+        // Find the certificate
+        $certificate = Certificate::query()->find($certificateId);
+        if (!$certificate) {
+            throw new ModelNotFoundException('The specified certificate does not exist.');
+        }
+
+        // Only the certificate owner or a mentor can update it
+        if ($authUser->id !== $certificate->user_id && $authUser->role !== 'mentor') {
+            throw new InvalidRoleException('You are not allowed to update this certificate.');
+        }
+
+        // If user_id is being changed, verify permissions and existence
+        if (isset($data['user_id'])) {
+            $newUser = User::query()->find($data['user_id']);
+            if (!$newUser) {
+                throw new ModelNotFoundException('The specified user does not exist.');
+            }
+
+            // Only mentors can reassign certificates to other users
+            if ($authUser->role !== 'mentor' && $data['user_id'] !== $authUser->id) {
+                throw new InvalidRoleException('You cannot assign this certificate to another user.');
+            }
+        }
+
+
+        if (isset($data['name'])) {
+            $duplicate = Certificate::query()
+                ->where('user_id', $data['user_id'] ?? $certificate->user_id)
+                ->where('name', $data['name'])
+                ->where('id', '!=', $certificateId)
+                ->first();
+
+            if ($duplicate) {
+                throw new DuplicatedResourceException(
+                    "An certificate named '{$data['name']}' already exists for this user."
+                );
+            }
+        }
+
+        // Update fields safely
+        $certificate->fill($data);
+        $certificate->save();
+
+        return $certificate;
+    }
+
+
+    /**
      * Get all certificates of the currently authenticated user.
      *
      * @return Collection<int, Certificate>
