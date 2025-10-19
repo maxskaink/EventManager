@@ -37,6 +37,7 @@ Route::middleware('auth:sanctum')->get('event/past', [EventController::class, 'l
 #Certificate Routes
 Route::middleware('auth:sanctum')->post('certificate', [CertificateController::class, 'addCertificate']);
 Route::middleware('auth:sanctum')->patch('certificate/{certificateId}', [CertificateController::class, 'updateCertificate']);
+Route::middleware('auth:sanctum')->delete('certificate/{certificateId}', [CertificateController::class, 'deleteCertificate']);
 Route::middleware('auth:sanctum')->get('certificate/my', [CertificateController::class, 'listMyCertificates']);
 Route::middleware('auth:sanctum')->get('certificate/user/{userId}', [CertificateController::class, 'listCertificatesByUser']);
 Route::middleware('auth:sanctum')->get('certificate/all', [CertificateController::class, 'listAllCertificates']);
@@ -46,6 +47,7 @@ Route::middleware('auth:sanctum')->get('certificate/date-range', [CertificateCon
 #Article Routes
 Route::middleware('auth:sanctum')->post('article', [ArticleController::class, 'addArticle']);
 Route::middleware('auth:sanctum')->patch('article/{articleId}', [ArticleController::class, 'updateArticle']);
+Route::middleware('auth:sanctum')->delete('article/{articleId}', [ArticleController::class, 'deleteArticle']);
 Route::middleware('auth:sanctum')->get('article/my', [ArticleController::class, 'listMyArticles']);
 Route::middleware('auth:sanctum')->get('article/user/{userId}', [ArticleController::class, 'listArticlesByUser']);
 Route::middleware('auth:sanctum')->get('article/all', [ArticleController::class, 'listAllArticles']);

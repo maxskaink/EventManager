@@ -240,4 +240,38 @@ class ArticleService
             ->orderBy('publication_date')
             ->get();
     }
+
+    /**
+     * Delete an existing article.
+     *
+     * @param int $articleId
+     * @return void
+     *
+     * @throws InvalidRoleException
+     * @throws ModelNotFoundException
+     */
+    public function deleteArticle(int $articleId): void
+    {
+        /** @var User|null $authUser */
+        $authUser = Auth::user();
+
+        // Ensure the authenticated user exists
+        if (!$authUser) {
+            throw new InvalidRoleException('You must be logged in to delete an article.');
+        }
+
+        // Find the article
+        $article = Article::query()->find($articleId);
+        if (!$article) {
+            throw new ModelNotFoundException('The specified article does not exist.');
+        }
+
+        // Only the article owner or a mentor can delete it
+        if ($authUser->id !== $article->user_id && $authUser->role !== 'mentor') {
+            throw new InvalidRoleException('You are not allowed to delete this article.');
+        }
+
+        // Delete the article
+        $article->delete();
+    }
 }

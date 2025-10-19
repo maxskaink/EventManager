@@ -103,4 +103,17 @@ class ArticleController extends Controller
             'articles' => $articles,
         ]);
     }
+
+    /**
+     * Delete an existing article.
+     */
+    public function deleteArticle(int $articleId): JsonResponse
+    {
+        $this->articleService->deleteArticle($articleId);
+
+        return response()->json([
+            'message' => 'Article deleted successfully.',
+        ]);
+    }
+
 }

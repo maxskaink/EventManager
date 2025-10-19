@@ -28,7 +28,7 @@ class CertificateController extends Controller
     }
 
     /**
-     * Update an existing article.
+     * Update an existing certificate.
      */
     public function updateCertificate(UpdateCertificateRequest $request, int $certificateId): JsonResponse
     {
@@ -38,7 +38,20 @@ class CertificateController extends Controller
 
         return response()->json([
             'message' => 'Certificate updated successfully.',
-            'article' => $updatedCertificate,
+            'certificate' => $updatedCertificate,
+        ]);
+    }
+
+
+    /**
+     * Delete an existing certificate.
+     */
+    public function deleteCertificate(int $certificateId): JsonResponse
+    {
+        $this->certificateService->deleteCertificate($certificateId);
+
+        return response()->json([
+            'message' => 'certificate deleted successfully.',
         ]);
     }
 

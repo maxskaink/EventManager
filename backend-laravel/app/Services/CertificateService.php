@@ -240,4 +240,39 @@ class CertificateService
             ->orderBy('issue_date')
             ->get();
     }
+
+    /**
+     * Delete an existing certificate.
+     *
+     * @param int $certificateId
+     * @return void
+     *
+     * @throws InvalidRoleException
+     * @throws ModelNotFoundException
+     */public function deleteCertificate(int $certificateId): void
+    {
+        /** @var User|null $authUser */
+        $authUser = Auth::user();
+
+        // Ensure the authenticated user exists
+        if (!$authUser) {
+            throw new InvalidRoleException('You must be logged in to delete a certificate.');
+        }
+
+
+        $certificate = Certificate::where('id', $certificateId)->first();
+
+        if (!$certificate) {
+            throw new ModelNotFoundException('The specified certificate does not exist.');
+        }
+
+
+        if ($authUser->id !== $certificate->user_id && $authUser->role !== 'mentor') {
+            throw new InvalidRoleException('You are not allowed to delete this certificate.');
+        }
+
+
+        $certificate->delete();
+    }
+
 }
