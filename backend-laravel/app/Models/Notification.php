@@ -60,4 +60,14 @@ class Notification extends Model
     {
         return $this->belongsTo(Profile::class);
     }
+
+    public function __toString(): string
+    {
+        return sprintf(
+            "Notification #%d: %s - %s",
+            $this->id ?? $this->getKey(),
+            $this->title ?? 'No title',
+            $this->profile?->user?->name ?? ($this->profile?->id ?? 'Unknown profile')
+        );
+    }
 }

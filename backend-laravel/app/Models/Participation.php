@@ -60,4 +60,15 @@ class Participation extends Model
     {
         return $this->belongsTo(Event::class);
     }
+
+    public function __toString(): string
+    {
+        return sprintf(
+            "Participation #%d: user %s in event %s (%s)",
+            $this->id ?? $this->getKey(),
+            $this->user?->name ?? $this->user_id ?? 'Unknown user',
+            $this->event?->name ?? $this->event_id ?? 'Unknown event',
+            $this->status ?? 'unknown'
+        );
+    }
 }

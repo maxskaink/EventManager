@@ -73,4 +73,14 @@ class PublicationAccess extends Model
     {
         return $this->belongsTo(Publication::class);
     }
+
+    public function __toString(): string
+    {
+        return sprintf(
+            "PublicationAccess #%d: publication %s accessed by profile %s",
+            $this->access_id ?? $this->getKey(),
+            $this->publication?->title ?? $this->publication_id ?? 'Unknown publication',
+            $this->profile?->id ?? $this->profile_id ?? 'Unknown profile'
+        );
+    }
 }

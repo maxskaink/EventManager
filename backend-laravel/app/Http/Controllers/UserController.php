@@ -19,12 +19,9 @@ class UserController extends Controller
     }
 
 
-    public function toggleRole(ToggleRoleRequest $request): JsonResponse
+    public function toggleRole(ToggleRoleRequest $request, int $userId): JsonResponse
     {
-
         $data = $request->validated();
-
-        $userId = $data['user_id'];
         $newRole = $data['new_role'];
 
         $updatedRole = $this->userService->toggleRole($userId, $newRole);
@@ -33,6 +30,7 @@ class UserController extends Controller
             'message' => "Role changed successfully to {$updatedRole}"
         ]);
     }
+
 
     /**
      * @throws AuthorizationException

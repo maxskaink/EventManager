@@ -18,7 +18,6 @@ class ToggleRoleRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'user_id' => 'required|integer|exists:users,id',
             'new_role' => 'required|string|in:interested,member,coordinator,mentor',
         ];
     }
@@ -26,9 +25,6 @@ class ToggleRoleRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'user_id.required' => 'User ID is required',
-            'user_id.integer' => 'User ID must be an integer',
-            'user_id.exists' => 'User not found',
             'new_role.required' => 'New role is required',
             'new_role.in' => 'Invalid role specified',
         ];

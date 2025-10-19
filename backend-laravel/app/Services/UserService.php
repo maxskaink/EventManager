@@ -26,6 +26,10 @@ class UserService
             throw new InvalidRoleException('You cannot modify your own role.');
         }
 
+        if (!in_array($newRole, ['interested', 'member', 'coordinator', 'mentor'])) {
+            throw new InvalidRoleException("Invalid role: {$newRole}");
+        }
+
         $user = User::query()->findOrFail($userID);
 
         $user->role = $newRole;
@@ -33,6 +37,7 @@ class UserService
 
         return $newRole;
     }
+
 
     /**
      * List all active users.

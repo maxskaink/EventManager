@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
 
 /**
  * @property int $user_id
@@ -74,4 +75,17 @@ class Certificate extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function __toString(): string
+    {
+        $userName = Auth::user()?->name ?? 'Unknown user';
+        return sprintf(
+            "Certificate for %s: %s issued on %s%s",
+            $userName,
+            $this->name,
+            $this->issue_date?->format('Y-m-d') ?? 'Unknown date',
+            $this->deleted ? ' [Deleted]' : ''
+        );
+    }
+
 }

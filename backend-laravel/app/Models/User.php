@@ -63,4 +63,15 @@ class User extends Authenticatable
         $this->attributes['role'] = $value;
     }
 
+    public function __toString(): string
+    {
+        return sprintf(
+            "User #%d: %s <%s> (%s)",
+            $this->id ?? $this->getKey(),
+            $this->name ?? 'Unknown',
+            $this->email ?? 'no-email',
+            $this->role ?? 'interested'
+        );
+    }
+
 }

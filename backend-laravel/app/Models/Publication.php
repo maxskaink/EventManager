@@ -67,4 +67,15 @@ class Publication extends Model
     {
         return $this->belongsTo(User::class, 'author_id');
     }
+
+    public function __toString(): string
+    {
+        return sprintf(
+            "Publication #%d: %s by %s (%s)",
+            $this->id ?? $this->getKey(),
+            $this->title ?? 'Untitled',
+            $this->author?->name ?? 'Unknown author',
+            $this->published_at?->format('Y-m-d') ?? 'No date'
+        );
+    }
 }

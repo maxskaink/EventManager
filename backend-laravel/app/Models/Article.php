@@ -58,4 +58,16 @@ class Article extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function __toString(): string
+    {
+        return sprintf(
+            "Article #%d: %s by %s (%s)",
+            $this->id,
+            $this->title ?? 'Untitled',
+            $this->authors ?? 'Unknown author',
+            $this->publication_date?->format('Y-m-d') ?? 'No date'
+        );
+    }
+
 }

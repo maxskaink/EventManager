@@ -64,4 +64,14 @@ class Interest extends Model
     {
         return $this->belongsTo(User::class);
     }
+    public function __toString(): string
+    {
+        return sprintf(
+            "Interest #%d: %s by %s",
+            $this->interest_id ?? $this->getKey(),
+            $this->keyword ?? 'No keyword',
+            $this->user?->name ?? 'Unknown user'
+        );
+    }
+
 }

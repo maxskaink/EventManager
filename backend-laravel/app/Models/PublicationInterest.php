@@ -64,4 +64,14 @@ class PublicationInterest extends Model
     {
         return $this->belongsTo(Publication::class);
     }
+
+    public function __toString(): string
+    {
+        return sprintf(
+            "PublicationInterest #%d: %s on publication %s",
+            $this->interest_id ?? $this->getKey(),
+            $this->interest ?? 'No interest',
+            $this->publication?->title ?? $this->publication_id ?? 'Unknown publication'
+        );
+    }
 }

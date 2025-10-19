@@ -56,4 +56,16 @@ class Event extends Model
             'updated_at' => 'datetime',
         ];
     }
+
+    public function __toString(): string
+    {
+        return sprintf(
+            "Event #%d: %s (%s - %s)",
+            $this->id,
+            $this->name,
+            $this->start_date?->format('Y-m-d'),
+            $this->end_date?->format('Y-m-d')
+        );
+    }
+
 }
