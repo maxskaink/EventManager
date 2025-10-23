@@ -8,7 +8,8 @@ return new class extends Migration
 {
     public function up(): void {
         Schema::create('certificates', function (Blueprint $table) {
-            $table->id('user_id');
+            $table->id();
+            $table->unsignedBigInteger('user_id');
             $table->string('name');
             $table->string('description');
             $table->date('issue_date');

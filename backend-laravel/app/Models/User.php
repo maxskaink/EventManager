@@ -6,8 +6,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Laravel\Sanctum\HasApiTokens; // 👈 Necesario para createToken() y currentAccessToken()
+use Laravel\Sanctum\HasApiTokens;
 
+/**
+ * @property string $role
+ * @property int id
+ */
 class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable, SoftDeletes;
@@ -47,6 +51,27 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'last_login_at' => 'datetime',
         ];
+    }
+
+    public function getRoleAttribute(): string
+    {
+        return $this->attributes['role'] ?? 'interested';
+    }
+
+    public function setRoleAttribute(string $value): void
+    {
+        $this->attributes['role'] = $value;
+    }
+
+    public function __toString(): string
+    {
+        return sprintf(
+            "User #%d: %s <%s> (%s)",
+            $this->id ?? $this->getKey(),
+            $this->name ?? 'Unknown',
+            $this->email ?? 'no-email',
+            $this->role ?? 'interested'
+        );
     }
 
 }

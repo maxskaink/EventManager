@@ -11,10 +11,11 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('description');
-            $table->string('location');
-            $table->date('start_date');
-            $table->date('end_date');
+            $table->dateTime('start_date');
+            $table->dateTime('end_date');
             $table->string('event_type');
+            $table->string('modality');
+            $table->string('location')->nullable();
             $table->string('status', 50);
             $table->integer('capacity')->nullable();
             $table->timestamps();
