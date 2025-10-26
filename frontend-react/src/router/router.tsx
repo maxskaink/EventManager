@@ -12,7 +12,7 @@ import { EventBoardScreen } from "../components/events/EventBoardScreen";
 import { ReportsScreen } from "../components/reports/ReportsScreen";
 import { PublicationsScreen } from "../components/publications/PublicationsScreen";
 import { CreatePublicationScreen } from "../components/publications/CreatePublicationScreen";
-import { ProfileScreen } from "../components/profile/ProfileScreenNew";
+import { ProfileScreen } from "../components/profile/ProfileScreen";
 import { CertificatesScreen } from "../components/certificates/CertificatesScreen";
 import NotificationsPage from "../pages/notifications";
 import CreateEventPage from "../pages/create-event";
