@@ -31,9 +31,12 @@ import {
   UserCheck,
 } from "lucide-react";
 import { useNavigate } from "react-router";
+import useUser from "../../hooks/useUser";
+import BottomNavbarWrapper from "../nav/BottomNavbarWrapper";
 
 export function ReportsScreen() {
   const { user } = useApp();
+  const someUser = useUser();
   const navigate = useNavigate()
   const [reportType, setReportType] = useState("participation");
   const [timeFilter, setTimeFilter] = useState("all");
@@ -445,11 +448,7 @@ export function ReportsScreen() {
       </div>
 
       {/* Navigation Bar */}
-
-      {user && user.role === "coordinator" && (
-        <BNavBarCoordinator />
-      )}
-      {user && user.role === "mentor" && <BNavBarMentor />}
+      <BottomNavbarWrapper role={someUser?.role ?? ""} />
     </div>
   );
 }

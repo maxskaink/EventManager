@@ -7,17 +7,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Checkbox } from '../ui/checkbox';
 import { Badge } from '../ui/badge';
 import { useApp } from '../context/AppContext';
-import { 
-  ArrowLeft, 
-  Save, 
-  Eye, 
+import {
+  ArrowLeft,
+  Save,
+  Eye,
   Send,
   FileText,
   MessageSquare,
   Users,
-  Settings,
-  Calendar,
-  Tag,
   Image,
   Link,
   Bold,
@@ -25,11 +22,15 @@ import {
   List
 } from 'lucide-react';
 import { useNavigate } from 'react-router';
+import useUser from '../../hooks/useUser';
+import BottomNavbarWrapper from '../nav/BottomNavbarWrapper';
 
 export function CreatePublicationScreen() {
   const navigate = useNavigate()
   const { user } = useApp();
-  
+  const someUser = useUser();
+  const role = someUser?.role ?? "";
+
   const [formData, setFormData] = useState({
     title: '',
     type: 'comunicado',
@@ -83,8 +84,8 @@ export function CreatePublicationScreen() {
         {/* Header */}
         <div className="bg-primary text-primary-foreground p-4">
           <div className="max-w-4xl mx-auto flex items-center gap-4">
-            <Button 
-              variant="ghost" 
+            <Button
+              variant="ghost"
               size="icon"
               onClick={() => setPreview(false)}
             >
@@ -115,14 +116,14 @@ export function CreatePublicationScreen() {
                   {formData.type}
                 </Badge>
                 <Badge variant="outline" className="text-xs">
-                  {formData.visibility === 'all' ? 'Público' : 
+                  {formData.visibility === 'all' ? 'Público' :
                    formData.visibility === 'members' ? 'Integrantes' :
                    formData.visibility === 'mentors' ? 'Mentores' : 'Coordinadores'}
                 </Badge>
               </div>
 
               <h1 className="text-3xl font-bold mb-4">{formData.title || 'Título de la publicación'}</h1>
-              
+
               <div className="flex items-center gap-4 text-sm text-muted-foreground mb-6">
                 <span>Por {user?.name}</span>
                 <span>{new Date().toLocaleDateString('es-ES')}</span>
@@ -161,8 +162,8 @@ export function CreatePublicationScreen() {
       {/* Header */}
       <div className="bg-primary text-primary-foreground p-4">
         <div className="max-w-4xl mx-auto flex items-center gap-4">
-          <Button 
-            variant="ghost" 
+          <Button
+            variant="ghost"
             size="icon"
             onClick={() => navigate('/publications')}
           >
@@ -312,7 +313,7 @@ export function CreatePublicationScreen() {
               </div>
 
               <div className="flex items-center space-x-2">
-                <Checkbox 
+                <Checkbox
                   id="allowComments"
                   checked={formData.allowComments}
                   onCheckedChange={(checked) => handleInputChange('allowComments', checked)}
@@ -323,7 +324,7 @@ export function CreatePublicationScreen() {
               </div>
 
               <div className="flex items-center space-x-2">
-                <Checkbox 
+                <Checkbox
                   id="notifyUsers"
                   checked={formData.notifyUsers}
                   onCheckedChange={(checked) => handleInputChange('notifyUsers', checked)}
@@ -358,7 +359,7 @@ export function CreatePublicationScreen() {
 
               <div className="border-t pt-4">
                 <div className="flex items-center space-x-2 mb-4">
-                  <Checkbox 
+                  <Checkbox
                     id="publishNow"
                     checked={formData.publishNow}
                     onCheckedChange={(checked) => handleInputChange('publishNow', checked)}
@@ -392,7 +393,7 @@ export function CreatePublicationScreen() {
                 <Button variant="outline" onClick={() => navigate('/publications')}>
                   Cancelar
                 </Button>
-                
+
                 <div className="flex gap-2">
                   <Button variant="outline" onClick={() => handleSave('draft')}>
                     <Save className="h-4 w-4 mr-2" />
@@ -429,6 +430,10 @@ export function CreatePublicationScreen() {
           </Button>
         </div>
       </div>
+
+      {/* Navigation bar */}
+      <BottomNavbarWrapper role={role} />
+
     </div>
   );
 }

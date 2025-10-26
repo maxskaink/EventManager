@@ -56,9 +56,9 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router";
-import { useAuthStore } from "../../stores/auth.store";
 import BottomNavbarWrapper from "../nav/BottomNavbarWrapper";
 import { useState } from "react";
+import useUser from "../../hooks/useUser";
 
 interface ContactInfo {
   phone: string;
@@ -81,8 +81,8 @@ export function ProfileScreen() {
     removeUserEventParticipation,
     logout
   } = useApp();
-  const role = useAuthStore(s => s.user?.role ?? "")
-  const someUser = useAuthStore(s => s.user)
+  const someUser = useUser()
+  const role = someUser?.role ?? ""
   const [isEditing, setIsEditing] = useState(false);
   const [isEditingContact, setIsEditingContact] = useState(false);
   const [interests, setInterests] = useState(user?.interests?.join(", ") || "");

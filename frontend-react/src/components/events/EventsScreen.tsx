@@ -24,9 +24,13 @@ import {
 } from "lucide-react";
 import { ImageWithFallback } from "../figma/ImageWithFallback";
 import { useNavigate } from "react-router";
+import useUser from "../../hooks/useUser";
+import BottomNavbarWrapper from "../nav/BottomNavbarWrapper";
 
 export function EventsScreen() {
   const { user, events } = useApp();
+  const someUser = useUser()
+  const role = someUser?.role ?? ""
   const navigate = useNavigate()
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] =
@@ -59,8 +63,8 @@ export function EventsScreen() {
 
   const getBackView = () => {
     if (!user) return "login";
-    if (user.role === "guest") return "dashboard-guest";
-    if (user.role === "coordinator")
+    if (role === "guest") return "dashboard-guest";
+    if (role === "coordinator")
       return "dashboard-coordinator";
     return "dashboard-member";
   };
@@ -232,7 +236,7 @@ export function EventsScreen() {
                         >
                           Ver detalle
                         </Button>
-                        {user && user.role !== "guest" && (
+                        {role !== "guest" && (
                           <Button
                             size="sm"
                             className="flex-1"
@@ -263,12 +267,7 @@ export function EventsScreen() {
       </div>
 
       {/* Navigation Bar */}
-      {user && user.role === "coordinator" && (
-        <BNavBarCoordinator />
-      )}
-      {user && user.role === "guest" && <BNavBarGuest />}
-      {user && user.role === "member" && <BNavBarMember />}
-      {user && user.role === "mentor" && <BNavBarMentor />}
+      <BottomNavbarWrapper role={role}/>
     </div>
   );
 }

@@ -1,24 +1,20 @@
-import React from 'react';
 import { Button } from '../ui/button';
-import { Card, CardContent, CardHeader } from '../ui/card';
+import { Card, CardContent, } from '../ui/card';
 import { Badge } from '../ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { BNavBarCoordinator } from "../ui/b-navbar-coordinator"
 import { useApp } from '../context/AppContext';
-import { 
-  Users, 
-  Calendar, 
-  TrendingUp, 
-  Plus, 
-  BarChart, 
-  FileText, 
+import {
+  Users,
+  Calendar,
+  TrendingUp,
+  Plus,
+  BarChart,
+  FileText,
   ClipboardList,
   Edit3,
   Eye,
   Settings,
-  LayoutDashboard,
-  CalendarDays,
-  User
 } from 'lucide-react';
 import { useNavigate } from 'react-router';
 
@@ -96,7 +92,7 @@ export function CoordinatorDashboard() {
                 <p className="text-sm text-muted-foreground mb-3">
                   Organiza charlas, cursos y convocatorias
                 </p>
-                <Button 
+                <Button
                   className="w-full"
                   onClick={() => navigate('/create-event')}
                 >
@@ -115,7 +111,7 @@ export function CoordinatorDashboard() {
                 <p className="text-sm text-muted-foreground mb-3">
                   Redacta comunicados y artículos
                 </p>
-                <Button 
+                <Button
                   className="w-full"
                   onClick={() => navigate('/create-publication')}
                 >
@@ -141,8 +137,8 @@ export function CoordinatorDashboard() {
                     Gestionar eventos y publicaciones
                   </p>
                 </div>
-                <Button 
-                  size="sm" 
+                <Button
+                  size="sm"
                   variant="outline"
                   onClick={() => navigate('/event-board')}
                 >
@@ -162,8 +158,8 @@ export function CoordinatorDashboard() {
                     Participación y logros
                   </p>
                 </div>
-                <Button 
-                  size="sm" 
+                <Button
+                  size="sm"
                   variant="outline"
                   onClick={() => navigate('/reports')}
                 >
@@ -178,8 +174,8 @@ export function CoordinatorDashboard() {
         <section>
           <div className="flex items-center justify-between mb-4">
             <h2>Próximos Eventos</h2>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => navigate('/events')}
             >
               Gestionar todos
@@ -240,8 +236,8 @@ export function CoordinatorDashboard() {
                     Ver estadísticas detalladas y gestión
                   </p>
                 </div>
-                <Button 
-                  size="sm" 
+                <Button
+                  size="sm"
                   variant="outline"
                   onClick={() => navigate('/admin')}
                 >

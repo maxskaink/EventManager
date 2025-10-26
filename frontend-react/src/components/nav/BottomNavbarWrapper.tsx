@@ -1,5 +1,4 @@
 import { BNavBarCoordinator } from "../ui/b-navbar-coordinator"
-import { BNavBarGuest } from "../ui/b-navbar-guest"
 import { BNavBarInterested } from "../ui/b-navbar-interested"
 import { BNavBarMember } from "../ui/b-navbar-member"
 import { BNavBarMentor } from "../ui/b-navbar-mentor"
@@ -17,7 +16,6 @@ export default function BottomNavbarWrapper({ role }: Props) {
     case "member": return <BNavBarMember />
     case "mentor": return <BNavBarMentor />
     case "interested": return <BNavBarInterested />
-
-    default: return <BNavBarGuest />
+    default: return <BNavBarInterested />
   }
 }

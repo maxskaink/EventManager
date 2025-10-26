@@ -1,3 +1,8 @@
+# EventManager
+
+## Notas acerca de las entidades
+* la entidad guest es lo mismo que interested en el dominio del backend
+
 # React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.

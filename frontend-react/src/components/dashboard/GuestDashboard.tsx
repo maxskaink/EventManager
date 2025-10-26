@@ -9,13 +9,10 @@ import {
   Clock,
   Users,
   MapPin,
-  Home,
-  CalendarDays,
-  User,
-  LogOut,
 } from "lucide-react";
 import { ImageWithFallback } from "../figma/ImageWithFallback";
 import { useNavigate } from "react-router";
+import { BNavBarInterested } from "../ui/b-navbar-interested";
 
 export function GuestDashboard() {
   const { user, events } = useApp();
@@ -153,7 +150,7 @@ export function GuestDashboard() {
         </section>
       </div>
       {/* Navigation Bar */}
-      <BNavBarGuest />
+      <BNavBarInterested />
     </div>
   );
 }

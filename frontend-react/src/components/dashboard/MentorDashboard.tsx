@@ -64,19 +64,12 @@ import {
   Award,
   FileText,
   Edit3,
-  Trash2,
   CheckCircle,
   XCircle,
   BarChart3,
   Search,
-  Filter,
-  UserCheck,
   Bell,
   LogOut,
-  LayoutDashboard,
-  CalendarDays,
-  User,
-  Home,
 } from "lucide-react";
 import { useNavigate } from "react-router";
 

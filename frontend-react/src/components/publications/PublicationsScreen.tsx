@@ -1,12 +1,7 @@
 import React, { useState } from "react";
 import { Button } from "../ui/button";
-import { Card, CardContent, CardHeader } from "../ui/card";
+import { Card, CardContent } from "../ui/card";
 import { Badge } from "../ui/badge";
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "../ui/avatar";
 import { Input } from "../ui/input";
 import {
   Select,
@@ -15,8 +10,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
-import { BNavBarMentor } from "../ui/b-navbar-mentor";
-import { BNavBarCoordinator } from "../ui/b-navbar-coordinator";
 
 import { useApp } from "../context/AppContext";
 import {
@@ -34,6 +27,8 @@ import {
   Share,
 } from "lucide-react";
 import { useNavigate } from "react-router";
+import BottomNavbarWrapper from "../nav/BottomNavbarWrapper";
+import useUser from "../../hooks/useUser";
 
 interface Publication {
   id: string;
@@ -50,7 +45,9 @@ interface Publication {
 }
 
 export function PublicationsScreen() {
-  const { user } = useApp();
+
+  const user = useUser();
+  const role = user?.role ?? ""
   const navigate = useNavigate()
   const [searchQuery, setSearchQuery] = useState("");
   const [filterType, setFilterType] = useState("all");
@@ -493,10 +490,7 @@ export function PublicationsScreen() {
       </div>
 
       {/* Navigation Bar */}
-      {user && user.role === "coordinator" && (
-        <BNavBarCoordinator />
-      )}
-      {user && user.role === "mentor" && <BNavBarMentor />}
+      <BottomNavbarWrapper role={role} />
     </div>
   );
 }
