@@ -1,9 +1,7 @@
-import { createBrowserRouter, Navigate, useParams } from "react-router";
+import { createBrowserRouter, Navigate } from "react-router";
 
 import { LoginScreen } from "../components/auth/LoginScreen";
 import { RegisterScreen } from "../components/auth/RegisterScreen";
-import { EventDetailScreen } from "../components/events/EventDetailScreen";
-import { useApp } from "../components/context/AppContext";
 import ForgotPasswordPage from "../pages/forgot-passoword";
 import { GuestDashboard } from "../components/dashboard/GuestDashboard";
 import { MemberDashboard } from "../components/dashboard/MemberDashboard";
@@ -21,26 +19,8 @@ import CreateEventPage from "../pages/create-event";
 import AdminPage from "../pages/admin";
 import { RootLayout } from "../components/nav/RootLayout";
 import GoogleCallback from "../pages/auth/google-callback";
-
-function EventDetailWrapper() {
-  const params = useParams();
-  const eventId = params.eventId ?? "";
-  if (!eventId) return <Navigate to="/events" replace />;
-  return <EventDetailScreen eventId={eventId} />;
-}
-
-function DashboardRedirect() {
-  const { user } = useApp();
-  const dashboardPath =
-    user?.role === "guest"
-      ? "/dashboard-guest"
-      : user?.role === "coordinator"
-        ? "/dashboard-coordinator"
-        : user?.role === "mentor"
-          ? "/dashboard-mentor"
-          : "/dashboard-member";
-  return <Navigate to={dashboardPath} replace />;
-}
+import DashboardRedirect from "../components/nav/DashboardRedirect";
+import EventDetailWrapper from "../components/nav/EventDetailWrapper";
 
 // Create the data router and export it for main.tsx to mount
 export const router = createBrowserRouter([

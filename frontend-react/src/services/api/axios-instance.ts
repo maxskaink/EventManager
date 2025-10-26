@@ -1,4 +1,5 @@
 import axios, { AxiosError } from "axios";
+import StorageKeys from "../../stores/storage-keys"
 
 // Create axios instance with base configuration
 const axiosInstance = axios.create({
@@ -15,7 +16,7 @@ const axiosInstance = axios.create({
 axiosInstance.interceptors.request.use(
     (config) => {
         // You can add auth token here if you're using JWT
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem(StorageKeys.API_TOKEN);
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }
