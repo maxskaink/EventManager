@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+
 import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader } from "../ui/card";
 import {
@@ -34,10 +34,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "../ui/alert-dialog";
-import { BNavBarMentor } from "../ui/b-navbar-mentor";
-import { BNavBarMember } from "../ui/b-navbar-member";
-import { BNavBarCoordinator } from "../ui/b-navbar-coordinator";
-import { BNavBarGuest } from "../ui/b-navbar-guest";
 import { useApp } from "../context/AppContext";
 import {
   ArrowLeft,
@@ -60,6 +56,9 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router";
+import { useAuthStore } from "../../stores/auth.store";
+import BottomNavbarWrapper from "../nav/BottomNavbarWrapper";
+import { useState } from "react";
 
 interface ContactInfo {
   phone: string;
@@ -71,7 +70,7 @@ interface ContactInfo {
 
 export function ProfileScreen() {
   const {
-    user,    
+    user,
     certificates,
     events,
     articles,
@@ -82,6 +81,8 @@ export function ProfileScreen() {
     removeUserEventParticipation,
     logout
   } = useApp();
+  const role = useAuthStore(s => s.user?.role ?? "")
+  const someUser = useAuthStore(s => s.user)
   const [isEditing, setIsEditing] = useState(false);
   const [isEditingContact, setIsEditingContact] = useState(false);
   const [interests, setInterests] = useState(user?.interests?.join(", ") || "");
@@ -119,11 +120,13 @@ export function ProfileScreen() {
     return null;
   }
 
+  console.log("role", role, someUser)
+
   const getBackView = () => {
-    if (user.role === "guest") return "dashboard-guest";
-    if (user.role === "coordinator")
+    if (role === "guest") return "dashboard-guest";
+    if (role === "coordinator")
       return "dashboard-coordinator";
-    if (user.role === "mentor") return "dashboard-mentor";
+    if (role === "mentor") return "dashboard-mentor";
     return "dashboard-member";
   };
 
@@ -160,6 +163,8 @@ export function ProfileScreen() {
     switch (role) {
       case "guest":
         return "Invitado";
+      case "interested":
+        return "Interesado"
       case "coordinator":
         return "Coordinador";
       case "mentor":
@@ -259,7 +264,7 @@ export function ProfileScreen() {
                     {user.email}
                   </p>
                   <Badge className="mt-2">
-                    {getRoleLabel(user.role)}
+                    {getRoleLabel(role)}
                   </Badge>
                 </div>
                 <Button variant="outline" size="icon">
@@ -268,7 +273,7 @@ export function ProfileScreen() {
               </div>
 
               {/* Intereses */}
-              {user.role !== "guest" && (
+              {role !== "guest" && (
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <label>Mis Intereses</label>
@@ -488,7 +493,7 @@ export function ProfileScreen() {
         </Dialog>
 
         {/* Estadísticas de participación */}
-        {user.role !== "guest" && (
+        {role !== "guest" && (
           <section>
             <h2 className="mb-4">Mi Participación</h2>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -534,7 +539,7 @@ export function ProfileScreen() {
         )}
 
         {/* Mis Eventos */}
-        {user.role !== "guest" && (
+        {role !== "guest" && (
           <section>
             <div className="flex items-center justify-between mb-4">
               <h2>Mis Eventos</h2>
@@ -608,7 +613,7 @@ export function ProfileScreen() {
         )}
 
         {/* Mis Artículos */}
-        {user.role !== "guest" && (
+        {role !== "guest" && (
           <section>
             <div className="flex items-center justify-between mb-4">
               <h2>Mis Artículos</h2>
@@ -673,7 +678,7 @@ export function ProfileScreen() {
         )}
 
         {/* Certificados recientes */}
-        {user.role !== "guest" && userCertificates > 0 && (
+        {role !== "guest" && userCertificates > 0 && (
           <section>
             <div className="flex items-center justify-between mb-4">
               <h2>Certificados Recientes</h2>
@@ -925,12 +930,7 @@ export function ProfileScreen() {
       </AlertDialog>
 
       {/* Navigation Bar */}
-      {user && user.role === "coordinator" && (
-        <BNavBarCoordinator />
-      )}
-      {user && user.role === "guest" && <BNavBarGuest />}
-      {user && user.role === "member" && <BNavBarMember />}
-      {user && user.role === "mentor" && <BNavBarMentor />}
+      <BottomNavbarWrapper role={role}/>
     </div>
   );
 }

@@ -28,7 +28,7 @@ export const router = createBrowserRouter([
     path: "/",
     element: <RootLayout />,
     children: [
-      { index: true, element: <Navigate to="/dashboard-guest" replace /> },
+      { index: true, element: <Navigate to="/dashboard" replace /> },
       { path: "login", element: <LoginScreen /> },
       { path: "register", element: <RegisterScreen /> },
       { path: "forgot-password", element: <ForgotPasswordPage /> },

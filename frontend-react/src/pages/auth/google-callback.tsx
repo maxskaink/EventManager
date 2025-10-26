@@ -35,9 +35,9 @@ function GoogleCallback() {
 
   useEffect(() => {
     async function fetchUserData() {
-      const user = await UserAPI.getUser();
+      const res = await UserAPI.getUser();
       setLoading(false)
-      authStore.setUser(user);
+      authStore.setUser(res.user);
 
     }
     fetchUserData();

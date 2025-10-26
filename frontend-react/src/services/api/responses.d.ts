@@ -8,3 +8,9 @@ namespace AuthAPI {
     access_token: string
   }
 }
+
+namespace UserAPI {
+  type GetUserRes =  {
+    user: API.User
+  }
+}

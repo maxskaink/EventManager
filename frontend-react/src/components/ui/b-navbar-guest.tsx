@@ -1,19 +1,14 @@
 import { Button } from "./button";
-import { useApp } from "../context/AppContext";
 import {
   CalendarDays,
   User,
-  BarChart3,
-  UserCheck,
-  LayoutDashboard,
-  LogOut,
   Home,
 } from "lucide-react";
-import { useLocation, useNavigate } from "react-router";
+import { useNavigate } from "react-router";
 
 const BNavBarGuest = () => {
   const navigate = useNavigate()
-  
+
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-background border-t p-4">
       <div className="max-w-4xl mx-auto flex justify-around">
