@@ -18,7 +18,7 @@ import NotificationsPage from "../pages/notifications";
 import CreateEventPage from "../pages/create-event";
 import AdminPage from "../pages/admin";
 import { RootLayout } from "../components/nav/RootLayout";
-import GoogleCallback from "../pages/auth/google-callback";
+import GoogleCallbackScreen from "../pages/auth/google-callback";
 import DashboardRedirect from "../components/nav/DashboardRedirect";
 import EventDetailWrapper from "../components/nav/EventDetailWrapper";
 import { authMiddleware } from "./middlewares/auth.middleware";
@@ -35,6 +35,20 @@ export const router = createBrowserRouter([
       { path: "login", element: <LoginScreen /> },
       { path: "register", element: <RegisterScreen /> },
       { path: "forgot-password", element: <ForgotPasswordPage /> },
+
+      // Dashboards
+      { path: "dashboard-guest", element: <GuestDashboard /> },
+
+      // Events
+      { path: "events", element: <EventsScreen /> },
+      { path: "events/:eventId", element: <EventDetailWrapper /> },
+      { path: "event-board", element: <EventBoardScreen /> },
+
+      // If user state is needed to choose a dashboard, use special redirect
+      { path: "dashboard", element: <DashboardRedirect /> },
+      { path: "auth/google/callback", element: <GoogleCallbackScreen /> },
+
+      // Autenticated
       {
         middleware: [authMiddleware],
         children: [
@@ -56,17 +70,7 @@ export const router = createBrowserRouter([
         ],
       },
 
-      // Dashboards
-      { path: "dashboard-guest", element: <GuestDashboard /> },
 
-      // Events
-      { path: "events", element: <EventsScreen /> },
-      { path: "events/:eventId", element: <EventDetailWrapper /> },
-      { path: "event-board", element: <EventBoardScreen /> },
-
-      // If user state is needed to choose a dashboard, use special redirect
-      { path: "dashboard", element: <DashboardRedirect /> },
-      { path: "auth/google/callback", element: <GoogleCallback /> },
     ],
   },
 ]);

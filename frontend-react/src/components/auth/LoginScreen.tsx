@@ -1,11 +1,10 @@
 import React, { useState } from "react";
 import { Button } from "../ui/button";
-import { Input } from "../ui/input";
 import { Card, CardContent, CardHeader } from "../ui/card";
 import { ImageWithFallback } from "../figma/ImageWithFallback";
 import { useNavigate } from "react-router";
-import axiosInstance from "../../services/api/axios-instance";
 import { AxiosError } from "axios";
+import { AuthAPI } from "../../services/api";
 
 export function LoginScreen() {
   const navigate = useNavigate();
@@ -15,8 +14,8 @@ export function LoginScreen() {
 
   const handleLogin = async () => {
     try {
-      const res = await axiosInstance.get<{ url: string }>("/api/auth");
-      window.location.href = res.data.url;
+      const res = await AuthAPI.getGoogleAuthUrl();
+      window.location.href = res.url;
     } catch (error) {
       if (error instanceof AxiosError) {
         console.log(error);

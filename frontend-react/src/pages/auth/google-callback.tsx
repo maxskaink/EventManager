@@ -5,7 +5,7 @@ import { AuthAPI, UserAPI } from "../../services/api";
 import { useAuthStore } from "../../stores/auth.store";
 import DashboardRedirect from "../../components/nav/DashboardRedirect";
 
-function GoogleCallback() {
+function GoogleCallbackScreen() {
   const [params] = useSearchParams();
 
   const authStore = useAuthStore();
@@ -35,10 +35,10 @@ function GoogleCallback() {
 
   useEffect(() => {
     async function fetchUserData() {
+      if (!authStore.isAuthenticated) return;
       const res = await UserAPI.getUser();
       setLoading(false)
       authStore.setUser(res.user);
-
     }
     fetchUserData();
   }, [authStore.isAuthenticated]);
@@ -83,4 +83,4 @@ function DisplayData({ data, error, user }: { data?: any; error?: any; user?: an
   );
 }
 
-export default GoogleCallback;
+export default GoogleCallbackScreen;
