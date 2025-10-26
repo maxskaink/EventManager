@@ -1,29 +1,12 @@
-
 import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader } from "../ui/card";
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "../ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Badge } from "../ui/badge";
 import { Input } from "../ui/input";
 import { Textarea } from "../ui/textarea";
 import { Label } from "../ui/label";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "../ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../ui/select";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "../ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -58,7 +41,9 @@ import { toast } from "sonner";
 import { useNavigate } from "react-router";
 import BottomNavbarWrapper from "../nav/BottomNavbarWrapper";
 import { useState } from "react";
-import useUser from "../../hooks/useUser";
+import useLogout from "../../hooks/useLogout";
+import useGoToDashboard from "../../hooks/useGoToDashboard";
+import { useAuthStore } from "../../stores/auth.store";
 
 interface ContactInfo {
   phone: string;
@@ -79,14 +64,15 @@ export function ProfileScreen() {
     deleteArticle,
     addUserEventParticipation,
     removeUserEventParticipation,
-    logout
   } = useApp();
-  const someUser = useUser()
-  const role = someUser?.role ?? ""
+  const someUser = useAuthStore(s => s.user);
+  const role = someUser?.role ?? "";
   const [isEditing, setIsEditing] = useState(false);
   const [isEditingContact, setIsEditingContact] = useState(false);
   const [interests, setInterests] = useState(user?.interests?.join(", ") || "");
-  const navigate = useNavigate()
+  const navigate = useNavigate();
+  const { logout } = useLogout();
+  const goToDashboard = useGoToDashboard();
 
   // Estados para artículos
   const [showAddArticle, setShowAddArticle] = useState(false);
@@ -113,19 +99,24 @@ export function ProfileScreen() {
     program: "Ingeniería de Sistemas",
   });
 
-  const [editingContactInfo, setEditingContactInfo] =
-    useState<ContactInfo>(contactInfo);
+  const [editingContactInfo, setEditingContactInfo] = useState<ContactInfo>(contactInfo);
+
+  const handleLogout = () =>
+    logout().then((success) => {
+      if (success) {
+        goToDashboard();
+      }
+    });
 
   if (!user) {
     return null;
   }
 
-  console.log("role", role, someUser)
+  console.log("role", role, someUser);
 
   const getBackView = () => {
     if (role === "guest") return "dashboard-guest";
-    if (role === "coordinator")
-      return "dashboard-coordinator";
+    if (role === "coordinator") return "dashboard-coordinator";
     if (role === "mentor") return "dashboard-mentor";
     return "dashboard-member";
   };
@@ -147,24 +138,20 @@ export function ProfileScreen() {
     setIsEditingContact(false);
   };
 
-  const userCertificates = certificates.filter(cert => cert.userId === user?.id).length;
-  const userArticles = articles.filter(article => article.userId === user?.id);
-  const userParticipations = userEventParticipations.filter(p => p.userId === user?.id);
+  const userCertificates = certificates.filter((cert) => cert.userId === user?.id).length;
+  const userArticles = articles.filter((article) => article.userId === user?.id);
+  const userParticipations = userEventParticipations.filter((p) => p.userId === user?.id);
 
-  const participatedEvents = events.filter(event =>
-    userParticipations.some(p => p.eventId === event.id)
-  );
+  const participatedEvents = events.filter((event) => userParticipations.some((p) => p.eventId === event.id));
 
-  const availableEvents = events.filter(event =>
-    !userParticipations.some(p => p.eventId === event.id)
-  );
+  const availableEvents = events.filter((event) => !userParticipations.some((p) => p.eventId === event.id));
 
   const getRoleLabel = (role: string) => {
     switch (role) {
       case "guest":
         return "Invitado";
       case "interested":
-        return "Interesado"
+        return "Interesado";
       case "coordinator":
         return "Coordinador";
       case "mentor":
@@ -176,7 +163,13 @@ export function ProfileScreen() {
 
   // Handlers para artículos
   const handleAddArticle = () => {
-    if (!newArticle.title || !newArticle.description || !newArticle.publicationDate || !newArticle.authors || !newArticle.publicationUrl) {
+    if (
+      !newArticle.title ||
+      !newArticle.description ||
+      !newArticle.publicationDate ||
+      !newArticle.authors ||
+      !newArticle.publicationUrl
+    ) {
       toast.error("Por favor completa todos los campos");
       return;
     }
@@ -235,11 +228,7 @@ export function ProfileScreen() {
       {/* Header */}
       <div className="bg-primary text-primary-foreground p-4">
         <div className="max-w-4xl mx-auto flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate("/" + getBackView())}
-          >
+          <Button variant="ghost" size="icon" onClick={() => navigate("/" + getBackView())}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <h1>Mi Perfil</h1>
@@ -254,18 +243,12 @@ export function ProfileScreen() {
               <div className="flex items-center gap-4 mb-6">
                 <Avatar className="h-20 w-20">
                   <AvatarImage src={user.avatar} />
-                  <AvatarFallback className="text-2xl">
-                    {user.name.charAt(0).toUpperCase()}
-                  </AvatarFallback>
+                  <AvatarFallback className="text-2xl">{user.name.charAt(0).toUpperCase()}</AvatarFallback>
                 </Avatar>
                 <div className="flex-1">
                   <h2>{user.name}</h2>
-                  <p className="text-muted-foreground">
-                    {user.email}
-                  </p>
-                  <Badge className="mt-2">
-                    {getRoleLabel(role)}
-                  </Badge>
+                  <p className="text-muted-foreground">{user.email}</p>
+                  <Badge className="mt-2">{getRoleLabel(role)}</Badge>
                 </div>
                 <Button variant="outline" size="icon">
                   <Edit className="h-4 w-4" />
@@ -277,11 +260,7 @@ export function ProfileScreen() {
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <label>Mis Intereses</label>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setIsEditing(!isEditing)}
-                    >
+                    <Button variant="ghost" size="sm" onClick={() => setIsEditing(!isEditing)}>
                       {isEditing ? "Cancelar" : "Editar"}
                     </Button>
                   </div>
@@ -290,20 +269,15 @@ export function ProfileScreen() {
                     <div className="space-y-3">
                       <Textarea
                         value={interests}
-                        onChange={(e) =>
-                          setInterests(e.target.value)
-                        }
+                        onChange={(e) => setInterests(e.target.value)}
                         placeholder="Machine Learning, React, Python..."
                         rows={3}
                       />
-                      <Button onClick={handleSaveInterests}>
-                        Guardar cambios
-                      </Button>
+                      <Button onClick={handleSaveInterests}>Guardar cambios</Button>
                     </div>
                   ) : (
                     <p className="text-muted-foreground">
-                      {user.interests?.join(", ") ||
-                        "No has definido intereses aún"}
+                      {user.interests?.join(", ") || "No has definido intereses aún"}
                     </p>
                   )}
                 </div>
@@ -318,11 +292,7 @@ export function ProfileScreen() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <h3>Información de Contacto</h3>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setIsEditingContact(true)}
-                >
+                <Button variant="outline" size="sm" onClick={() => setIsEditingContact(true)}>
                   <Edit className="h-4 w-4 mr-2" />
                   Editar
                 </Button>
@@ -335,9 +305,7 @@ export function ProfileScreen() {
                     <Phone className="h-4 w-4 text-blue-600" />
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">
-                      Teléfono
-                    </p>
+                    <p className="text-sm text-muted-foreground">Teléfono</p>
                     <p>{contactInfo.phone}</p>
                   </div>
                 </div>
@@ -347,9 +315,7 @@ export function ProfileScreen() {
                     <Mail className="h-4 w-4 text-green-600" />
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">
-                      Email
-                    </p>
+                    <p className="text-sm text-muted-foreground">Email</p>
                     <p>{user.email}</p>
                   </div>
                 </div>
@@ -359,13 +325,9 @@ export function ProfileScreen() {
                     <MapPin className="h-4 w-4 text-purple-600" />
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">
-                      Dirección
-                    </p>
+                    <p className="text-sm text-muted-foreground">Dirección</p>
                     <p>{contactInfo.address}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {contactInfo.city}
-                    </p>
+                    <p className="text-sm text-muted-foreground">{contactInfo.city}</p>
                   </div>
                 </div>
 
@@ -374,13 +336,9 @@ export function ProfileScreen() {
                     <User className="h-4 w-4 text-orange-600" />
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">
-                      Universidad
-                    </p>
+                    <p className="text-sm text-muted-foreground">Universidad</p>
                     <p>{contactInfo.university}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {contactInfo.program}
-                    </p>
+                    <p className="text-sm text-muted-foreground">{contactInfo.program}</p>
                   </div>
                 </div>
               </div>
@@ -389,18 +347,11 @@ export function ProfileScreen() {
         </section>
 
         {/* Dialog para editar información de contacto */}
-        <Dialog
-          open={isEditingContact}
-          onOpenChange={setIsEditingContact}
-        >
+        <Dialog open={isEditingContact} onOpenChange={setIsEditingContact}>
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
-              <DialogTitle>
-                Editar Información de Contacto
-              </DialogTitle>
-              <DialogDescription>
-                Actualiza tu información de contacto personal.
-              </DialogDescription>
+              <DialogTitle>Editar Información de Contacto</DialogTitle>
+              <DialogDescription>Actualiza tu información de contacto personal.</DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
               <div>
@@ -460,9 +411,7 @@ export function ProfileScreen() {
               </div>
 
               <div>
-                <label className="text-sm">
-                  Programa Académico
-                </label>
+                <label className="text-sm">Programa Académico</label>
                 <Input
                   value={editingContactInfo.program}
                   onChange={(e) =>
@@ -476,10 +425,7 @@ export function ProfileScreen() {
               </div>
 
               <div className="flex gap-2 justify-end">
-                <Button
-                  variant="outline"
-                  onClick={handleCancelContactEdit}
-                >
+                <Button variant="outline" onClick={handleCancelContactEdit}>
                   <X className="h-4 w-4 mr-2" />
                   Cancelar
                 </Button>
@@ -503,9 +449,7 @@ export function ProfileScreen() {
                     <Calendar className="h-6 w-6 text-blue-600" />
                   </div>
                   <h3 className="text-2xl">{participatedEvents.length}</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Eventos Registrados
-                  </p>
+                  <p className="text-sm text-muted-foreground">Eventos Registrados</p>
                 </CardContent>
               </Card>
 
@@ -514,12 +458,8 @@ export function ProfileScreen() {
                   <div className="p-2 bg-green-100 rounded-lg w-fit mx-auto mb-2">
                     <Award className="h-6 w-6 text-green-600" />
                   </div>
-                  <h3 className="text-2xl">
-                    {userCertificates}
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    Certificados
-                  </p>
+                  <h3 className="text-2xl">{userCertificates}</h3>
+                  <p className="text-sm text-muted-foreground">Certificados</p>
                 </CardContent>
               </Card>
 
@@ -529,9 +469,7 @@ export function ProfileScreen() {
                     <BookOpen className="h-6 w-6 text-purple-600" />
                   </div>
                   <h3 className="text-2xl">{userArticles.length}</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Artículos Escritos
-                  </p>
+                  <p className="text-sm text-muted-foreground">Artículos Escritos</p>
                 </CardContent>
               </Card>
             </div>
@@ -553,15 +491,13 @@ export function ProfileScreen() {
               <Card className="text-center py-8">
                 <CardContent>
                   <Calendar className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
-                  <p className="text-muted-foreground">
-                    No has registrado participación en ningún evento aún
-                  </p>
+                  <p className="text-muted-foreground">No has registrado participación en ningún evento aún</p>
                 </CardContent>
               </Card>
             ) : (
               <div className="grid gap-3 md:grid-cols-2">
                 {participatedEvents.map((event) => {
-                  const participation = userParticipations.find(p => p.eventId === event.id);
+                  const participation = userParticipations.find((p) => p.eventId === event.id);
                   return (
                     <Card key={event.id} className="hover:shadow-md transition-shadow">
                       <CardContent className="p-4">
@@ -627,9 +563,7 @@ export function ProfileScreen() {
               <Card className="text-center py-8">
                 <CardContent>
                   <BookOpen className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
-                  <p className="text-muted-foreground">
-                    No has agregado ningún artículo aún
-                  </p>
+                  <p className="text-muted-foreground">No has agregado ningún artículo aún</p>
                 </CardContent>
               </Card>
             ) : (
@@ -640,9 +574,7 @@ export function ProfileScreen() {
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex-1 min-w-0">
                           <h4 className="line-clamp-2 mb-2">{article.title}</h4>
-                          <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
-                            {article.description}
-                          </p>
+                          <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{article.description}</p>
                           <div className="flex flex-wrap gap-3 text-sm text-muted-foreground mb-2">
                             <span>
                               <strong>Autores:</strong> {article.authors}
@@ -682,17 +614,14 @@ export function ProfileScreen() {
           <section>
             <div className="flex items-center justify-between mb-4">
               <h2>Certificados Recientes</h2>
-              <Button
-                variant="outline"
-                onClick={() => navigate("/certificates")}
-              >
+              <Button variant="outline" onClick={() => navigate("/certificates")}>
                 Ver todos
               </Button>
             </div>
 
             <div className="space-y-3">
               {certificates
-                .filter(cert => cert.userId === user.id)
+                .filter((cert) => cert.userId === user.id)
                 .slice(0, 3)
                 .map((cert) => (
                   <Card key={cert.id}>
@@ -723,29 +652,16 @@ export function ProfileScreen() {
               <h3>Configuración</h3>
             </CardHeader>
             <CardContent className="space-y-4">
-              <Button
-                variant="outline"
-                className="w-full justify-start"
-              >
+              <Button variant="outline" className="w-full justify-start">
                 Cambiar contraseña
               </Button>
-              <Button
-                variant="outline"
-                className="w-full justify-start"
-              >
+              <Button variant="outline" className="w-full justify-start">
                 Notificaciones
               </Button>
-              <Button
-                variant="outline"
-                className="w-full justify-start"
-              >
+              <Button variant="outline" className="w-full justify-start">
                 Privacidad
               </Button>
-              <Button
-                variant="destructive"
-                className="w-full justify-start"
-                onClick={logout}
-              >
+              <Button variant="destructive" className="w-full justify-start" onClick={handleLogout}>
                 Cerrar sesión
               </Button>
             </CardContent>
@@ -833,9 +749,7 @@ export function ProfileScreen() {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Registrar Participación en Evento</DialogTitle>
-            <DialogDescription>
-              Selecciona un evento en el que participaste o participarás.
-            </DialogDescription>
+            <DialogDescription>Selecciona un evento en el que participaste o participarás.</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div>
@@ -846,9 +760,7 @@ export function ProfileScreen() {
                 </SelectTrigger>
                 <SelectContent>
                   {availableEvents.length === 0 ? (
-                    <div className="p-2 text-sm text-muted-foreground text-center">
-                      No hay eventos disponibles
-                    </div>
+                    <div className="p-2 text-sm text-muted-foreground text-center">No hay eventos disponibles</div>
                   ) : (
                     availableEvents.map((event) => (
                       <SelectItem key={event.id} value={event.id}>
@@ -861,12 +773,18 @@ export function ProfileScreen() {
               {selectedEventId && (
                 <div className="mt-3 p-3 bg-muted rounded-lg">
                   {(() => {
-                    const event = events.find(e => e.id === selectedEventId);
+                    const event = events.find((e) => e.id === selectedEventId);
                     return event ? (
                       <div className="space-y-2 text-sm">
-                        <p><strong>Categoría:</strong> {event.category}</p>
-                        <p><strong>Fecha:</strong> {formatDate(event.date)}</p>
-                        <p><strong>Modalidad:</strong> {event.modality}</p>
+                        <p>
+                          <strong>Categoría:</strong> {event.category}
+                        </p>
+                        <p>
+                          <strong>Fecha:</strong> {formatDate(event.date)}
+                        </p>
+                        <p>
+                          <strong>Modalidad:</strong> {event.modality}
+                        </p>
                       </div>
                     ) : null;
                   })()}
@@ -930,7 +848,7 @@ export function ProfileScreen() {
       </AlertDialog>
 
       {/* Navigation Bar */}
-      <BottomNavbarWrapper role={role}/>
+      <BottomNavbarWrapper role={role} />
     </div>
   );
 }

@@ -21,38 +21,49 @@ import { RootLayout } from "../components/nav/RootLayout";
 import GoogleCallback from "../pages/auth/google-callback";
 import DashboardRedirect from "../components/nav/DashboardRedirect";
 import EventDetailWrapper from "../components/nav/EventDetailWrapper";
+import { authMiddleware } from "./middlewares/auth.middleware";
+import { timingMiddleware } from "./middlewares/timing.middleware";
 
 // Create the data router and export it for main.tsx to mount
 export const router = createBrowserRouter([
   {
     path: "/",
     element: <RootLayout />,
+    middleware: [timingMiddleware],
     children: [
       { index: true, element: <Navigate to="/dashboard" replace /> },
       { path: "login", element: <LoginScreen /> },
       { path: "register", element: <RegisterScreen /> },
       { path: "forgot-password", element: <ForgotPasswordPage /> },
+      {
+        middleware: [authMiddleware],
+        children: [
+          // Dashboards
+          { path: "dashboard-interested", element: <GuestDashboard /> },
+          { path: "dashboard-member", element: <MemberDashboard /> },
+          { path: "dashboard-coordinator", element: <CoordinatorDashboard /> },
+          { path: "dashboard-mentor", element: <MentorDashboard /> },
+
+          // Others
+          { path: "reports", element: <ReportsScreen /> },
+          { path: "publications", element: <PublicationsScreen /> },
+          { path: "create-publication", element: <CreatePublicationScreen /> },
+          { path: "profile", element: <ProfileScreen /> },
+          { path: "certificates", element: <CertificatesScreen /> },
+          { path: "notifications", element: <NotificationsPage /> },
+          { path: "create-event", element: <CreateEventPage /> },
+          { path: "admin", element: <AdminPage /> },
+        ],
+      },
 
       // Dashboards
       { path: "dashboard-guest", element: <GuestDashboard /> },
-      { path: "dashboard-member", element: <MemberDashboard /> },
-      { path: "dashboard-coordinator", element: <CoordinatorDashboard /> },
-      { path: "dashboard-mentor", element: <MentorDashboard /> },
 
       // Events
       { path: "events", element: <EventsScreen /> },
       { path: "events/:eventId", element: <EventDetailWrapper /> },
       { path: "event-board", element: <EventBoardScreen /> },
 
-      // Others
-      { path: "reports", element: <ReportsScreen /> },
-      { path: "publications", element: <PublicationsScreen /> },
-      { path: "create-publication", element: <CreatePublicationScreen /> },
-      { path: "profile", element: <ProfileScreen /> },
-      { path: "certificates", element: <CertificatesScreen /> },
-      { path: "notifications", element: <NotificationsPage /> },
-      { path: "create-event", element: <CreateEventPage /> },
-      { path: "admin", element: <AdminPage /> },
       // If user state is needed to choose a dashboard, use special redirect
       { path: "dashboard", element: <DashboardRedirect /> },
       { path: "auth/google/callback", element: <GoogleCallback /> },

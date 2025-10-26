@@ -32,7 +32,7 @@ const BNavBarInterested = () => {
         </Button>
         <Button
           variant="ghost"
-          onClick={() => navigate(isAuthenticated ? "/login" : "/profile")}
+          onClick={() => navigate(isAuthenticated ? "/profile" : "/login")}
           className="flex flex-col items-center gap-1 h-auto py-2"
         >
           <User className="h-5 w-5" />

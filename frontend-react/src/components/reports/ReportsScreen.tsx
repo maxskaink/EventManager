@@ -31,12 +31,12 @@ import {
   UserCheck,
 } from "lucide-react";
 import { useNavigate } from "react-router";
-import useUser from "../../hooks/useUser";
 import BottomNavbarWrapper from "../nav/BottomNavbarWrapper";
+import { useAuthStore } from "../../stores/auth.store";
 
 export function ReportsScreen() {
   const { user } = useApp();
-  const someUser = useUser();
+  const someUser = useAuthStore(s => s.user);
   const navigate = useNavigate()
   const [reportType, setReportType] = useState("participation");
   const [timeFilter, setTimeFilter] = useState("all");

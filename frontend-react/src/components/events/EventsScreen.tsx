@@ -24,12 +24,12 @@ import {
 } from "lucide-react";
 import { ImageWithFallback } from "../figma/ImageWithFallback";
 import { useNavigate } from "react-router";
-import useUser from "../../hooks/useUser";
 import BottomNavbarWrapper from "../nav/BottomNavbarWrapper";
+import { useAuthStore } from "../../stores/auth.store";
 
 export function EventsScreen() {
   const { user, events } = useApp();
-  const someUser = useUser()
+  const someUser = useAuthStore(s => s.user)
   const role = someUser?.role ?? ""
   const navigate = useNavigate()
   const [searchTerm, setSearchTerm] = useState("");

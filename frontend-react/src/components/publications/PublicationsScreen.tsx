@@ -28,7 +28,7 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router";
 import BottomNavbarWrapper from "../nav/BottomNavbarWrapper";
-import useUser from "../../hooks/useUser";
+import { useAuthStore } from "../../stores/auth.store";
 
 interface Publication {
   id: string;
@@ -46,7 +46,7 @@ interface Publication {
 
 export function PublicationsScreen() {
 
-  const user = useUser();
+  const user = useAuthStore(s => s.user);
   const role = user?.role ?? ""
   const navigate = useNavigate()
   const [searchQuery, setSearchQuery] = useState("");

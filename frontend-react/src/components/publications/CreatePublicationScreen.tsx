@@ -22,13 +22,13 @@ import {
   List
 } from 'lucide-react';
 import { useNavigate } from 'react-router';
-import useUser from '../../hooks/useUser';
 import BottomNavbarWrapper from '../nav/BottomNavbarWrapper';
+import { useAuthStore } from '../../stores/auth.store';
 
 export function CreatePublicationScreen() {
   const navigate = useNavigate()
   const { user } = useApp();
-  const someUser = useUser();
+  const someUser = useAuthStore(s => s.user);
   const role = someUser?.role ?? "";
 
   const [formData, setFormData] = useState({
