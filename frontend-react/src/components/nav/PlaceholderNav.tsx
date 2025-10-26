@@ -1,17 +1,11 @@
 import { useNavigate } from "react-router";
-import { useApp } from "../context/AppContext";
+import { getDashboardRouteFromRole } from "../../services/navigation/redirects";
+import { useAuthStore } from "../../stores/auth.store";
 
 export default function PlaceholderNav({ title, children }: { title: string; children?: React.ReactNode }) {
-    const { user } = useApp();
+    const user = useAuthStore(s => s.user)
     const navigate = useNavigate();
-    const dashboardPath =
-        user?.role === "guest"
-            ? "/dashboard-guest"
-            : user?.role === "coordinator"
-                ? "/dashboard-coordinator"
-                : user?.role === "mentor"
-                    ? "/dashboard-mentor"
-                    : "/dashboard-member";
+    const dashboardPath = getDashboardRouteFromRole(user?.role ?? "")
 
     return (
         <div className="min-h-screen bg-background flex items-center justify-center p-4">

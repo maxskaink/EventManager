@@ -5,7 +5,7 @@
  * @param role rol del usuario
  * @returns ruta de la dashboard
  */
-export const getDashboardRouteFromRole = (role: API.User["role"]) => {
+export const getDashboardRouteFromRole = (role: string) => {
   switch (role) {
     case "guest": return "/dashboard-guest"
     case "interested": return "/dashboard-interested"
