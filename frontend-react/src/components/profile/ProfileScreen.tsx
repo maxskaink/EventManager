@@ -52,7 +52,7 @@ export function ProfileScreen() {
 
   // --- API MUTATIONS ---
   const updateProfileMutation = useMutation({
-    mutationFn: ProfileAPI.updateProfile,
+    mutationFn: ProfileAPI.updateProfile,    
     onSuccess: () => {
       toast.success("Perfil actualizado correctamente");
       queryClient.invalidateQueries({ queryKey: ["profile", user?.id] });
@@ -96,12 +96,8 @@ export function ProfileScreen() {
       personalInfo={<PersonalInfoCard user={{ ...user, interests: [] }} role={role} getRoleLabel={getRoleLabel} />}
       contactInfo={
         <ContactInfoCard
-          isLoading={isLoadingProfile}
-          contactInfo={{
-            phone: profile?.phone ?? "No especificado",
-            university: profile?.university ?? "No especificada",
-            program: profile?.academic_program ?? "No especificado",
-          }}
+          isLoading={isLoadingProfile || updateProfileMutation.isPending}
+          contactInfo={profile}
           email={user.email}
           onEdit={() => setEditContactOpen(true)}
         />

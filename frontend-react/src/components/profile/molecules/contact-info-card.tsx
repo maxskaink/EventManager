@@ -1,16 +1,13 @@
 import { Card, CardHeader, CardContent } from "../../ui/card";
 import { Button } from "../../ui/button";
-import { Edit, Loader, Mail, MapPin, Phone, User } from "lucide-react";
+import { Edit, Mail, Phone, User } from "lucide-react";
+import { L3Loader } from "../../ui/l3-loader";
 
-interface ContactInfo {
-  phone: string;
-  university: string;
-  program: string;
-}
+type ContactInfo = API.Profile;
 
 interface ContactInfoCardProps {
   isLoading?: boolean;
-  contactInfo: ContactInfo;
+  contactInfo?: ContactInfo;
   email: string;
   onEdit: () => void;
 }
@@ -41,28 +38,26 @@ export const ContactInfoCard = ({ contactInfo, email, onEdit, isLoading }: Conta
     <CardHeader>
       <div className="flex items-center justify-between">
         <h3>Información de Perfil</h3>
-        <Button variant="outline" size="sm" onClick={onEdit}>
-          <Edit className="mr-2 h-4 w-4" />
-          Editar
-        </Button>
+        {isLoading ? (
+          <L3Loader size={30} />
+        ) : (
+          <Button variant="outline" size="sm" onClick={onEdit}>
+            <Edit className="mr-2 h-4 w-4" />
+            Editar
+          </Button>
+        )}
       </div>
     </CardHeader>
     <CardContent className="grid grid-cols-1 gap-4 md:grid-cols-2">
-      {isLoading ? (
-        <Loader />
-      ) : (
-        <>
-          <InfoItem icon={<Phone className="h-4 w-4 text-blue-600" />} label="Teléfono" value={contactInfo.phone} />
-          <InfoItem icon={<Mail className="h-4 w-4 text-green-600" />} label="Email" value={email} />
-          {/*<InfoItem icon={<MapPin className="h-4 w-4 text-purple-600" />} label="Dirección" value={contactInfo.address} subValue={contactInfo.city} />*/}
-          <InfoItem
-            icon={<User className="h-4 w-4 text-orange-600" />}
-            label="Universidad"
-            value={contactInfo.university}
-            subValue={contactInfo.program}
-          />
-        </>
-      )}
+      <InfoItem icon={<Phone className="h-4 w-4 text-blue-600" />} label="Teléfono" value={contactInfo?.phone ?? ""} />
+      <InfoItem icon={<Mail className="h-4 w-4 text-green-600" />} label="Email" value={email} />
+      {/*<InfoItem icon={<MapPin className="h-4 w-4 text-purple-600" />} label="Dirección" value={contactInfo.address} subValue={contactInfo.city} />*/}
+      <InfoItem
+        icon={<User className="h-4 w-4 text-orange-600" />}
+        label="Universidad"
+        value={contactInfo?.university ?? ""}
+        subValue={contactInfo?.academic_program ?? ""}
+      />
     </CardContent>
   </Card>
 );
