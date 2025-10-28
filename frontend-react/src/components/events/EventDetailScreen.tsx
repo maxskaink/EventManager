@@ -1,4 +1,3 @@
-import React from "react";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader } from "../ui/card";
 import { Badge } from "../ui/badge";
@@ -17,6 +16,7 @@ import { BNavBarMember } from "../ui/b-navbar-member";
 import { BNavBarCoordinator } from "../ui/b-navbar-coordinator";
 import { BNavBarGuest } from "../ui/b-navbar-guest";
 import { useNavigate } from "react-router";
+import { toast } from "sonner";
 
 interface EventDetailScreenProps {
   eventId: string;
@@ -47,15 +47,18 @@ export function EventDetailScreen({
     );
   }
 
-  const isEventFull = event.enrolled >= event.capacity;
+  const isEventFull = event.capacity && event.enrolled ? event.enrolled >= event.capacity : false;
   const canRegister =
     user && user.role !== "guest" && !isEventFull;
 
   const handleRegister = () => {
     if (canRegister) {
       registerEvent(event.id);
-      // Mock success feedback
-      alert("¡Te has inscrito exitosamente al evento!");
+      // Success feedback with toast
+      toast.success("🎉 ¡Te has inscrito exitosamente al evento!", {
+        description: `Ahora eres parte de: ${event.title}`,
+        duration: 4000,
+      });
     }
   };
 
@@ -89,14 +92,14 @@ export function EventDetailScreen({
           <Badge
             className="absolute top-4 right-4"
             variant={
-              event.category === "curso"
+              event.type === "curso"
                 ? "default"
-                : event.category === "charla"
+                : event.type === "charla"
                   ? "secondary"
                   : "outline"
             }
           >
-            {event.category}
+            {event.type}
           </Badge>
           {event.status === "upcoming" && (
             <Badge className="absolute top-4 left-4 bg-green-500">
@@ -185,7 +188,7 @@ export function EventDetailScreen({
                         <div
                           className="bg-orange-500 h-2 rounded-full"
                           style={{
-                            width: `${(event.enrolled / event.capacity) * 100}%`,
+                            width: event.capacity && event.enrolled ? `${(event.enrolled / event.capacity) * 100}%` : '0%',
                           }}
                         ></div>
                       </div>

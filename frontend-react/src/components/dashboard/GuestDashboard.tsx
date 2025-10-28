@@ -117,7 +117,7 @@ export function GuestDashboard() {
                   <Button
                     className="w-full"
                     onClick={() =>
-                      navigate(`/event-detail-${event.id}`)
+                      navigate(`/events/${event.id}`)
                     }
                   >
                     Ver detalle

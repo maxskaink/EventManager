@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "../ui/button";
-import { Card, CardContent, CardHeader } from "../ui/card";
+import { Card, CardContent } from "../ui/card";
 import { Badge } from "../ui/badge";
 import { Input } from "../ui/input";
 import {
@@ -32,19 +32,79 @@ import {
   Share,
 } from "lucide-react";
 import { useNavigate } from "react-router";
+import { getDashboardRouteFromRole } from "../../services/navigation/redirects";
+import { EventAPI, ArticleAPI } from "../../services/api";
+import { toast } from "sonner";
 
 export function EventBoardScreen() {
-  const { content, user } = useApp();
+  const { user } = useApp();
   const navigate = useNavigate()
   const [searchQuery, setSearchQuery] = useState("");
   const [filterCategory, setFilterCategory] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
-  const [viewMode, setViewMode] = useState<"grid" | "list">(
-    "grid",
-  );
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [loading, setLoading] = useState(true);
+  const [events, setEvents] = useState<API.Event[]>([]);
+  const [articles, setArticles] = useState<API.Article[]>([]);
 
-  // Mock pinned content
-  const [pinnedContent] = useState(["1", "3"]);
+  // Mock pinned content (TODO: implement pinning feature)
+  const [pinnedContent] = useState<string[]>([]);
+
+  // Load events and articles from API
+  useEffect(() => {
+    loadContent();
+  }, []);
+
+  const loadContent = async () => {
+    try {
+      setLoading(true);
+      const [eventsData, articlesData] = await Promise.all([
+        EventAPI.listAllEvents(),
+        ArticleAPI.listAllArticles(),
+      ]);
+      setEvents(eventsData);
+      setArticles(articlesData);
+    } catch (error) {
+      console.error('Error loading content:', error);
+      toast.error('Error al cargar el contenido');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Transform API data to match the old content format
+  const content = [
+    // Events
+    ...events.map(event => ({
+      id: event.id.toString(),
+      type: event.event_type,
+      title: event.name,
+      description: event.description,
+      date: event.start_date.split('T')[0],
+      time: event.start_date.split('T')[1]?.substring(0, 5) || undefined,
+      location: event.location || event.modality,
+      status: event.status === 'activo' ? 'upcoming' : 
+              event.status === 'inactivo' ? 'completed' : 
+              event.status === 'cancelado' ? 'cancelled' : 'upcoming',
+      capacity: event.capacity,
+      enrolled: 0, // TODO: implement enrollment tracking
+      views: undefined,
+    })),
+    // Articles as publications
+    ...articles.map(article => ({
+      id: `article-${article.id}`,
+      type: 'articulo',
+      title: article.title,
+      description: article.description || '',
+      date: article.publication_date,
+      time: undefined,
+      location: undefined,
+      status: 'published',
+      capacity: undefined,
+      enrolled: undefined,
+      views: 0, // TODO: implement view tracking
+    })),
+  ];
 
   const filteredContent = content.filter((item) => {
     const matchesSearch =
@@ -153,7 +213,7 @@ export function EventBoardScreen() {
             variant="ghost"
             size="icon"
             onClick={() =>
-              navigate("/dashboard-coordinator")
+              navigate(getDashboardRouteFromRole(user?.role || ""))
             }
           >
             <ArrowLeft className="h-5 w-5" />
@@ -302,7 +362,7 @@ export function EventBoardScreen() {
               <div className="p-2 bg-blue-100 rounded-lg w-fit mx-auto mb-2">
                 <Calendar className="h-6 w-6 text-blue-600" />
               </div>
-              <h3 className="text-2xl">{content.length}</h3>
+              <h3 className="text-2xl">{loading ? "..." : content.length}</h3>
               <p className="text-sm text-muted-foreground">
                 Total Contenido
               </p>
@@ -315,13 +375,10 @@ export function EventBoardScreen() {
                 <Users className="h-6 w-6 text-green-600" />
               </div>
               <h3 className="text-2xl">
-                {content.reduce(
-                  (sum, item) => sum + (item.enrolled || 0),
-                  0,
-                )}
+                {loading ? "..." : events.length}
               </h3>
               <p className="text-sm text-muted-foreground">
-                Total Inscritos
+                Eventos
               </p>
             </CardContent>
           </Card>
@@ -332,10 +389,10 @@ export function EventBoardScreen() {
                 <Pin className="h-6 w-6 text-purple-600" />
               </div>
               <h3 className="text-2xl">
-                {pinnedContent.length}
+                {loading ? "..." : articles.length}
               </h3>
               <p className="text-sm text-muted-foreground">
-                Destacados
+                Artículos
               </p>
             </CardContent>
           </Card>
@@ -346,13 +403,10 @@ export function EventBoardScreen() {
                 <Eye className="h-6 w-6 text-orange-600" />
               </div>
               <h3 className="text-2xl">
-                {content.reduce(
-                  (sum, item) => sum + (item.views || 0),
-                  0,
-                )}
+                {loading ? "..." : pinnedContent.length}
               </h3>
               <p className="text-sm text-muted-foreground">
-                Visualizaciones
+                Destacados
               </p>
             </CardContent>
           </Card>
@@ -361,10 +415,19 @@ export function EventBoardScreen() {
         {/* Lista/Grid de contenido */}
         <section>
           <div className="flex items-center justify-between mb-4">
-            <h2>Contenido ({sortedContent.length})</h2>
+            <h2>Contenido ({loading ? "..." : sortedContent.length})</h2>
           </div>
 
-          {viewMode === "grid" ? (
+          {loading && (
+            <Card>
+              <CardContent className="p-8 text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+                <p className="text-muted-foreground">Cargando contenido...</p>
+              </CardContent>
+            </Card>
+          )}
+
+          {!loading && viewMode === "grid" ? (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {sortedContent.map((item) => {
                 const isPinned = pinnedContent.includes(
@@ -474,7 +537,7 @@ export function EventBoardScreen() {
                 );
               })}
             </div>
-          ) : (
+          ) : !loading ? (
             <div className="space-y-3">
               {sortedContent.map((item) => {
                 const isPinned = pinnedContent.includes(
@@ -587,9 +650,9 @@ export function EventBoardScreen() {
                 );
               })}
             </div>
-          )}
+          ) : null}
 
-          {sortedContent.length === 0 && (
+          {!loading && sortedContent.length === 0 && (
             <Card>
               <CardContent className="p-8 text-center">
                 <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />

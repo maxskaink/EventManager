@@ -26,9 +26,10 @@ import { ImageWithFallback } from "../figma/ImageWithFallback";
 import { useNavigate } from "react-router";
 import BottomNavbarWrapper from "../nav/BottomNavbarWrapper";
 import { useAuthStore } from "../../stores/auth.store";
+import { toast } from "sonner";
 
 export function EventsScreen() {
-  const { user, events } = useApp();
+  const { user, events, registerEvent } = useApp();
   const someUser = useAuthStore(s => s.user)
   const role = someUser?.role ?? ""
   const navigate = useNavigate()
@@ -230,7 +231,7 @@ export function EventsScreen() {
                           className="flex-1"
                           onClick={() =>
                             navigate(
-                              `/event-detail-${event.id}`,
+                              `/events/${event.id}`,
                             )
                           }
                         >
@@ -244,11 +245,11 @@ export function EventsScreen() {
                               event.enrolled >= event.capacity
                             }
                             onClick={() => {
-                              // Mock inscription
-                              console.log(
-                                "Inscribing to event:",
-                                event.id,
-                              );
+                              registerEvent(event.id);
+                              toast.success("🎉 ¡Te has inscrito exitosamente al evento!", {
+                                description: `Ahora eres parte de: ${event.title}`,
+                                duration: 4000,
+                              });
                             }}
                           >
                             {event.enrolled >= event.capacity

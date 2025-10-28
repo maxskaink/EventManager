@@ -88,7 +88,7 @@ export function MemberDashboard() {
                       </div>
                     </div>
 
-                    <Button className="w-full" onClick={() => navigate(`/event-detail-${event.id}`)}>
+                    <Button className="w-full" onClick={() => navigate(`/events/${event.id}`)}>
                       Inscribirme
                     </Button>
                   </CardContent>

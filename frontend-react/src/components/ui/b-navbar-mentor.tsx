@@ -2,18 +2,9 @@ import {
   LayoutDashboard,
   CalendarDays,
   User,
-  MoreVertical,
-  UserCheck,
-  BarChart3,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "./button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "./dropdown-menu"; // Asegúrate de que la ruta de importación sea correcta
 
 const BNavBarMentor = () => {
   const navigate = useNavigate();
@@ -50,30 +41,6 @@ const BNavBarMentor = () => {
           <User className="h-5 w-5" />
           <span className="text-xs">Perfil</span>
         </Button>
-
-        {/* Menú Desplegable "Más Opciones" */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              className="flex h-auto flex-col items-center gap-1 py-2"
-            >
-              <MoreVertical className="h-5 w-5" />
-              <span className="text-xs">Más</span>
-            </Button>
-          </DropdownMenuTrigger>
-          {/* Posiciona el menú encima del botón */}
-          <DropdownMenuContent side="top" align="center" className="mb-2">
-            <DropdownMenuItem onClick={() => navigate("/admin")}>
-              <UserCheck className="mr-2 h-4 w-4" />
-              <span>Administrar</span>
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => navigate("/reports")}>
-              <BarChart3 className="mr-2 h-4 w-4" />
-              <span>Reportes</span>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
       </div>
     </div>
   );
