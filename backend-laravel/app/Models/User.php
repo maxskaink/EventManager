@@ -16,6 +16,8 @@ class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable, SoftDeletes;
 
+    public mixed $profile;
+
     /**
      * The attributes that are mass assignable.
      *

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Profile;
 use App\Models\User;
 use Exception;
 use Illuminate\Http\Client\RequestException;
@@ -77,6 +78,16 @@ class AuthService
                 'role' => 'interested',
             ]
         );
+
+        // Step 3.1: Ensure the user has a profile
+        if (!$user->profile) {
+            Profile::query()->create([
+                'user_id' => $user->id,
+                'university' => null,
+                'academic_program' => null,
+                'phone' => null,
+            ]);
+        }
 
         // Step 4: Create a Sanctum token
         $token = $user->createToken('access_token')->plainTextToken;
