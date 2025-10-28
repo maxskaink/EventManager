@@ -14,7 +14,7 @@ return new class extends Migration {
 
         // Interest → Profile
         Schema::table('interests', function (Blueprint $table) {
-            $table->foreign('user_id')->references('id')->on('profiles')->onDelete('cascade');
+            $table->foreign('user_id')->references('user_id')->on('profiles')->onDelete('cascade');
         });
 
         // Participation → User
@@ -34,7 +34,7 @@ return new class extends Migration {
 
         // Publication → Profile (author_id)
         Schema::table('publications', function (Blueprint $table) {
-            $table->foreign('author_id')->references('id')->on('profiles')->onDelete('cascade');
+            $table->foreign('author_id')->references('user_id')->on('profiles')->onDelete('cascade');
         });
 
         // AccessPublication → Publication
@@ -44,7 +44,7 @@ return new class extends Migration {
 
         // AccessPublication → Profile
         Schema::table('publication_accesses', function (Blueprint $table) {
-            $table->foreign('profile_id')->references('id')->on('profiles')->onDelete('cascade');
+            $table->foreign('profile_id')->references('user_id')->on('profiles')->onDelete('cascade');
         });
 
         // Article → User
@@ -54,7 +54,7 @@ return new class extends Migration {
 
         // Notification → Profile
         Schema::table('notifications', function (Blueprint $table) {
-            $table->foreign('profile_id')->references('id')->on('profiles')->onDelete('cascade');
+            $table->foreign('profile_id')->references('user_id')->on('profiles')->onDelete('cascade');
         });
     }
 

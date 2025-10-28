@@ -8,7 +8,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 
 /**
- * @property int $id
  * @property int $user_id
  * @property string|null $university
  * @property string|null $academic_program
@@ -58,7 +57,7 @@ class Profile extends Model
     {
         return sprintf(
             "Profile #%d: %s (%s)",
-            $this->id ?? $this->getKey(),
+            $this->user_id ?? $this->getKey(),
             $this->user?->name ?? 'Unknown user',
             $this->academic_program ?? $this->university ?? 'No academic info'
         );
