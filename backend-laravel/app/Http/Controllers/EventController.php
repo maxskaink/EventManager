@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 
 
 use App\Http\Requests\Event\AddEventRequest;
+use App\Http\Requests\Event\UpdateEventRequest;
 use App\Services\EventService;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
@@ -53,4 +54,19 @@ class EventController extends Controller
         return response()->json($this->eventService->listPastEvents());
     }
 
+    /**
+     * Update an event by ID.
+     */
+    public function updateEvent(UpdateEventRequest $request, int $id): JsonResponse
+    {
+        $data = $request->validated();
+
+
+        $updatedEvent = $this->eventService->updateEvent($id, $data);
+
+        return response()->json([
+            'message' => 'Event updated successfully.',
+            'event' => $updatedEvent,
+        ]);
+    }
 }

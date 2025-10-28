@@ -260,7 +260,7 @@ class CertificateService
         }
 
 
-        $certificate = Certificate::where('id', $certificateId)->first();
+        $certificate = Certificate::query()->where('id', $certificateId)->first();
 
         if (!$certificate) {
             throw new ModelNotFoundException('The specified certificate does not exist.');

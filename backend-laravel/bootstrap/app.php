@@ -11,6 +11,7 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\Routing\Exception\ResourceNotFoundException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -75,6 +76,13 @@ return Application::configure(basePath: dirname(__DIR__))
         });
 
         $exceptions->render(function (NotFoundHttpException $e, Request $request) {
+            return response()->json([
+                'error' => class_basename($e),
+                'message' => 'Resource not found.',
+            ], 404);
+        });
+
+        $exceptions->render(function (ResourceNotFoundException $e, Request $request) {
             return response()->json([
                 'error' => class_basename($e),
                 'message' => 'Resource not found.',

@@ -11,11 +11,19 @@ use Illuminate\Auth\AuthenticationException;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Symfony\Component\Routing\Exception\ResourceNotFoundException;
 
 class EventService
 {
     public function addEvent(array $data): Event
     {
+        /** @var User|null $authUser */
+        $authUser = Auth::user();
+
+        if (!$authUser || ($authUser->role !== 'mentor' && $authUser->role !== 'coordinator')) {
+            throw new InvalidRoleException('Only mentors or coordinators can create events.');
+        }
+
         $existingEvent = Event::query()->where('name', $data['name'])->first();
 
         if ($existingEvent) {
@@ -89,5 +97,56 @@ class EventService
         return Event::query()->where('end_date', '<', $now)
             ->orderBy('end_date', 'desc')
             ->get();
+    }
+
+    /**
+     * Update an existing event by ID.
+     *
+     * @param int $id
+     * @param array $data
+     * @return Event
+     *
+     * @throws ResourceNotFoundException
+     * @throws DuplicatedResourceException
+     */
+    public function updateEvent(int $id, array $data): Event
+    {
+        /** @var User|null $authUser */
+        $authUser = Auth::user();
+
+        if (!$authUser || ($authUser->role !== 'mentor' && $authUser->role !== 'coordinator')) {
+            throw new InvalidRoleException('Only mentors or coordinators can update events.');
+        }
+
+        $event = Event::query()->find($id);
+
+        if (!$event) {
+            throw new ResourceNotFoundException("The event with ID {$id} was not found.");
+        }
+
+        // Check for duplicated name if it's being updated
+        if (isset($data['name'])) {
+            $existing = Event::query()
+                ->where('name', $data['name'])
+                ->where('id', '<>', $id)
+                ->first();
+
+            if ($existing) {
+                throw new DuplicatedResourceException("A resource with the name: {$data['name']} already exists");
+            }
+        }
+
+        // Normalize dates if present
+        if (isset($data['start_date'])) {
+            $data['start_date'] = Carbon::parse($data['start_date'])->toDateTimeString();
+        }
+        if (isset($data['end_date'])) {
+            $data['end_date'] = Carbon::parse($data['end_date'])->toDateTimeString();
+        }
+
+        $event->fill($data);
+        $event->save();
+
+        return $event;
     }
 }
