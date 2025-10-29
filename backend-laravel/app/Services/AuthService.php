@@ -44,13 +44,17 @@ class AuthService
         // Step 1: Exchange authorization code for access token
         $tokenResponse = Http::asForm()->post('https://oauth2.googleapis.com/token', [
             'code' => $code,
-            'client_id' => env('GOOGLE_CLIENT_ID'),
-            'client_secret' => env('GOOGLE_CLIENT_SECRET'),
-            'redirect_uri' => env('GOOGLE_REDIRECT_URI'),
+            'client_id' => config('services.google.client_id'),
+            'client_secret' => config('services.google.client_secret'),
+            'redirect_uri' => config('services.google.redirect'),
             'grant_type' => 'authorization_code',
         ]);
 
         if ($tokenResponse->failed()) {
+            \Log::error('Google OAuth token exchange failed', [
+                'status' => $tokenResponse->status(),
+                'body' => $tokenResponse->body(),
+            ]);
             throw new RequestException($tokenResponse);
         }
 

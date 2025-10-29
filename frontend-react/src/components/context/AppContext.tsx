@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, type ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, type ReactNode } from "react";
 import {
   mockArticles,
   mockCertificates,
@@ -6,19 +6,22 @@ import {
   mockNotifications,
   mockUserEventParticipations,
 } from "./mock-data";
+import { useAuthStore } from "../../stores/auth.store";
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>({
-    id: "0",
-    name: "guest",
-    role: "guest",
-    email: "guest@guest.com",
-    avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face",
-    interests: ["Machone Learning", "React", "Python"],
-  });
+  // Sincronizar con el auth store de Zustand
+  const authUser = useAuthStore((state) => state.user);
+  const authLogout = useAuthStore((state) => state.logout);
+  
+  const [user, setUser] = useState<User | null>(authUser);
   const [navigate, setNavigate] = useState<(to: string) => void>();
+  
+  // Sincronizar el usuario cuando cambie en el auth store
+  useEffect(() => {
+    setUser(authUser);
+  }, [authUser]);
   const [content] = useState<Content[]>(mockContent);
   const [certificates, setCertificates] = useState<Certificate[]>(mockCertificates);
   const [notifications] = useState<AppNotification[]>(mockNotifications);
@@ -55,8 +58,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = () => {
+    authLogout(); // Usar el logout del auth store
     setUser(null);
-    navigate?.("/login");
+    // Redirigir al login
+    if (navigate) {
+      navigate("/login");
+    } else {
+      window.location.href = "/login";
+    }
   };
 
   const registerEvent = (eventId: string) => {

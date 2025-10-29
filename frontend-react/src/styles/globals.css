@@ -229,3 +229,13 @@
 html {
   font-size: var(--font-size);
 }
+
+/* Estilos para Sonner Toast - Forzar color negro en descripción */
+[data-sonner-toast] [data-description] {
+  color: #000000 !important;
+  font-weight: 500 !important;
+}
+
+.dark [data-sonner-toast] [data-description] {
+  color: #ffffff !important;
+}

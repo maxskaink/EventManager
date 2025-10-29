@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\User\CreateUserRequest;
 use App\Http\Requests\User\ToggleRoleRequest;
 use App\Services\UserService;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -16,6 +17,24 @@ class UserController extends Controller
         $this->userService = $userService;
     }
 
+    /**
+     * Create a new user manually
+     */
+    public function createUser(CreateUserRequest $request): JsonResponse
+    {
+        $data = $request->validated();
+
+        $user = $this->userService->createUser(
+            $data['name'],
+            $data['email'],
+            $data['role']
+        );
+
+        return response()->json([
+            'message' => 'User created successfully',
+            'user' => $user
+        ], 201);
+    }
 
     public function toggleRole(ToggleRoleRequest $request, int $userId): JsonResponse
     {

@@ -8,51 +8,81 @@ import DashboardRedirect from "../../components/nav/DashboardRedirect";
 function GoogleCallbackScreen() {
   const [params] = useSearchParams();
 
-  const authStore = useAuthStore();
+  // Suscribirse a los cambios del store
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const user = useAuthStore((state) => state.user);
+  const login = useAuthStore((state) => state.login);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState();
 
-  const user = authStore.user;
-
   // On page load, we take "search" parameters
   // and proxy them to /api/auth/callback on our Laravel API
   useEffect(() => {
+    let isCancelled = false;
+    
     async function callCallback() {
-      if (authStore.isAuthenticated) return;
       const code = params.get("code") ?? "";
+      
+      if (!code) {
+        setError({ message: "No se recibió código de autorización de Google" });
+        setLoading(false);
+        return;
+      }
+
+      if (isCancelled) return;
+
       try {
         const res = await AuthAPI.googleCallback({ code });
-        authStore.login(res.user, res.access_token);
+        
+        if (isCancelled) return;
+        
+        if (!res.user || !res.access_token) {
+          setError({ message: "Respuesta incompleta del servidor" });
+          setLoading(false);
+          return;
+        }
+        
+        login(res.user, res.access_token);
+        setLoading(false);
       } catch (err) {
-        console.log(err);
+        if (isCancelled) return;
+        
         setError(err instanceof AxiosError ? err.response?.data : err);
+        setLoading(false);
       }
-      setLoading(false);
     }
+    
     callCallback();
-  }, [params, authStore]);
+    
+    return () => {
+      isCancelled = true;
+    };
+  }, [params]); // Removido authStore de las dependencias
 
-  useEffect(() => {
-    async function fetchUserData() {
-      if (!authStore.isAuthenticated) return;
-      const res = await UserAPI.getUser();
-      setLoading(false)
-      authStore.setUser(res.user);
-    }
-    fetchUserData();
-  }, [authStore.isAuthenticated]);
+  // Remover este useEffect que causa conflicto
+  // El usuario ya viene del backend en el callback
 
   if (loading) {
     return <DisplayLoading />;
   }
 
-  if (authStore.isAuthenticated) {
+  if (isAuthenticated && user) {
     return <DashboardRedirect/>
+  }
+
+  if (error) {
+    return (
+      <div>
+        <h1>Error en la autenticación</h1>
+        <DisplayData error={error} user={user} />
+      </div>
+    );
   }
 
   return (
     <div>
+      <h1>Procesando autenticación...</h1>
       <DisplayData error={error} user={user} />
     </div>
   );

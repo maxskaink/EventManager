@@ -4,7 +4,7 @@ import StorageKeys from "../../stores/storage-keys"
 // Create axios instance with base configuration
 const axiosInstance = axios.create({
     baseURL: import.meta.env.VITE_API_URL + "/api",
-    withCredentials: false, // Changed to false to work with CORS *
+    withCredentials: true, // Enable credentials for CORS
     headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json'

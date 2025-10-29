@@ -11,6 +11,37 @@ use Illuminate\Support\Facades\Auth;
 class UserService
 {
     /**
+     * Create a new user manually (by mentor).
+     *
+     * @param string $name User's name
+     * @param string $email User's email
+     * @param string $role User's initial role
+     * @return User The created user
+     */
+    public function createUser(string $name, string $email, string $role): User
+    {
+        /** @var User|null $authUser */
+        $authUser = Auth::user();
+
+        if (!$authUser || $authUser->role !== 'mentor') {
+            throw new AuthorizationException('Only mentors can create users manually.');
+        }
+
+        if (!in_array($role, ['interested', 'member', 'coordinator', 'mentor'])) {
+            throw new InvalidRoleException("Invalid role: {$role}");
+        }
+
+        $user = User::create([
+            'name' => $name,
+            'email' => $email,
+            'role' => $role,
+            'email_verified_at' => now(), // Pre-verified since created by mentor
+        ]);
+
+        return $user;
+    }
+
+    /**
      * Toggle the user's role between 'interested' and 'organizer'.
      *
      * @param int $userID ID of the user to toggle.

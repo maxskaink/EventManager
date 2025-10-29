@@ -16,6 +16,7 @@ Route::middleware('auth:sanctum')->get('logout', [AuthController::class, 'logout
 Route::middleware('auth:sanctum')->get('user', [AuthController::class, 'user']);
 
 #User Routes
+Route::middleware('auth:sanctum')->post('user', [UserController::class, 'createUser']);
 Route::middleware('auth:sanctum')->patch('user/{user}/toggle-role', [UserController::class, 'toggleRole']);
 Route::middleware('auth:sanctum')->get('user/member', [UserController::class, 'listActiveMembers']);
 Route::middleware('auth:sanctum')->get('user/interested', [UserController::class, 'listActiveInterested']);

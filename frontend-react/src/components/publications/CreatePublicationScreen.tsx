@@ -2,9 +2,8 @@ import React, { useState } from 'react';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardHeader } from '../ui/card';
 import { Input } from '../ui/input';
+import { Label } from '../ui/label';
 import { Textarea } from '../ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
-import { Checkbox } from '../ui/checkbox';
 import { Badge } from '../ui/badge';
 import { useApp } from '../context/AppContext';
 import {
@@ -13,35 +12,27 @@ import {
   Eye,
   Send,
   FileText,
-  MessageSquare,
-  Users,
-  Image,
-  Link,
-  Bold,
-  Italic,
-  List
+  Link as LinkIcon,
 } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import BottomNavbarWrapper from '../nav/BottomNavbarWrapper';
 import { useAuthStore } from '../../stores/auth.store';
+import { ArticleAPI } from '../../services/api';
+import { toast } from 'sonner';
+import { getDashboardRouteFromRole } from '../../services/navigation/redirects';
 
 export function CreatePublicationScreen() {
   const navigate = useNavigate()
   const { user } = useApp();
-  const someUser = useAuthStore(s => s.user);
-  const role = someUser?.role ?? "";
+  const authUser = useAuthStore(s => s.user);
+  const [loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState({
     title: '',
-    type: 'comunicado',
-    content: '',
-    excerpt: '',
-    visibility: 'all',
-    tags: '',
-    allowComments: true,
-    notifyUsers: true,
-    publishNow: true,
-    scheduledDate: ''
+    authors: '',
+    description: '',
+    publication_url: '',
+    publication_date: new Date().toISOString().split('T')[0],
   });
 
   const [preview, setPreview] = useState(false);
@@ -53,30 +44,53 @@ export function CreatePublicationScreen() {
     }));
   };
 
-  const handleSave = (status: 'draft' | 'published') => {
-    console.log('Saving publication:', { ...formData, status });
-    // Here would be the actual save logic
-    navigate('/publications');
-  };
+  const handleSave = async (isDraft: boolean = false) => {
+    // Validaciones
+    if (!formData.title.trim()) {
+      toast.error('El título es obligatorio');
+      return;
+    }
+    if (!formData.authors.trim()) {
+      toast.error('Debe especificar al menos un autor');
+      return;
+    }
+    if (!formData.publication_date) {
+      toast.error('La fecha de publicación es obligatoria');
+      return;
+    }
 
-  const getTypeIcon = (type: string) => {
-    switch (type) {
-      case 'comunicado': return <MessageSquare className="h-4 w-4" />;
-      case 'articulo': return <FileText className="h-4 w-4" />;
-      case 'anuncio': return <Users className="h-4 w-4" />;
-      default: return <FileText className="h-4 w-4" />;
+    if (!authUser?.id) {
+      toast.error('Debe estar autenticado para crear una publicación');
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const articleData: Payloads.AddArticle = {
+        user_id: authUser.id,
+        title: formData.title,
+        description: formData.description || null,
+        publication_date: formData.publication_date,
+        authors: formData.authors,
+        publication_url: formData.publication_url || null,
+      };
+
+      await ArticleAPI.addArticle(articleData);
+      
+      toast.success(isDraft ? '✅ Artículo guardado como borrador' : '🎉 Artículo publicado exitosamente');
+      
+      // Navegar de vuelta
+      navigate(getDashboardRouteFromRole(authUser?.role || ''));
+    } catch (error: any) {
+      console.error('Error creating article:', error);
+      const message = error.response?.data?.message || 'Error al crear el artículo';
+      toast.error(message);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const getVisibilityDescription = (visibility: string) => {
-    switch (visibility) {
-      case 'all': return 'Visible para todos los usuarios de la plataforma';
-      case 'members': return 'Solo visible para integrantes del semillero';
-      case 'mentors': return 'Solo visible para mentores y coordinadores';
-      case 'coordinators': return 'Solo visible para coordinadores';
-      default: return '';
-    }
-  };
 
   if (preview) {
     return (
@@ -93,11 +107,11 @@ export function CreatePublicationScreen() {
             </Button>
             <h1>Vista Previa</h1>
             <div className="ml-auto flex gap-2">
-              <Button variant="secondary" onClick={() => handleSave('draft')}>
+              <Button variant="secondary" onClick={() => handleSave(true)} disabled={loading}>
                 <Save className="h-4 w-4 mr-2" />
                 Guardar Borrador
               </Button>
-              <Button variant="secondary" onClick={() => handleSave('published')}>
+              <Button variant="secondary" onClick={() => handleSave(false)} disabled={loading}>
                 <Send className="h-4 w-4 mr-2" />
                 Publicar
               </Button>
@@ -109,45 +123,38 @@ export function CreatePublicationScreen() {
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center gap-2 mb-4">
-                <div className="p-2 bg-blue-100 rounded-lg">
-                  {getTypeIcon(formData.type)}
+                <div className="p-2 bg-blue-100 dark:bg-blue-950 rounded-lg">
+                  <FileText className="h-5 w-5 text-blue-600" />
                 </div>
-                <Badge variant="outline" className="text-xs capitalize">
-                  {formData.type}
-                </Badge>
-                <Badge variant="outline" className="text-xs">
-                  {formData.visibility === 'all' ? 'Público' :
-                   formData.visibility === 'members' ? 'Integrantes' :
-                   formData.visibility === 'mentors' ? 'Mentores' : 'Coordinadores'}
-                </Badge>
+                <Badge variant="outline" className="text-xs">Artículo</Badge>
               </div>
 
-              <h1 className="text-3xl font-bold mb-4">{formData.title || 'Título de la publicación'}</h1>
+              <h1 className="text-3xl font-bold mb-4">{formData.title || 'Título del Artículo'}</h1>
 
               <div className="flex items-center gap-4 text-sm text-muted-foreground mb-6">
-                <span>Por {user?.name}</span>
-                <span>{new Date().toLocaleDateString('es-ES')}</span>
+                <span>Por {formData.authors || 'Autor(es)'}</span>
+                <span>{formData.publication_date ? new Date(formData.publication_date).toLocaleDateString('es-ES') : new Date().toLocaleDateString('es-ES')}</span>
               </div>
 
-              {formData.excerpt && (
-                <div className="bg-muted p-4 rounded-lg mb-6">
-                  <p className="italic">{formData.excerpt}</p>
+              {formData.description && (
+                <div className="prose max-w-none mb-6">
+                  <div style={{ whiteSpace: 'pre-wrap' }}>
+                    {formData.description}
+                  </div>
                 </div>
               )}
 
-              <div className="prose max-w-none">
-                <div style={{ whiteSpace: 'pre-wrap' }}>
-                  {formData.content || 'El contenido de tu publicación aparecerá aquí...'}
-                </div>
-              </div>
-
-              {formData.tags && (
-                <div className="flex flex-wrap gap-2 mt-6 pt-6 border-t">
-                  {formData.tags.split(',').map((tag, index) => (
-                    <Badge key={index} variant="secondary" className="text-xs">
-                      #{tag.trim()}
-                    </Badge>
-                  ))}
+              {formData.publication_url && (
+                <div className="flex items-center gap-2 p-4 bg-muted rounded-lg mt-6">
+                  <LinkIcon className="h-5 w-5 text-blue-600" />
+                  <a 
+                    href={formData.publication_url} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:underline break-all"
+                  >
+                    {formData.publication_url}
+                  </a>
                 </div>
               )}
             </CardContent>
@@ -162,252 +169,126 @@ export function CreatePublicationScreen() {
       {/* Header */}
       <div className="bg-primary text-primary-foreground p-4">
         <div className="max-w-4xl mx-auto flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate('/publications')}
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <h1>Nueva Publicación</h1>
-          <div className="ml-auto flex gap-2">
-            <Button variant="secondary" onClick={() => setPreview(true)}>
-              <Eye className="h-4 w-4 mr-2" />
-              Vista Previa
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate(getDashboardRouteFromRole(authUser?.role || ''))}
+            >
+              <ArrowLeft className="h-5 w-5" />
             </Button>
-            <Button variant="secondary" onClick={() => handleSave('draft')}>
-              <Save className="h-4 w-4 mr-2" />
-              Guardar
-            </Button>
-          </div>
+            <h1>Nuevo Artículo / Publicación</h1>
+            <div className="ml-auto flex gap-2">
+              <Button variant="secondary" onClick={() => setPreview(true)}>
+                <Eye className="h-4 w-4 mr-2" />
+                Vista Previa
+              </Button>
+              <Button variant="secondary" onClick={() => handleSave(true)} disabled={loading}>
+                <Save className="h-4 w-4 mr-2" />
+                Guardar
+              </Button>
+            </div>
         </div>
       </div>
 
       <div className="max-w-4xl mx-auto p-4 space-y-6">
         {/* Información básica */}
-        <section>
-          <Card>
-            <CardHeader>
-              <h3>Información Básica</h3>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <label className="text-sm font-medium">Título *</label>
-                <Input
-                  value={formData.title}
-                  onChange={(e) => handleInputChange('title', e.target.value)}
-                  placeholder="Ej: Convocatoria taller de Machine Learning"
-                  className="mt-1"
-                />
-              </div>
-
-              <div>
-                <label className="text-sm font-medium">Tipo de publicación *</label>
-                <Select value={formData.type} onValueChange={(value) => handleInputChange('type', value)}>
-                  <SelectTrigger className="mt-1">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="comunicado">
-                      <div className="flex items-center gap-2">
-                        <MessageSquare className="h-4 w-4" />
-                        Comunicado
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="articulo">
-                      <div className="flex items-center gap-2">
-                        <FileText className="h-4 w-4" />
-                        Artículo
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="anuncio">
-                      <div className="flex items-center gap-2">
-                        <Users className="h-4 w-4" />
-                        Anuncio
-                      </div>
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <label className="text-sm font-medium">Resumen (opcional)</label>
-                <Textarea
-                  value={formData.excerpt}
-                  onChange={(e) => handleInputChange('excerpt', e.target.value)}
-                  placeholder="Breve descripción que aparecerá en las previsualizaciones..."
-                  rows={2}
-                  className="mt-1"
-                />
-                <p className="text-xs text-muted-foreground mt-1">
-                  Máximo 200 caracteres. Si no lo especificas, se usará el inicio del contenido.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        </section>
-
-        {/* Editor de contenido */}
-        <section>
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <h3>Contenido</h3>
-                <div className="flex gap-1">
-                  <Button size="sm" variant="outline">
-                    <Bold className="h-4 w-4" />
-                  </Button>
-                  <Button size="sm" variant="outline">
-                    <Italic className="h-4 w-4" />
-                  </Button>
-                  <Button size="sm" variant="outline">
-                    <List className="h-4 w-4" />
-                  </Button>
-                  <Button size="sm" variant="outline">
-                    <Link className="h-4 w-4" />
-                  </Button>
-                  <Button size="sm" variant="outline">
-                    <Image className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <Textarea
-                value={formData.content}
-                onChange={(e) => handleInputChange('content', e.target.value)}
-                placeholder="Escribe aquí el contenido de tu publicación..."
-                rows={12}
-                className="resize-none"
+        <Card>
+          <CardHeader>
+            <h3 className="font-semibold">Información Básica</h3>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <Label htmlFor="title">Título del Artículo *</Label>
+              <Input
+                id="title"
+                value={formData.title}
+                onChange={(e) => handleInputChange('title', e.target.value)}
+                placeholder="Ej: Avances en Machine Learning aplicado a la medicina"
+                className="mt-1"
               />
-              <p className="text-xs text-muted-foreground mt-2">
-                Soporta texto enriquecido, enlaces e imágenes. Usa Markdown para dar formato.
+            </div>
+
+            <div>
+              <Label htmlFor="authors">Autor(es) *</Label>
+              <Input
+                id="authors"
+                value={formData.authors}
+                onChange={(e) => handleInputChange('authors', e.target.value)}
+                placeholder="Ej: Juan Pérez, María García"
+                className="mt-1"
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Separa múltiples autores con comas
               </p>
-            </CardContent>
-          </Card>
-        </section>
+            </div>
 
-        {/* Configuración de visibilidad */}
-        <section>
-          <Card>
-            <CardHeader>
-              <h3>Configuración de Visibilidad</h3>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <label className="text-sm font-medium">¿Quién puede ver esta publicación? *</label>
-                <Select value={formData.visibility} onValueChange={(value) => handleInputChange('visibility', value)}>
-                  <SelectTrigger className="mt-1">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todos los usuarios</SelectItem>
-                    <SelectItem value="members">Solo integrantes</SelectItem>
-                    <SelectItem value="mentors">Solo mentores y coordinadores</SelectItem>
-                    <SelectItem value="coordinators">Solo coordinadores</SelectItem>
-                  </SelectContent>
-                </Select>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {getVisibilityDescription(formData.visibility)}
-                </p>
-              </div>
+            <div>
+              <Label htmlFor="publication_date">Fecha de Publicación *</Label>
+              <Input
+                id="publication_date"
+                type="date"
+                value={formData.publication_date}
+                onChange={(e) => handleInputChange('publication_date', e.target.value)}
+                className="mt-1"
+              />
+            </div>
 
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="allowComments"
-                  checked={formData.allowComments}
-                  onCheckedChange={(checked) => handleInputChange('allowComments', checked)}
-                />
-                <label htmlFor="allowComments" className="text-sm">
-                  Permitir comentarios
-                </label>
-              </div>
+            <div>
+              <Label htmlFor="description">Descripción / Resumen</Label>
+              <Textarea
+                id="description"
+                value={formData.description}
+                onChange={(e) => handleInputChange('description', e.target.value)}
+                placeholder="Breve resumen del artículo, abstract o contenido principal..."
+                rows={6}
+                className="mt-1"
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Proporciona un resumen del artículo, contexto o abstract
+              </p>
+            </div>
 
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="notifyUsers"
-                  checked={formData.notifyUsers}
-                  onCheckedChange={(checked) => handleInputChange('notifyUsers', checked)}
-                />
-                <label htmlFor="notifyUsers" className="text-sm">
-                  Notificar a los usuarios cuando se publique
-                </label>
-              </div>
-            </CardContent>
-          </Card>
-        </section>
+            <div>
+              <Label htmlFor="publication_url">URL de Publicación (opcional)</Label>
+              <Input
+                id="publication_url"
+                type="url"
+                value={formData.publication_url}
+                onChange={(e) => handleInputChange('publication_url', e.target.value)}
+                placeholder="https://ejemplo.com/mi-articulo"
+                className="mt-1"
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Enlace al artículo completo, PDF, DOI, etc.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
 
-        {/* Configuración adicional */}
-        <section>
-          <Card>
-            <CardHeader>
-              <h3>Configuración Adicional</h3>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <label className="text-sm font-medium">Etiquetas (opcional)</label>
-                <Input
-                  value={formData.tags}
-                  onChange={(e) => handleInputChange('tags', e.target.value)}
-                  placeholder="machine-learning, react, python"
-                  className="mt-1"
-                />
-                <p className="text-xs text-muted-foreground mt-1">
-                  Separa las etiquetas con comas. Estas ayudan a categorizar y encontrar el contenido.
-                </p>
-              </div>
-
-              <div className="border-t pt-4">
-                <div className="flex items-center space-x-2 mb-4">
-                  <Checkbox
-                    id="publishNow"
-                    checked={formData.publishNow}
-                    onCheckedChange={(checked) => handleInputChange('publishNow', checked)}
-                  />
-                  <label htmlFor="publishNow" className="text-sm">
-                    Publicar inmediatamente
-                  </label>
-                </div>
-
-                {!formData.publishNow && (
-                  <div>
-                    <label className="text-sm font-medium">Programar publicación</label>
-                    <Input
-                      type="datetime-local"
-                      value={formData.scheduledDate}
-                      onChange={(e) => handleInputChange('scheduledDate', e.target.value)}
-                      className="mt-1"
-                    />
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        </section>
-
-        {/* Acciones */}
-        <section>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex justify-between">
-                <Button variant="outline" onClick={() => navigate('/publications')}>
-                  Cancelar
-                </Button>
-
-                <div className="flex gap-2">
-                  <Button variant="outline" onClick={() => handleSave('draft')}>
-                    <Save className="h-4 w-4 mr-2" />
-                    Guardar Borrador
-                  </Button>
-                  <Button onClick={() => handleSave('published')}>
-                    <Send className="h-4 w-4 mr-2" />
-                    {formData.publishNow ? 'Publicar Ahora' : 'Programar Publicación'}
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </section>
+        {/* Botones de acción */}
+        <div className="flex gap-3 justify-end">
+          <Button 
+            variant="outline" 
+            onClick={() => navigate(getDashboardRouteFromRole(authUser?.role || ''))}
+          >
+            Cancelar
+          </Button>
+          <Button 
+            variant="outline" 
+            onClick={() => handleSave(true)}
+            disabled={loading}
+          >
+            <Save className="h-4 w-4 mr-2" />
+            Guardar como Borrador
+          </Button>
+          <Button 
+            onClick={() => handleSave(false)}
+            disabled={loading}
+          >
+            <Send className="h-4 w-4 mr-2" />
+            Publicar Artículo
+          </Button>
+        </div>
       </div>
 
       {/* Navigation Bar */}
@@ -432,7 +313,7 @@ export function CreatePublicationScreen() {
       </div>
 
       {/* Navigation bar */}
-      <BottomNavbarWrapper role={role} />
+      <BottomNavbarWrapper />
 
     </div>
   );
