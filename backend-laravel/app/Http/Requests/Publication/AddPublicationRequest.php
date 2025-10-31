@@ -23,7 +23,7 @@ class AddPublicationRequest extends FormRequest
         return [
             'title' => ['required', 'string', 'max:255'],
             'content' => ['required', 'string'],
-            'type' => ['required', 'string', 'max:100'],
+            'type' => ['required', 'string', 'max:100'],#TODO: Definir tipos de publicaciones
             'published_at' => ['required', 'date'],
             'status' => ['required', 'string', 'in:activo,inactivo,borrador,pendiente'],
             'image_url' => ['nullable', 'string', 'url', 'max:255'],

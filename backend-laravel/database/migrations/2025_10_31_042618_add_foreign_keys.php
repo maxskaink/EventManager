@@ -57,6 +57,10 @@ return new class extends Migration {
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
 
+        // External Event → User
+        Schema::table('events', function (Blueprint $table) {
+            $table->foreign('publication_id')->references('id')->on('publications')->onDelete('cascade');
+        });
 
         // Notification → Profile
         Schema::table('notifications', function (Blueprint $table) {

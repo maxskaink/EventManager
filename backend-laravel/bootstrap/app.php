@@ -85,7 +85,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->render(function (ResourceNotFoundException $e, Request $request) {
             return response()->json([
                 'error' => class_basename($e),
-                'message' => 'Resource not found.',
+                'message' => 'Resource not found. ' . $e->getMessage(),
             ], 404);
         });
 

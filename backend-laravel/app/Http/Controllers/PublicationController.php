@@ -32,7 +32,21 @@ class PublicationController extends Controller
     }
 
     /**
-     * @throws AuthorizationException
+     * Create a new publication about a new event.
+     */
+    public function addEventPublication(AddPublicationRequest $request, int $eventId): JsonResponse
+    {
+        $data = $request->validated();
+
+        $newPublication = $this->publicationService->addEventPublication($data, $eventId);
+
+        return response()->json([
+            'message' => "Publication created successfully: {$newPublication}"
+        ]);
+    }
+
+
+    /**
      * List all publications.
      */
     public function listAllPublications(): JsonResponse

@@ -61,15 +61,14 @@ class EventService
     /**
      * List upcoming events (events that have not yet ended),
      * ordered from the soonest to the latest.
-     * @throws AuthorizationException
      */
     public function listUpcomingEvents(): Collection
     {
         /** @var User|null $authUser */
         $authUser = Auth::user();
 
-        if ($authUser && !in_array($authUser->role, ['mentor', 'coordinator'])) {
-            throw new AuthorizationException('You are not allowed to view all events.');
+        if (!$authUser) {
+            throw new InvalidRoleException('Only authenticated users can list published publications.');
         }
 
         $now = Carbon::now();

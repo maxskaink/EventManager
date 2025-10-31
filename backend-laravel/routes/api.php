@@ -56,7 +56,8 @@ Route::middleware('auth:sanctum')->get('article/date-range', [ArticleController:
 
 // Publication Routes
 Route::middleware('auth:sanctum')->post('publication', [PublicationController::class, 'addPublication']);
+Route::middleware('auth:sanctum')->post('publication/{eventId}', [PublicationController::class, 'addEventPublication']);
 Route::middleware('auth:sanctum')->get('publication/all', [PublicationController::class, 'listAllPublications']);
-Route::middleware('auth:sanctum')->get('publication/active', [PublicationController::class, 'listActivePublications']);
-Route::middleware('auth:sanctum')->get('publication/archived', [PublicationController::class, 'listArchivedPublications']);
+Route::middleware('auth:sanctum')->get('publication/active', [PublicationController::class, 'listPublishedPublications']);
+Route::middleware('auth:sanctum')->get('publication/archived', [PublicationController::class, 'listDraftPublications']);
 Route::middleware('auth:sanctum')->patch('publication/{publicationId}', [PublicationController::class, 'updatePublication']);

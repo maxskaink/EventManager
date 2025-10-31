@@ -9,6 +9,7 @@ return new class extends Migration
     public function up(): void {
         Schema::create('events', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('publication_id')->nullable();
             $table->string('name');
             $table->string('description');
             $table->dateTime('start_date');
