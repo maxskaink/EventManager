@@ -1,0 +1,28 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void {
+        Schema::create('external_events', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('user_id');
+            $table->string('name');
+            $table->string('description');
+            $table->dateTime('start_date');
+            $table->dateTime('end_date');
+            $table->string('modality');
+            $table->string('host_organization');
+            $table->string('location')->nullable();
+            $table->string('participation_url')->nullable();
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void {
+        Schema::dropIfExists('events');
+    }
+};

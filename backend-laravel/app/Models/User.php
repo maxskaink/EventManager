@@ -6,17 +6,15 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Carbon;
 use Laravel\Sanctum\HasApiTokens;
 
 /**
- * @property string $role
- * @property int id
+ * @property string|null $role
  */
 class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable, SoftDeletes;
-
-    public mixed $profile;
 
     /**
      * The attributes that are mass assignable.
@@ -76,4 +74,11 @@ class User extends Authenticatable
         );
     }
 
+    /**
+     * Relation: a user has one profile
+     */
+    public function profile()
+    {
+        return $this->hasOne(Profile::class, 'user_id');
+    }
 }

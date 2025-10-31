@@ -52,6 +52,12 @@ return new class extends Migration {
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
 
+        // External Event → User
+        Schema::table('external_events', function (Blueprint $table) {
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+        });
+
+
         // Notification → Profile
         Schema::table('notifications', function (Blueprint $table) {
             $table->foreign('profile_id')->references('user_id')->on('profiles')->onDelete('cascade');

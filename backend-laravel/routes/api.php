@@ -5,6 +5,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CertificateController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\PublicationController;
 use App\Http\Controllers\UserController;
 
 use Illuminate\Support\Facades\Route;
@@ -44,7 +45,6 @@ Route::middleware('auth:sanctum')->get('certificate/user/{userId}', [Certificate
 Route::middleware('auth:sanctum')->get('certificate/all', [CertificateController::class, 'listAllCertificates']);
 Route::middleware('auth:sanctum')->get('certificate/date-range', [CertificateController::class, 'listCertificatesByDateRange']);
 
-
 #Article Routes
 Route::middleware('auth:sanctum')->post('article', [ArticleController::class, 'addArticle']);
 Route::middleware('auth:sanctum')->patch('article/{articleId}', [ArticleController::class, 'updateArticle']);
@@ -53,3 +53,10 @@ Route::middleware('auth:sanctum')->get('article/my', [ArticleController::class, 
 Route::middleware('auth:sanctum')->get('article/user/{userId}', [ArticleController::class, 'listArticlesByUser']);
 Route::middleware('auth:sanctum')->get('article/all', [ArticleController::class, 'listAllArticles']);
 Route::middleware('auth:sanctum')->get('article/date-range', [ArticleController::class, 'listArticlesByDateRange']);
+
+// Publication Routes
+Route::middleware('auth:sanctum')->post('publication', [PublicationController::class, 'addPublication']);
+Route::middleware('auth:sanctum')->get('publication/all', [PublicationController::class, 'listAllPublications']);
+Route::middleware('auth:sanctum')->get('publication/active', [PublicationController::class, 'listActivePublications']);
+Route::middleware('auth:sanctum')->get('publication/archived', [PublicationController::class, 'listArchivedPublications']);
+Route::middleware('auth:sanctum')->patch('publication/{publicationId}', [PublicationController::class, 'updatePublication']);
