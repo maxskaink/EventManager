@@ -38,6 +38,11 @@ Route::middleware('auth:sanctum')->get('event/all', [EventController::class, 'li
 Route::middleware('auth:sanctum')->get('event/active', [EventController::class, 'listUpcomingEvents']);
 Route::middleware('auth:sanctum')->get('event/past', [EventController::class, 'listPastEvents']);
 Route::middleware('auth:sanctum')->patch('event/{eventId}', [EventController::class, 'updateEvent']);
+#EventParticipations Routes
+Route::middleware('auth:sanctum')->post('event/{eventId}/participation', [EventController::class, 'enrollUser']);
+Route::middleware('auth:sanctum')->patch('event/{eventId}/participation/attend', [EventController::class, 'markUsersAsAttended']);
+Route::middleware('auth:sanctum')->patch('event/{eventId}/participation/absent', [EventController::class, 'markUsersAsAbsent']);
+Route::middleware('auth:sanctum')->delete('event/{eventId}/participation', [EventController::class, 'cancelEnrollment']);
 
 #Certificate Routes
 Route::middleware('auth:sanctum')->post('certificate', [CertificateController::class, 'addCertificate']);

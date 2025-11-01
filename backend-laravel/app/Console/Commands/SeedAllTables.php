@@ -8,6 +8,9 @@ use App\Models\Interest;
 use App\Models\Publication;
 use App\Models\PublicationInterest;
 use App\Models\Profile;
+use App\Models\PublicationAccess;
+use App\Models\Notification;
+use App\Models\ExternalEvent;
 use App\Models\User;
 use App\Models\Event;
 use Illuminate\Console\Command;
@@ -191,10 +194,68 @@ class SeedAllTables extends Command
                     DB::table('participations')->insert([
                         'event_id' => $eid,
                         'user_id' => $uid,
-                        'status' => $faker->randomElement(['registered','attended','cancelled']),
+                        'status' => $faker->randomElement(['inscrito', 'asistio', 'ausente', 'cancelado']),
                         'created_at' => now(),
                         'updated_at' => now(),
                     ]);
+                }
+            }
+
+            // Publication accesses (who viewed which publication)
+            $this->info('Creating publication access records...');
+            $profileIds = DB::table('profiles')->pluck('user_id')->toArray();
+            foreach ($publicationIds as $pubId) {
+                // choose 1-4 random profiles for each publication
+                $viewers = (array) $faker->randomElements($profileIds, min(count($profileIds), $faker->numberBetween(1, max(1, min(4, count($profileIds))))));
+                foreach ($viewers as $pid) {
+                    try {
+                        PublicationAccess::query()->create([
+                            'profile_id' => $pid,
+                            'publication_id' => $pubId,
+                        ]);
+                    } catch (\Throwable $e) {
+                        // ignore individual insert errors
+                    }
+                }
+            }
+
+            // Notifications for random profiles
+            $this->info('Creating notifications...');
+            foreach (range(1, 8) as $i) {
+                $profileId = $faker->randomElement($profileIds);
+                try {
+                    Notification::query()->create([
+                        'profile_id' => $profileId,
+                        'title' => 'Test notification ' . $i,
+                        'message' => $faker->sentence(8),
+                        'type' => $faker->randomElement(['info', 'warning', 'success']),
+                        'status' => $faker->randomElement(['unread', 'read']),
+                        'read_at' => $faker->optional()->dateTimeBetween('-1 month', 'now'),
+                        'url' => $faker->optional()->url(),
+                    ]);
+                } catch (\Throwable $e) {
+                }
+            }
+
+            // External events
+            $this->info('Creating external events...');
+            foreach (range(1, 6) as $i) {
+                $organizer = $users->random();
+                $start = $faker->dateTimeBetween('-2 months', '+3 months');
+                $end = (clone $start)->modify('+' . $faker->numberBetween(1, 72) . ' hours');
+                try {
+                    ExternalEvent::query()->create([
+                        'user_id' => $organizer->id,
+                        'name' => $faker->sentence(4),
+                        'description' => $faker->paragraph(),
+                        'start_date' => $start,
+                        'end_date' => $end,
+                        'modality' => $faker->randomElement(['online', 'presencial', 'hybrid']),
+                        'host_organization' => $faker->company(),
+                        'location' => $faker->optional()->city(),
+                        'participation_url' => $faker->optional()->url(),
+                    ]);
+                } catch (\Throwable $e) {
                 }
             }
 
