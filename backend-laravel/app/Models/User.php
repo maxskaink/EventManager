@@ -10,6 +10,7 @@ use Illuminate\Support\Carbon;
 use Laravel\Sanctum\HasApiTokens;
 
 /**
+ * @property int $id
  * @property string|null $role
  */
 class User extends Authenticatable

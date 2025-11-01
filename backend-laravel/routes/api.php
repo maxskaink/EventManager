@@ -4,6 +4,7 @@ use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CertificateController;
 use App\Http\Controllers\EventController;
+use App\Http\Controllers\InterestController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PublicationController;
 use App\Http\Controllers\UserController;
@@ -28,6 +29,7 @@ Route::middleware('auth:sanctum')->get('user/active', [UserController::class, 'l
 #Profile Routes
 Route::middleware('auth:sanctum')->put('profile', [ProfileController::class, 'updateProfile']);
 Route::middleware('auth:sanctum')->get('profile', [ProfileController::class, 'getProfile']);
+Route::middleware('auth:sanctum')->post('profile/interests', [ProfileController::class, 'addProfileInterests']);
 
 #Event Routes
 Route::middleware('auth:sanctum')->post('event', [EventController::class, 'addEvent']);
@@ -54,10 +56,16 @@ Route::middleware('auth:sanctum')->get('article/user/{userId}', [ArticleControll
 Route::middleware('auth:sanctum')->get('article/all', [ArticleController::class, 'listAllArticles']);
 Route::middleware('auth:sanctum')->get('article/date-range', [ArticleController::class, 'listArticlesByDateRange']);
 
-// Publication Routes
+#Publication Routes
 Route::middleware('auth:sanctum')->post('publication', [PublicationController::class, 'addPublication']);
 Route::middleware('auth:sanctum')->post('publication/{eventId}', [PublicationController::class, 'addEventPublication']);
 Route::middleware('auth:sanctum')->get('publication/all', [PublicationController::class, 'listAllPublications']);
 Route::middleware('auth:sanctum')->get('publication/active', [PublicationController::class, 'listPublishedPublications']);
 Route::middleware('auth:sanctum')->get('publication/archived', [PublicationController::class, 'listDraftPublications']);
 Route::middleware('auth:sanctum')->patch('publication/{publicationId}', [PublicationController::class, 'updatePublication']);
+Route::middleware('auth:sanctum')->post('publication/{publicationId}/interests', [PublicationController::class, 'addPublicationInterests']);
+
+#Interest Routes
+Route::middleware('auth:sanctum')->post('interest', [InterestController::class, 'addInterest']);
+Route::middleware('auth:sanctum')->get('interest/all', [InterestController::class, 'listAllInterests']);
+Route::middleware('auth:sanctum')->delete('interest/{interestId}', [InterestController::class, 'deleteInterest']);

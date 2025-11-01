@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Publication\AddPublicationInterestRequest;
 use App\Http\Requests\Publication\AddPublicationRequest;
 use App\Http\Requests\Publication\UpdatePublicationRequest;
 use App\Services\PublicationService;
@@ -84,6 +85,21 @@ class PublicationController extends Controller
         return response()->json([
             'message' => 'Publication updated successfully.',
             'publication' => $updatedPublication,
+        ]);
+    }
+
+    public function addPublicationInterests(int $publicationId, AddPublicationInterestRequest $request): JsonResponse
+    {
+        $data = $request->validated();
+
+        // Allow one or multiple interests
+        $interestIds = $data['interests'];
+
+        $addedInterests = $this->publicationService->addPublicationInterests($publicationId,  $interestIds);
+
+        return response()->json([
+            'message' => 'Interests added successfully.',
+            'interests' => $addedInterests,
         ]);
     }
 }

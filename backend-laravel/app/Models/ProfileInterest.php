@@ -9,12 +9,12 @@ use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
- * @property int $publication_id
+ * @property int $user_id
  * @property int $interest_id
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-class PublicationInterest extends Model
+class ProfileInterest extends Model
 {
     use HasFactory;
 
@@ -38,7 +38,8 @@ class PublicationInterest extends Model
      * @var list<string>
      */
     protected $fillable = [
-        'publication_id',
+        'id',
+        'user_id',
         'interest_id',
     ];
 
@@ -50,29 +51,28 @@ class PublicationInterest extends Model
     protected function casts(): array
     {
         return [
-            'id',
-            'publication_id' => 'integer',
             'interest_id' => 'integer',
+            'user_id' => 'integer',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
         ];
     }
 
     /**
-     * Get the publication associated with this interest.
+     * Get the user that owns this interest.
      */
-    public function publication(): BelongsTo
+    public function user(): BelongsTo
     {
-        return $this->belongsTo(Publication::class);
+        return $this->belongsTo(User::class);
     }
-
     public function __toString(): string
     {
         return sprintf(
-            "PublicationInterest #%d: %s on publication %s",
+            "ProfileInterest #%d: %s by %s",
             $this->interest_id ?? $this->getKey(),
-            $this->interest ?? 'No interest',
-            $this->publication?->title ?? $this->publication_id ?? 'Unknown publication'
+            $this->keyword ?? 'No keyword',
+            $this->user?->name ?? 'Unknown user'
         );
     }
+
 }

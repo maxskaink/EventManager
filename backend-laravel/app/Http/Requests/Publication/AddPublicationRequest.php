@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Publication;
 
+use App\Models\User;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -9,8 +10,10 @@ class AddPublicationRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        // Allow only authenticated users to create publications
-        return auth()->check();
+        /** @var User|null $user */
+        $user = auth()->user();
+
+        return $user && ($user->getRoleAttribute() === 'mentor' || $user->getRoleAttribute() === 'coordinator');
     }
 
     /**
@@ -23,7 +26,7 @@ class AddPublicationRequest extends FormRequest
         return [
             'title' => ['required', 'string', 'max:255'],
             'content' => ['required', 'string'],
-            'type' => ['required', 'string', 'max:100'],#TODO: Definir tipos de publicaciones
+            'type' => ['required', 'string', 'in:articulo,aviso,comunicado,material,evento'],
             'published_at' => ['required', 'date'],
             'status' => ['required', 'string', 'in:activo,inactivo,borrador,pendiente'],
             'image_url' => ['nullable', 'string', 'url', 'max:255'],

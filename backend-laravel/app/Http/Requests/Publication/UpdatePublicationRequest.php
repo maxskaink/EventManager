@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Publication;
 
+use App\Models\User;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -9,10 +10,11 @@ class UpdatePublicationRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        // Allow only authenticated users to update publications
-        return auth()->check();
-    }
+        /** @var User|null $user */
+        $user = auth()->user();
 
+        return $user && ($user->getRoleAttribute() === 'mentor' || $user->getRoleAttribute() === 'coordinator');
+    }
     /**
      * Get the validation rules that apply to the request.
      *
@@ -24,7 +26,7 @@ class UpdatePublicationRequest extends FormRequest
             'author_id' => ['sometimes', 'integer', 'exists:users,id'],
             'title' => ['sometimes', 'string', 'max:255'],
             'content' => ['sometimes', 'string'],
-            'type' => ['sometimes', 'string', 'max:100'],
+            'type' => ['sometimes', 'string', 'in:articulo,aviso,comunicado,material,evento'],
             'published_at' => ['sometimes', 'date'],
             'status' => ['sometimes', 'string', 'in:activo,inactivo,borrador,pendiente'],
             'image_url' => ['nullable', 'string', 'url', 'max:255'],

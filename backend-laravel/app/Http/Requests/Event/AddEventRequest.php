@@ -10,7 +10,10 @@ class AddEventRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return auth()->check();
+        /** @var User|null $user */
+        $user = auth()->user();
+
+        return $user && ($user->getRoleAttribute() === 'mentor' || $user->getRoleAttribute() === 'coordinator');
     }
 
     /**

@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Event;
 
+use App\Models\User;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -9,9 +10,11 @@ class UpdateEventRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return auth()->check();
-    }
+        /** @var User|null $user */
+        $user = auth()->user();
 
+        return $user && ($user->getRoleAttribute() === 'mentor' || $user->getRoleAttribute() === 'coordinator');
+    }
     /**
      * Get the validation rules that apply to the request.
      *

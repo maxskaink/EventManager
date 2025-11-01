@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Profile\AddProfileInterestsRequest;
 use App\Http\Requests\Profile\UpdateProfileRequest;
 use App\Models\User;
 use App\Services\ProfileService;
@@ -36,5 +37,23 @@ class ProfileController extends Controller
     public function getProfile(): JsonResponse
     {
         return response()->json([$this->profileService->getProfile(Auth::id())]);
+    }
+
+    public function addProfileInterests(AddProfileInterestsRequest $request): JsonResponse
+    {
+        /** @var User|null $authUser */
+        $authUser = Auth::user();
+
+        $data = $request->validated();
+
+        // Allow one or multiple interests
+        $interestIds = $data['interests'];
+
+        $addedInterests = $this->profileService->addProfileInterests( $interestIds);
+
+        return response()->json([
+            'message' => 'Interests added successfully.',
+            'interests' => $addedInterests,
+        ]);
     }
 }

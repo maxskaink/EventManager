@@ -6,11 +6,13 @@ use App\Exceptions\DuplicatedResourceException;
 use App\Exceptions\InvalidRoleException;
 use App\Models\Event;
 use App\Models\Publication;
+use App\Models\PublicationInterest;
 use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Symfony\Component\Routing\Exception\ResourceNotFoundException;
 
 class PublicationService
@@ -186,5 +188,41 @@ class PublicationService
         $publication->save();
 
         return $publication;
+    }
+
+    public function addPublicationInterests(int $id, array $interestIds): array
+    {
+        /** @var User|null $authUser */
+        $authUser = Auth::user();
+
+        if (!$authUser || ($authUser->role !== 'mentor' && $authUser->role !== 'coordinator')) {
+            throw new InvalidRoleException('Only mentors or coordinators can add interests to a publication.');
+        }
+
+
+        // Use a transaction to ensure atomicity
+        DB::transaction(function () use ($id, $interestIds) {
+            foreach ($interestIds as $interestId) {
+                // Avoid duplicates
+                $exists = PublicationInterest::query()
+                    ->where('publication_id', $id)
+                    ->where('interest_id', $interestId)
+                    ->exists();
+
+                if (!$exists) {
+                    PublicationInterest::query()->create([
+                        'publication_id' => $id,
+                        'interest_id' => $interestId,
+                    ]);
+                }
+            }
+        });
+
+        // Return updated list of interests
+        return PublicationInterest::query()
+            ->where('publication_id', $id)
+            ->with('publication')
+            ->get()
+            ->toArray();
     }
 }
