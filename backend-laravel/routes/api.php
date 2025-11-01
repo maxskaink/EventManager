@@ -4,6 +4,7 @@ use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CertificateController;
 use App\Http\Controllers\EventController;
+use App\Http\Controllers\ExternalEventController;
 use App\Http\Controllers\InterestController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PublicationController;
@@ -69,3 +70,12 @@ Route::middleware('auth:sanctum')->post('publication/{publicationId}/interests',
 Route::middleware('auth:sanctum')->post('interest', [InterestController::class, 'addInterest']);
 Route::middleware('auth:sanctum')->get('interest/all', [InterestController::class, 'listAllInterests']);
 Route::middleware('auth:sanctum')->delete('interest/{interestId}', [InterestController::class, 'deleteInterest']);
+
+# ExternalEvent Routes
+Route::middleware('auth:sanctum')->post('external-event', [ExternalEventController::class, 'addExternalEvent']);
+Route::middleware('auth:sanctum')->patch('external-event/{externalEventId}', [ExternalEventController::class, 'updateExternalEvent']);
+Route::middleware('auth:sanctum')->delete('external-event/{externalEventId}', [ExternalEventController::class, 'deleteExternalEvent']);
+Route::middleware('auth:sanctum')->get('external-event/my', [ExternalEventController::class, 'listMyExternalEvents']);
+Route::middleware('auth:sanctum')->get('external-event/user/{userId}', [ExternalEventController::class, 'listExternalEventsByUser']);
+Route::middleware('auth:sanctum')->get('external-event/all', [ExternalEventController::class, 'listAllExternalEvents']);
+Route::middleware('auth:sanctum')->get('external-event/date-range', [ExternalEventController::class, 'listExternalEventsByDateRange']);
