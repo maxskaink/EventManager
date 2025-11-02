@@ -32,10 +32,8 @@ class SeedAllTables extends Command
 
         $faker = Faker::create();
 
-        // 🚫 NO mezclar con transacciones
         Schema::disableForeignKeyConstraints();
 
-        // Truncate tables
         $tables = [
             'publication_interests',
             'publication_accesses',
@@ -60,32 +58,31 @@ class SeedAllTables extends Command
 
         Schema::enableForeignKeyConstraints();
 
-        // 🔹 Usa la transacción solo para inserciones, no para truncar ni schema ops
         DB::beginTransaction();
         try {
             $this->info('Creating users...');
-            if (method_exists(User::class, 'factory')) {
-                $users = User::factory()->count(8)->create();
-            } else {
-                $users = collect();
-                for ($i = 0; $i < 8; $i++) {
-                    $u = User::query()->create([
-                        'name' => $faker->name(),
-                        'email' => $faker->unique()->safeEmail(),
-                        'email_verified_at' => now(),
-                        'google_id' => 'dev_' . uniqid(),
-                        'avatar' => 'https://via.placeholder.com/150',
-                        'role' => $faker->randomElement(['interested', 'member', 'mentor', 'coordinator']),
-                    ]);
-                    $users->push($u);
-                }
+            $users = collect();
+            for ($i = 0; $i < 8; $i++) {
+                $u = User::query()->create([
+                    'name' => $faker->name(),
+                    'email' => $faker->unique()->safeEmail(),
+                    'email_verified_at' => now(),
+                    'google_id' => 'dev_' . uniqid(),
+                    'avatar' => 'https://via.placeholder.com/150',
+                    'role' => $faker->randomElement(['interested', 'member', 'mentor', 'coordinator']),
+                ]);
+                $users->push($u);
             }
 
-            $this->info('Creating profiles for users...');
+            $this->info('Creating profiles...');
             foreach ($users as $user) {
                 Profile::query()->firstOrCreate(
                     ['user_id' => $user->id],
-                    ['university' => $faker->company(), 'academic_program' => $faker->word(), 'phone' => $faker->phoneNumber()]
+                    [
+                        'university' => $faker->company(),
+                        'academic_program' => $faker->word(),
+                        'phone' => $faker->phoneNumber()
+                    ]
                 );
             }
 
@@ -120,7 +117,7 @@ class SeedAllTables extends Command
                     'content' => $faker->paragraph(4),
                     'type' => $faker->randomElement(['articulo', 'aviso', 'comunicado', 'material', 'evento']),
                     'published_at' => $faker->date(),
-                    'status' => $faker->randomElement(['activo', 'borrador']),
+                    'status' => $faker->randomElement(['activo', 'inactivo', 'borrador', 'pendiente']),
                     'last_modified' => now(),
                     'image_url' => null,
                     'summary' => $faker->sentence(10),
@@ -153,10 +150,10 @@ class SeedAllTables extends Command
                     'description' => $faker->paragraph(),
                     'start_date' => $start,
                     'end_date' => $end,
-                    'event_type' => $faker->randomElement(['workshop','conference','webinar']),
-                    'modality' => $faker->randomElement(['online','presencial']),
+                    'event_type' => $faker->randomElement(['charla', 'curso', 'convocatoria']),
+                    'modality' => $faker->randomElement(['presencial', 'virtual', 'mixta']),
                     'location' => $faker->city(),
-                    'status' => $faker->randomElement(['scheduled','cancelled','finished']),
+                    'status' => $faker->randomElement(['scheduled', 'cancelled', 'finished']),
                     'capacity' => $faker->numberBetween(10, 200),
                 ]);
                 $eventIds[] = $ev->id;
@@ -170,7 +167,7 @@ class SeedAllTables extends Command
                     'name' => 'Certificate ' . $i,
                     'description' => $faker->sentence(),
                     'issue_date' => $faker->date(),
-                    'document_url' => null,
+                    'document_url' => "assets/certificates/certificate_$i.pdf",
                     'comment' => null,
                     'deleted' => false,
                 ]);
@@ -201,12 +198,9 @@ class SeedAllTables extends Command
                 }
             }
 
-            // Publication accesses (who viewed which publication)
             $this->info('Creating publication access records...');
-            $profileIds = DB::table('profiles')->pluck('user_id')->toArray();
             foreach ($publicationIds as $pubId) {
-                // choose 1-4 random profiles for each publication
-                $viewers = (array) $faker->randomElements($profileIds, min(count($profileIds), $faker->numberBetween(1, max(1, min(4, count($profileIds))))));
+                $viewers = (array)$faker->randomElements($profileIds, min(count($profileIds), $faker->numberBetween(1, max(1, min(4, count($profileIds))))));
                 foreach ($viewers as $pid) {
                     try {
                         PublicationAccess::query()->create([
@@ -214,49 +208,40 @@ class SeedAllTables extends Command
                             'publication_id' => $pubId,
                         ]);
                     } catch (\Throwable $e) {
-                        // ignore individual insert errors
                     }
                 }
             }
 
-            // Notifications for random profiles
             $this->info('Creating notifications...');
             foreach (range(1, 8) as $i) {
                 $profileId = $faker->randomElement($profileIds);
-                try {
-                    Notification::query()->create([
-                        'profile_id' => $profileId,
-                        'title' => 'Test notification ' . $i,
-                        'message' => $faker->sentence(8),
-                        'type' => $faker->randomElement(['info', 'warning', 'success']),
-                        'status' => $faker->randomElement(['unread', 'read']),
-                        'read_at' => $faker->optional()->dateTimeBetween('-1 month', 'now'),
-                        'url' => $faker->optional()->url(),
-                    ]);
-                } catch (\Throwable $e) {
-                }
+                Notification::query()->create([
+                    'profile_id' => $profileId,
+                    'title' => 'Test notification ' . $i,
+                    'message' => $faker->sentence(8),
+                    'type' => $faker->randomElement(['info', 'warning', 'success']),
+                    'status' => $faker->randomElement(['unread', 'read']),
+                    'read_at' => $faker->optional()->dateTimeBetween('-1 month', 'now'),
+                    'url' => $faker->optional()->url(),
+                ]);
             }
 
-            // External events
             $this->info('Creating external events...');
             foreach (range(1, 6) as $i) {
                 $organizer = $users->random();
                 $start = $faker->dateTimeBetween('-2 months', '+3 months');
                 $end = (clone $start)->modify('+' . $faker->numberBetween(1, 72) . ' hours');
-                try {
-                    ExternalEvent::query()->create([
-                        'user_id' => $organizer->id,
-                        'name' => $faker->sentence(4),
-                        'description' => $faker->paragraph(),
-                        'start_date' => $start,
-                        'end_date' => $end,
-                        'modality' => $faker->randomElement(['online', 'presencial', 'hybrid']),
-                        'host_organization' => $faker->company(),
-                        'location' => $faker->optional()->city(),
-                        'participation_url' => $faker->optional()->url(),
-                    ]);
-                } catch (\Throwable $e) {
-                }
+                ExternalEvent::query()->create([
+                    'user_id' => $organizer->id,
+                    'name' => $faker->sentence(4),
+                    'description' => $faker->paragraph(),
+                    'start_date' => $start,
+                    'end_date' => $end,
+                    'modality' => $faker->randomElement(['presencial', 'virtual', 'mixta']),
+                    'host_organization' => $faker->company(),
+                    'location' => $faker->optional()->city(),
+                    'participation_url' => $faker->optional()->url(),
+                ]);
             }
 
             DB::commit();

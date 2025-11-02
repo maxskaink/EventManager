@@ -22,7 +22,7 @@ class InterestPolicy
     public function create(User $user): bool
     {
         // Only mentors or admins can create new interests
-        return in_array($user->role, ['mentor', 'admin']);
+        return in_array($user->role, ['mentor', 'coordinator']);
     }
 
     /**
@@ -31,6 +31,6 @@ class InterestPolicy
     public function delete(User $user): bool
     {
         // Only mentors or admins can delete interests
-        return in_array($user->role, ['mentor', 'admin']);
+        return in_array($user->role, ['mentor', 'coordinator']);
     }
 }

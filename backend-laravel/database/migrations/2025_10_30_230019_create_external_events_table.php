@@ -14,7 +14,7 @@ return new class extends Migration
             $table->string('description');
             $table->dateTime('start_date');
             $table->dateTime('end_date');
-            $table->string('modality');
+            $table->enum('modality', ['presencial', 'virtual', 'mixta'])->default('presencial');
             $table->string('host_organization');
             $table->string('location')->nullable();
             $table->string('participation_url')->nullable();
