@@ -70,6 +70,9 @@ Route::middleware('auth:sanctum')->get('publication/active', [PublicationControl
 Route::middleware('auth:sanctum')->get('publication/archived', [PublicationController::class, 'listDraftPublications']);
 Route::middleware('auth:sanctum')->patch('publication/{publicationId}', [PublicationController::class, 'updatePublication']);
 Route::middleware('auth:sanctum')->post('publication/{publicationId}/interests', [PublicationController::class, 'addPublicationInterests']);
+# Publication Access Routes
+Route::middleware('auth:sanctum')->post('publication/{publicationId}/access/grant', [PublicationController::class, 'grantPublicationAccess']);
+Route::middleware('auth:sanctum')->delete('publication/{publicationId}/access/revoke', [PublicationController::class, 'revokePublicationAccess']);
 
 #Interest Routes
 Route::middleware('auth:sanctum')->post('interest', [InterestController::class, 'addInterest']);

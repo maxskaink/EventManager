@@ -6,6 +6,7 @@ use App\Exceptions\DuplicatedResourceException;
 use App\Exceptions\InvalidRoleException;
 use App\Models\Event;
 use App\Models\Publication;
+use App\Models\PublicationAccess;
 use App\Models\PublicationInterest;
 use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -94,7 +95,7 @@ class PublicationService
         $authUser = Auth::user();
         // Only authors or editors can view drafts
         if ($authUser && !in_array($authUser->role, ['mentor', 'coordinator'])) {
-            throw new AuthorizationException('You are not allowed to view all publications.');
+            throw new InvalidRoleException('You are not allowed to view all publications.');
         }
         return Publication::query()
             ->orderBy('published_at', 'desc')
@@ -225,4 +226,141 @@ class PublicationService
             ->get()
             ->toArray();
     }
+
+
+    /**
+     * Grant access to one or more users or roles for a private publication.
+     *
+     * @param int $publicationId
+     * @param array $userIds
+     * @param array $roles
+     * @return array
+     *
+     * @throws ResourceNotFoundException|AuthorizationException
+     */
+    public function grantPublicationAccess(int $publicationId, array $userIds = [], array $roles = []): array
+    {
+        /** @var User|null $authUser */
+        $authUser = Auth::user();
+
+        if (!$authUser || !in_array($authUser->role, ['mentor', 'coordinator'])) {
+            throw new InvalidRoleException('Only mentors or coordinators can grant publication access.');
+        }
+
+        $publication = Publication::query()->find($publicationId);
+        if (!$publication) {
+            throw new ResourceNotFoundException("The publication with ID {$publicationId} was not found.");
+        }
+
+        if ($publication->visibility !== 'private') {
+            throw new AuthorizationException('Access can only be granted for private publications.');
+        }
+
+        // Collect all target users
+        $targetUsers = collect();
+
+        if (!empty($userIds)) {
+            $usersById = User::query()->whereIn('id', $userIds)->get();
+            $targetUsers = $targetUsers->merge($usersById);
+        }
+
+        if (!empty($roles)) {
+            $usersByRole = User::query()->whereIn('role', $roles)->get();
+            $targetUsers = $targetUsers->merge($usersByRole);
+        }
+
+        if ($targetUsers->isEmpty()) {
+            throw new AuthorizationException('No valid users found to grant access.');
+        }
+
+        $createdAccesses = [];
+
+        DB::transaction(function () use ($publicationId, $targetUsers, &$createdAccesses) {
+            foreach ($targetUsers as $user) {
+
+                $exists = PublicationAccess::query()
+                    ->where('publication_id', $publicationId)
+                    ->where('profile_id', $user->id)
+                    ->exists();
+
+                if (!$exists) {
+                    $access = PublicationAccess::query()->create([
+                        'publication_id' => $publicationId,
+                        'profile_id' => $user->id,
+                    ]);
+                    $createdAccesses[] = $access;
+                }
+            }
+        });
+
+        return $createdAccesses;
+    }
+
+    /**
+     * Revoke access from one or more users or roles for a publication.
+     *
+     * @param int $publicationId
+     * @param array $userIds
+     * @param array $roles
+     * @return array List of user IDs whose access was revoked
+     *
+     * @throws AuthorizationException
+     * @throws ResourceNotFoundException
+     */
+    public function revokePublicationAccess(int $publicationId, array $userIds = [], array $roles = []): array
+    {
+        /** @var User|null $authUser */
+        $authUser = Auth::user();
+
+        if (!$authUser || !in_array($authUser->role, ['mentor', 'coordinator'])) {
+            throw new InvalidRoleException('Only mentors or coordinators can revoke publication access.');
+        }
+
+        $publication = Publication::query()->find($publicationId);
+        if (!$publication) {
+            throw new ResourceNotFoundException("The publication with ID {$publicationId} was not found.");
+        }
+
+        // Collect all target user IDs
+        $targetUserIds = collect($userIds);
+
+        if (!empty($roles)) {
+            $usersByRoles = User::query()
+                ->whereIn('role', $roles)
+                ->pluck('id');
+            $targetUserIds = $targetUserIds->merge($usersByRoles);
+        }
+
+        $targetUserIds = $targetUserIds->unique();
+
+        if ($targetUserIds->isEmpty()) {
+            throw new ResourceNotFoundException('No valid users found to revoke access.');
+        }
+
+        $revokedUserIds = [];
+
+        DB::transaction(function () use ($publicationId, $targetUserIds, &$revokedUserIds) {
+            // Get the list of actually assigned accesses to delete
+            $revokedUserIds = PublicationAccess::query()
+                ->where('publication_id', $publicationId)
+                ->whereIn('profile_id', $targetUserIds)
+                ->pluck('profile_id')
+                ->toArray();
+
+            if (!empty($revokedUserIds)) {
+                PublicationAccess::query()
+                    ->where('publication_id', $publicationId)
+                    ->whereIn('profile_id', $revokedUserIds)
+                    ->delete();
+            }
+        });
+
+        if (empty($revokedUserIds)) {
+            throw new ResourceNotFoundException('No accesses were revoked.');
+        }
+
+        return $revokedUserIds;
+    }
+
+
 }

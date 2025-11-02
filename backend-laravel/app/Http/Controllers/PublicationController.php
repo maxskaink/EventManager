@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\Publication\AddPublicationInterestRequest;
 use App\Http\Requests\Publication\AddPublicationRequest;
+use App\Http\Requests\Publication\PublicationAccessRequest;
 use App\Http\Requests\Publication\UpdatePublicationRequest;
 use App\Services\PublicationService;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -56,7 +57,6 @@ class PublicationController extends Controller
     }
 
     /**
-     * @throws AuthorizationException
      * List all published publications.
      */
     public function listPublishedPublications(): JsonResponse
@@ -102,4 +102,55 @@ class PublicationController extends Controller
             'interests' => $addedInterests,
         ]);
     }
+
+    /**
+     * Grant special access to a private publication.
+     * Access can only be granted if the publication visibility is 'private'.
+     * @throws AuthorizationException
+     */
+    public function grantPublicationAccess(int $publicationId, PublicationAccessRequest $request): JsonResponse
+    {
+        $data = $request->validated();
+
+        $userIds = $data['user_ids'] ?? [];
+        $roles = $data['roles'] ?? [];
+
+        // Grant access to multiple users and/or roles
+        $grantedAccess = $this->publicationService->grantPublicationAccess(
+            $publicationId,
+            $userIds,
+            $roles
+        );
+
+        return response()->json([
+            'message' => 'Access granted successfully.',
+            'access' => $grantedAccess,
+        ]);
+    }
+
+    /**
+     * Revoke access to a publication.
+     * Can revoke access either by user IDs or by roles.
+     * @throws AuthorizationException
+     */
+    public function revokePublicationAccess(int $publicationId, PublicationAccessRequest $request): JsonResponse
+    {
+        $data = $request->validated();
+
+        $userIds = $data['user_ids'] ?? [];
+        $roles = $data['roles'] ?? [];
+
+        // Revoke access from multiple users and/or roles
+        $revokedAccess = $this->publicationService->revokePublicationAccess(
+            $publicationId,
+            $userIds,
+            $roles
+        );
+
+        return response()->json([
+            'message' => 'Access revoked successfully.',
+            'revoked' => $revokedAccess,
+        ]);
+    }
+
 }
