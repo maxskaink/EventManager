@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Auth;
  * @property string $name
  * @property string $description
  * @property Carbon $issue_date
- * @property string|null $document_url
+ * @property string $document_url
  * @property string|null $comment
  * @property bool $deleted
  * @property Carbon|null $created_at

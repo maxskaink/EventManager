@@ -7,15 +7,15 @@ namespace App\Http\Controllers;
 use App\Http\Requests\Event\AddEventRequest;
 use App\Http\Requests\Event\MarkUsersRequest;
 use App\Http\Requests\Event\UpdateEventRequest;
-use App\Services\EventService;
+use App\Services\Contracts\EventServiceInterface;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
 
 class EventController extends Controller
 {
-    protected EventService $eventService;
+    protected EventServiceInterface $eventService;
 
-    public function __construct(EventService $eventService)
+    public function __construct(EventServiceInterface $eventService)
     {
         $this->eventService = $eventService;
     }
@@ -32,7 +32,6 @@ class EventController extends Controller
     }
 
     /**
-     * @throws AuthorizationException
      */
     public function listAllEvents(): JsonResponse
     {
@@ -40,7 +39,6 @@ class EventController extends Controller
     }
 
     /**
-     * @throws AuthorizationException
      */
     public function listUpcomingEvents(): JsonResponse
     {
@@ -48,7 +46,6 @@ class EventController extends Controller
     }
 
     /**
-     * @throws AuthorizationException
      */
     public function listPastEvents(): JsonResponse
     {

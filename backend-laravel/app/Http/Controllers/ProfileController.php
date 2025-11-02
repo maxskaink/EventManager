@@ -5,15 +5,15 @@ namespace App\Http\Controllers;
 use App\Http\Requests\Profile\AddProfileInterestsRequest;
 use App\Http\Requests\Profile\UpdateProfileRequest;
 use App\Models\User;
-use App\Services\ProfileService;
+use App\Services\Contracts\ProfileServiceInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 
 class ProfileController extends Controller
 {
-    protected ProfileService $profileService;
+    protected ProfileServiceInterface $profileService;
 
-    public function __construct(ProfileService $profileService)
+    public function __construct(ProfileServiceInterface $profileService)
     {
         $this->profileService = $profileService;
     }

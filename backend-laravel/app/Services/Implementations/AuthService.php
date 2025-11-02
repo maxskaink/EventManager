@@ -1,17 +1,18 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\Implementations;
 
 use App\Models\Profile;
 use App\Models\User;
+use App\Services\Contracts\AuthServiceInterface;
 use Exception;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Http;
-use Laravel\Socialite\Facades\Socialite;
 use Laravel\Socialite\Contracts\User as SocialiteUser;
+use Laravel\Socialite\Facades\Socialite;
 use Laravel\Socialite\Two\GoogleProvider;
 
-class AuthService
+class AuthService implements AuthServiceInterface
 {
     /**
      * Generate a stateless Google OAuth redirect URL.

@@ -1,18 +1,19 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\Implementations;
 
 use App\Exceptions\DuplicatedResourceException;
 use App\Exceptions\InvalidRoleException;
 use App\Models\Article;
 use App\Models\User;
+use App\Services\Contracts\ArticleServiceInterface;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use InvalidArgumentException;
 
-class ArticleService
+class ArticleService implements ArticleServiceInterface
 {
     /**
      * Create and store a new article for a user.

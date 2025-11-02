@@ -1,15 +1,16 @@
 <?php
-namespace App\Services;
+namespace App\Services\Implementations;
 
 
 use App\Exceptions\InvalidRoleException;
 use App\Models\Profile;
 use App\Models\ProfileInterest;
 use App\Models\User;
+use App\Services\Contracts\ProfileServiceInterface;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
-class ProfileService
+class ProfileService implements ProfileServiceInterface
 {
 
     public function updateProfile(int $userId, array $data): Profile

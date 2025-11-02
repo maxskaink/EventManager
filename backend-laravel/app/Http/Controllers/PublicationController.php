@@ -6,15 +6,15 @@ use App\Http\Requests\Publication\AddPublicationInterestRequest;
 use App\Http\Requests\Publication\AddPublicationRequest;
 use App\Http\Requests\Publication\PublicationAccessRequest;
 use App\Http\Requests\Publication\UpdatePublicationRequest;
-use App\Services\PublicationService;
+use App\Services\Contracts\PublicationServiceInterface;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
 
 class PublicationController extends Controller
 {
-    protected PublicationService $publicationService;
+    protected PublicationServiceInterface $publicationService;
 
-    public function __construct(PublicationService $publicationService)
+    public function __construct(PublicationServiceInterface $publicationService)
     {
         $this->publicationService = $publicationService;
     }

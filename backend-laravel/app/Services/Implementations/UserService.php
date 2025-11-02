@@ -1,14 +1,15 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\Implementations;
 
 use App\Exceptions\InvalidRoleException;
 use App\Models\User;
+use App\Services\Contracts\UserServiceInterface;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
 
-class UserService
+class UserService implements UserServiceInterface
 {
     /**
      * Toggle the user's role between 'interested' and 'organizer'.

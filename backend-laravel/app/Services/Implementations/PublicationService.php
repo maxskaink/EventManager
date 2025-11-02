@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\Implementations;
 
 use App\Exceptions\DuplicatedResourceException;
 use App\Exceptions\InvalidRoleException;
@@ -9,6 +9,7 @@ use App\Models\Publication;
 use App\Models\PublicationAccess;
 use App\Models\PublicationInterest;
 use App\Models\User;
+use App\Services\Contracts\PublicationServiceInterface;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
@@ -16,7 +17,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\Routing\Exception\ResourceNotFoundException;
 
-class PublicationService
+class PublicationService implements PublicationServiceInterface
 {
     /**
      * Create a new publication.

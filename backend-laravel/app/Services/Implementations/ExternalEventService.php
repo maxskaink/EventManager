@@ -1,18 +1,19 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\Implementations;
 
 use App\Exceptions\DuplicatedResourceException;
 use App\Exceptions\InvalidRoleException;
 use App\Models\ExternalEvent;
 use App\Models\User;
+use App\Services\Contracts\ExternalEventServiceInterface;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use InvalidArgumentException;
 
-class ExternalEventService
+class ExternalEventService implements ExternalEventServiceInterface
 {
     /**
      * Create and store a new external event for a user.

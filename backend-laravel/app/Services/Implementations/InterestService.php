@@ -1,16 +1,17 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\Implementations;
 
 use App\Exceptions\DuplicatedResourceException;
 use App\Exceptions\InvalidRoleException;
 use App\Models\Interest;
 use App\Models\User;
+use App\Services\Contracts\InterestServiceInterface;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Auth;
 
-class InterestService
+class InterestService implements InterestServiceInterface
 {
     /**
      * Create and store a new interest.

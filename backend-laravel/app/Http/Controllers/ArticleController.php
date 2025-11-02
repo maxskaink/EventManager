@@ -5,14 +5,15 @@ namespace App\Http\Controllers;
 use App\Http\Requests\Article\AddArticleRequest;
 use App\Http\Requests\Article\ListArticlesByDateRangeRequest;
 use App\Http\Requests\Article\UpdateArticleRequest;
-use App\Services\ArticleService;
+
+use App\Services\Contracts\ArticleServiceInterface;
 use Illuminate\Http\JsonResponse;
 
 class ArticleController extends Controller
 {
-    protected ArticleService $articleService;
+    protected ArticleServiceInterface $articleService;
 
-    public function __construct(ArticleService $articleService)
+    public function __construct(ArticleServiceInterface $articleService)
     {
         $this->articleService = $articleService;
     }

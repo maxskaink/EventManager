@@ -5,14 +5,14 @@ namespace App\Http\Controllers;
 use App\Http\Requests\Certificate\AddCertificateRequest;
 use App\Http\Requests\Certificate\ListCertificatesByDateRangeRequest;
 use App\Http\Requests\Certificate\UpdateCertificateRequest;
-use App\Services\CertificateService;
+use App\Services\Contracts\CertificateServiceInterface;
 use Illuminate\Http\JsonResponse;
 
 class CertificateController extends Controller
 {
-    protected CertificateService $certificateService;
+    protected CertificateServiceInterface $certificateService;
 
-    public function __construct(CertificateService $certificateService)
+    public function __construct(CertificateServiceInterface $certificateService)
     {
         $this->certificateService = $certificateService;
     }

@@ -1,14 +1,14 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\Implementations;
 
 use App\Exceptions\DuplicatedResourceException;
 use App\Exceptions\InvalidRoleException;
 use App\Models\Event;
 use App\Models\Participation;
 use App\Models\User;
+use App\Services\Contracts\EventServiceInterface;
 use Illuminate\Auth\Access\AuthorizationException;
-use Illuminate\Auth\AuthenticationException;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\DB;
 use Nette\Schema\ValidationException;
 use Symfony\Component\Routing\Exception\ResourceNotFoundException;
 
-class EventService
+class EventService implements EventServiceInterface
 {
     public function addEvent(array $data): Event
     {

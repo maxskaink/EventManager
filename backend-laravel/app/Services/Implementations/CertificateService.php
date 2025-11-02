@@ -1,18 +1,19 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\Implementations;
 
 use App\Exceptions\DuplicatedResourceException;
 use App\Exceptions\InvalidRoleException;
 use App\Models\Certificate;
 use App\Models\User;
+use App\Services\Contracts\CertificateServiceInterface;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use InvalidArgumentException;
 
-class CertificateService
+class CertificateService implements CertificateServiceInterface
 {
     /**
      * Create and store a new certificate for a user.

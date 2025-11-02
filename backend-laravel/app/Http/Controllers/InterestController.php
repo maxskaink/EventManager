@@ -3,14 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\Interest\AddInterestRequest;
-use App\Services\InterestService;
+use App\Services\Contracts\InterestServiceInterface;
 use Illuminate\Http\JsonResponse;
 
 class InterestController extends Controller
 {
-    protected InterestService $interestService;
+    protected InterestServiceInterface $interestService;
 
-    public function __construct(InterestService $interestService)
+    public function __construct(InterestServiceInterface $interestService)
     {
         $this->interestService = $interestService;
     }

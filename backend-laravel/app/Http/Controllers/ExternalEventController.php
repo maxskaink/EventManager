@@ -5,14 +5,14 @@ namespace App\Http\Controllers;
 use App\Http\Requests\ExternalEvent\AddExternalEventRequest;
 use App\Http\Requests\ExternalEvent\UpdateExternalEventRequest;
 use App\Http\Requests\ExternalEvent\ListExternalEventsByDateRangeRequest;
-use App\Services\ExternalEventService;
+use App\Services\Contracts\ExternalEventServiceInterface;
 use Illuminate\Http\JsonResponse;
 
 class ExternalEventController extends Controller
 {
-    protected ExternalEventService $externalEventService;
+    protected ExternalEventServiceInterface $externalEventService;
 
-    public function __construct(ExternalEventService $externalEventService)
+    public function __construct(ExternalEventServiceInterface $externalEventService)
     {
         $this->externalEventService = $externalEventService;
     }
