@@ -5,8 +5,11 @@ namespace App\Http\Controllers;
 use App\Http\Requests\Certificate\AddCertificateRequest;
 use App\Http\Requests\Certificate\ListCertificatesByDateRangeRequest;
 use App\Http\Requests\Certificate\UpdateCertificateRequest;
+use App\Models\Certificate;
+use App\Models\User;
 use App\Services\Contracts\CertificateServiceInterface;
 use Illuminate\Http\JsonResponse;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class CertificateController extends Controller
 {
@@ -16,14 +19,22 @@ class CertificateController extends Controller
     {
         $this->certificateService = $certificateService;
     }
+
+    /**
+     * Add a new certificate for a user.
+     */
     public function addCertificate(AddCertificateRequest $request): JsonResponse
     {
         $data = $request->validated();
 
+        // Allow user to add their own certificate or mentor to add for others
+        $this->authorize('create', [Certificate::class, $data['user_id']]);
+
         $newCertificate = $this->certificateService->addCertificate($data);
 
         return response()->json([
-            'message' => "Certificate created successfully to {$newCertificate}"
+            'message' => 'Certificate created successfully.',
+            'certificate' => $newCertificate,
         ]);
     }
 
@@ -34,6 +45,9 @@ class CertificateController extends Controller
     {
         $data = $request->validated();
 
+        $certificate = Certificate::query()->findOrFail($certificateId);
+        $this->authorize('update', $certificate);
+
         $updatedCertificate = $this->certificateService->updateCertificate($certificateId, $data);
 
         return response()->json([
@@ -42,16 +56,18 @@ class CertificateController extends Controller
         ]);
     }
 
-
     /**
      * Delete an existing certificate.
      */
     public function deleteCertificate(int $certificateId): JsonResponse
     {
+        $certificate = Certificate::query()->findOrFail($certificateId);
+        $this->authorize('delete', $certificate);
+
         $this->certificateService->deleteCertificate($certificateId);
 
         return response()->json([
-            'message' => 'certificate deleted successfully.',
+            'message' => 'Certificate deleted successfully.',
         ]);
     }
 
@@ -60,7 +76,10 @@ class CertificateController extends Controller
      */
     public function listMyCertificates(): JsonResponse
     {
-        $certificates = $this->certificateService->getCertificatesOfActiveUser();
+        $userId = request()->user()->id;
+        $this->authorize('viewByUser', [Certificate::class, $userId]);
+
+        $certificates = $this->certificateService->getCertificatesByUser($userId);
 
         return response()->json([
             'certificates' => $certificates,
@@ -72,6 +91,14 @@ class CertificateController extends Controller
      */
     public function listCertificatesByUser(int $userId): JsonResponse
     {
+        $targetUser = User::query()->find($userId);
+
+        if (!$targetUser) {
+            throw new NotFoundHttpException('User not found.');
+        }
+
+        $this->authorize('viewByUser', [Certificate::class, $userId]);
+
         $certificates = $this->certificateService->getCertificatesByUser($userId);
 
         return response()->json([
@@ -84,6 +111,8 @@ class CertificateController extends Controller
      */
     public function listAllCertificates(): JsonResponse
     {
+        $this->authorize('viewAny', Certificate::class);
+
         $certificates = $this->certificateService->getAllCertificates();
 
         return response()->json([
@@ -100,6 +129,9 @@ class CertificateController extends Controller
             'start_date' => ['required', 'date'],
             'end_date' => ['required', 'date'],
         ]);
+
+        // Only mentors can filter by date range
+        $this->authorize('filterByDateRange', Certificate::class);
 
         $certificates = $this->certificateService->getCertificatesByDateRange(
             $request->input('start_date'),

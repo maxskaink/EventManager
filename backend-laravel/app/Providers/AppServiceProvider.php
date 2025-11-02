@@ -21,6 +21,21 @@ use App\Services\Implementations\ProfileService;
 use App\Services\Implementations\PublicationService;
 use App\Services\Implementations\UserService;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\Gate;
+use App\Models\Article;
+use App\Models\Certificate;
+use App\Models\Event;
+use App\Models\ExternalEvent;
+use App\Models\Publication;
+use App\Models\Profile;
+use App\Models\User;
+use App\Policies\ArticlePolicy;
+use App\Policies\CertificatePolicy;
+use App\Policies\EventPolicy;
+use App\Policies\ExternalEventPolicy;
+use App\Policies\PublicationPolicy;
+use App\Policies\ProfilePolicy;
+use App\Policies\UserPolicy;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -46,6 +61,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Register model policies
+    Gate::policy(Article::class, ArticlePolicy::class);
+    Gate::policy(Certificate::class, CertificatePolicy::class);
+    Gate::policy(Event::class, EventPolicy::class);
+    Gate::policy(ExternalEvent::class, ExternalEventPolicy::class);
+    Gate::policy(Publication::class, PublicationPolicy::class);
+    Gate::policy(Profile::class, ProfilePolicy::class);
+    Gate::policy(User::class, UserPolicy::class);
     }
 }

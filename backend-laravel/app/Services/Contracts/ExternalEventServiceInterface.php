@@ -13,10 +13,6 @@ interface ExternalEventServiceInterface
 
     public function deleteExternalEvent(int $eventId): void;
 
-    /**
-     * @return Collection<int, ExternalEvent>
-     */
-    public function getExternalEventsOfActiveUser(): Collection;
 
     /**
      * @param int $userId

@@ -12,15 +12,14 @@ interface ArticleServiceInterface
     public function updateArticle(int $articleId, array $data): Article;
 
     /**
-     * @return Collection<int, Article>
-     */
-    public function getArticlesOfActiveUser(): Collection;
-
-    /**
-     * @param int $userId
-     * @return Collection<int, Article>
-     */
+    * Get articles for a specific user id.
+    *
+    * @param int $userId
+    * @return Collection<int, Article>
+    */
     public function getArticlesByUser(int $userId): Collection;
+
+    
 
     /**
      * @return Collection<int, Article>

@@ -6,9 +6,12 @@ use App\Http\Requests\Publication\AddPublicationInterestRequest;
 use App\Http\Requests\Publication\AddPublicationRequest;
 use App\Http\Requests\Publication\PublicationAccessRequest;
 use App\Http\Requests\Publication\UpdatePublicationRequest;
+use App\Models\Publication;
+use App\Models\User;
 use App\Services\Contracts\PublicationServiceInterface;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Auth;
 
 class PublicationController extends Controller
 {
@@ -21,39 +24,54 @@ class PublicationController extends Controller
 
     /**
      * Create a new publication.
+     *
+     * @throws AuthorizationException
      */
     public function addPublication(AddPublicationRequest $request): JsonResponse
     {
         $data = $request->validated();
+        $this->authorize('create', Publication::class);
 
         $newPublication = $this->publicationService->addPublication($data);
 
         return response()->json([
-            'message' => "Publication created successfully: {$newPublication}"
+            'message' => 'Publication created successfully.',
+            'publication' => $newPublication,
         ]);
     }
 
     /**
-     * Create a new publication about a new event.
+     * Create a new publication related to an event.
+     *
+     * @throws AuthorizationException
      */
     public function addEventPublication(AddPublicationRequest $request, int $eventId): JsonResponse
     {
         $data = $request->validated();
+        $this->authorize('create', Publication::class);
 
         $newPublication = $this->publicationService->addEventPublication($data, $eventId);
 
         return response()->json([
-            'message' => "Publication created successfully: {$newPublication}"
+            'message' => 'Event publication created successfully.',
+            'publication' => $newPublication,
         ]);
     }
 
-
     /**
-     * List all publications.
+     * List all publications (restricted to mentors/coordinators).
+     *
+     * @throws AuthorizationException
      */
     public function listAllPublications(): JsonResponse
     {
-        return response()->json($this->publicationService->listAllPublications());
+        $this->authorize('viewAny', Publication::class);
+
+        $publications = $this->publicationService->listAllPublications();
+
+        return response()->json([
+            'publications' => $publications,
+        ]);
     }
 
     /**
@@ -61,24 +79,39 @@ class PublicationController extends Controller
      */
     public function listPublishedPublications(): JsonResponse
     {
-        return response()->json($this->publicationService->listPublishedPublications());
+        // Public — no policy needed
+        return response()->json([
+            'publications' => $this->publicationService->listPublishedPublications(),
+        ]);
     }
 
     /**
+     * List all draft publications (restricted to mentors/coordinators).
+     *
      * @throws AuthorizationException
-     * List all draft publications.
      */
     public function listDraftPublications(): JsonResponse
     {
-        return response()->json($this->publicationService->listDraftPublications());
+        $this->authorize('viewAny', Publication::class);
+
+        $publications = $this->publicationService->listDraftPublications();
+
+        return response()->json([
+            'publications' => $publications,
+        ]);
     }
 
     /**
-     * Update a publication by ID.
+     * Update a publication.
+     *
+     * @throws AuthorizationException
      */
     public function updatePublication(UpdatePublicationRequest $request, int $id): JsonResponse
     {
         $data = $request->validated();
+
+        $publication = Publication::query()->findOrFail($id);
+        $this->authorize('update', $publication);
 
         $updatedPublication = $this->publicationService->updatePublication($id, $data);
 
@@ -88,14 +121,20 @@ class PublicationController extends Controller
         ]);
     }
 
+    /**
+     * Add interests to a publication.
+     *
+     * @throws AuthorizationException
+     */
     public function addPublicationInterests(int $publicationId, AddPublicationInterestRequest $request): JsonResponse
     {
-        $data = $request->validated();
+        $publication = Publication::query()->findOrFail($publicationId);
+        $this->authorize('update', $publication);
 
-        // Allow one or multiple interests
+        $data = $request->validated();
         $interestIds = $data['interests'];
 
-        $addedInterests = $this->publicationService->addPublicationInterests($publicationId,  $interestIds);
+        $addedInterests = $this->publicationService->addPublicationInterests($publicationId, $interestIds);
 
         return response()->json([
             'message' => 'Interests added successfully.',
@@ -105,22 +144,18 @@ class PublicationController extends Controller
 
     /**
      * Grant special access to a private publication.
-     * Access can only be granted if the publication visibility is 'private'.
+     *
      * @throws AuthorizationException
      */
     public function grantPublicationAccess(int $publicationId, PublicationAccessRequest $request): JsonResponse
     {
-        $data = $request->validated();
+        $this->authorize('grantAccess', Publication::class);
 
+        $data = $request->validated();
         $userIds = $data['user_ids'] ?? [];
         $roles = $data['roles'] ?? [];
 
-        // Grant access to multiple users and/or roles
-        $grantedAccess = $this->publicationService->grantPublicationAccess(
-            $publicationId,
-            $userIds,
-            $roles
-        );
+        $grantedAccess = $this->publicationService->grantPublicationAccess($publicationId, $userIds, $roles);
 
         return response()->json([
             'message' => 'Access granted successfully.',
@@ -130,27 +165,22 @@ class PublicationController extends Controller
 
     /**
      * Revoke access to a publication.
-     * Can revoke access either by user IDs or by roles.
+     *
      * @throws AuthorizationException
      */
     public function revokePublicationAccess(int $publicationId, PublicationAccessRequest $request): JsonResponse
     {
-        $data = $request->validated();
+        $this->authorize('grantAccess', Publication::class);
 
+        $data = $request->validated();
         $userIds = $data['user_ids'] ?? [];
         $roles = $data['roles'] ?? [];
 
-        // Revoke access from multiple users and/or roles
-        $revokedAccess = $this->publicationService->revokePublicationAccess(
-            $publicationId,
-            $userIds,
-            $roles
-        );
+        $revokedAccess = $this->publicationService->revokePublicationAccess($publicationId, $userIds, $roles);
 
         return response()->json([
             'message' => 'Access revoked successfully.',
             'revoked' => $revokedAccess,
         ]);
     }
-
 }

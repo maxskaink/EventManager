@@ -5,8 +5,11 @@ namespace App\Http\Controllers;
 use App\Http\Requests\ExternalEvent\AddExternalEventRequest;
 use App\Http\Requests\ExternalEvent\UpdateExternalEventRequest;
 use App\Http\Requests\ExternalEvent\ListExternalEventsByDateRangeRequest;
+use App\Models\ExternalEvent;
 use App\Services\Contracts\ExternalEventServiceInterface;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class ExternalEventController extends Controller
 {
@@ -19,11 +22,14 @@ class ExternalEventController extends Controller
 
     /**
      * Create a new external event.
+     *
+     * @throws AuthorizationException
      */
     public function addExternalEvent(AddExternalEventRequest $request): JsonResponse
     {
-        $data = $request->validated();
+        $this->authorize('create', ExternalEvent::class);
 
+        $data = $request->validated();
         $newEvent = $this->externalEventService->addExternalEvent($data);
 
         return response()->json([
@@ -33,11 +39,19 @@ class ExternalEventController extends Controller
 
     /**
      * Update an existing external event.
+     *
+     * @throws AuthorizationException
      */
     public function updateExternalEvent(UpdateExternalEventRequest $request, int $eventId): JsonResponse
     {
-        $data = $request->validated();
+        $event = ExternalEvent::query()->find($eventId);
+        if (!$event) {
+            throw new NotFoundHttpException('External event not found.');
+        }
 
+        $this->authorize('update', $event);
+
+        $data = $request->validated();
         $updatedEvent = $this->externalEventService->updateExternalEvent($eventId, $data);
 
         return response()->json([
@@ -48,9 +62,18 @@ class ExternalEventController extends Controller
 
     /**
      * Delete an existing external event.
+     *
+     * @throws AuthorizationException
      */
     public function deleteExternalEvent(int $eventId): JsonResponse
     {
+        $event = ExternalEvent::query()->find($eventId);
+        if (!$event) {
+            throw new NotFoundHttpException('External event not found.');
+        }
+
+        $this->authorize('delete', $event);
+
         $this->externalEventService->deleteExternalEvent($eventId);
 
         return response()->json([
@@ -72,9 +95,13 @@ class ExternalEventController extends Controller
 
     /**
      * List all external events of a specific user.
+     *
+     * @throws AuthorizationException
      */
     public function listExternalEventsByUser(int $userId): JsonResponse
     {
+        $this->authorize('viewByUser', [ExternalEvent::class, $userId]);
+
         $events = $this->externalEventService->getExternalEventsByUser($userId);
 
         return response()->json([
@@ -84,9 +111,13 @@ class ExternalEventController extends Controller
 
     /**
      * List all external events in the system (mentor/admin only).
+     *
+     * @throws AuthorizationException
      */
     public function listAllExternalEvents(): JsonResponse
     {
+        $this->authorize('viewAny', ExternalEvent::class);
+
         $events = $this->externalEventService->getAllExternalEvents();
 
         return response()->json([
@@ -96,11 +127,14 @@ class ExternalEventController extends Controller
 
     /**
      * List external events within a specific date range (mentor/admin only).
+     *
+     * @throws AuthorizationException
      */
     public function listExternalEventsByDateRange(ListExternalEventsByDateRangeRequest $request): JsonResponse
     {
-        $data = $request->validated();
+        $this->authorize('filterByDateRange', ExternalEvent::class);
 
+        $data = $request->validated();
         $events = $this->externalEventService->getExternalEventsByDateRange(
             $data['start_date'],
             $data['end_date']

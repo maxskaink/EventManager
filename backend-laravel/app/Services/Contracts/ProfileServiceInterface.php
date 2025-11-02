@@ -26,8 +26,9 @@ interface ProfileServiceInterface
     /**
      * Add interests to the currently authenticated user's profile.
      *
+     * @param int $userId
      * @param array $interestIds
      * @return array
      */
-    public function addProfileInterests(array $interestIds): array;
+    public function addProfileInterests(int $userId, array $interestIds): array;
 }

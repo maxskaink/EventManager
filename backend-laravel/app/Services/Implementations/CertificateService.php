@@ -3,14 +3,12 @@
 namespace App\Services\Implementations;
 
 use App\Exceptions\DuplicatedResourceException;
-use App\Exceptions\InvalidRoleException;
 use App\Models\Certificate;
 use App\Models\User;
 use App\Services\Contracts\CertificateServiceInterface;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Auth;
 use InvalidArgumentException;
 
 class CertificateService implements CertificateServiceInterface
@@ -21,33 +19,20 @@ class CertificateService implements CertificateServiceInterface
      * @param array $data
      * @return Certificate
      *
-     * @throws InvalidRoleException
      * @throws DuplicatedResourceException
      * @throws ModelNotFoundException
      */
     public function addCertificate(array $data): Certificate
     {
-        /** @var User|null $authUser */
-        $authUser = Auth::user();
-
-        // Ensure the authenticated user exists
-        if (!$authUser) {
-            throw new InvalidRoleException('You must be logged in to add a certificate.');
-        }
-
         // Ensure the user exists
         $user = User::query()->find($data['user_id']);
         if (!$user) {
             throw new ModelNotFoundException('The specified user does not exist.');
         }
 
-        // Restrict actions: only the same user or a mentor can add a certificate
-        if ($authUser->id !== $user->id && $authUser->role !== 'mentor') {
-            throw new InvalidRoleException('You are not allowed to create certificates for other users.');
-        }
-
         // Check if a certificate with the same name already exists for this user
-        $existingCertificate = Certificate::query()->where('user_id', $data['user_id'])
+        $existingCertificate = Certificate::query()
+            ->where('user_id', $data['user_id'])
             ->where('name', $data['name'])
             ->where('deleted', false)
             ->first();
@@ -72,55 +57,37 @@ class CertificateService implements CertificateServiceInterface
      * @param array $data
      * @return Certificate
      *
-     * @throws InvalidRoleException
      * @throws ModelNotFoundException
      * @throws DuplicatedResourceException
      */
     public function updateCertificate(int $certificateId, array $data): Certificate
     {
-        /** @var User|null $authUser */
-        $authUser = Auth::user();
-
-        // Ensure the authenticated user exists
-        if (!$authUser) {
-            throw new InvalidRoleException('You must be logged in to update an certificate.');
-        }
-
         // Find the certificate
         $certificate = Certificate::query()->find($certificateId);
         if (!$certificate) {
             throw new ModelNotFoundException('The specified certificate does not exist.');
         }
 
-        // Only the certificate owner or a mentor can update it
-        if ($authUser->id !== $certificate->user_id && $authUser->role !== 'mentor') {
-            throw new InvalidRoleException('You are not allowed to update this certificate.');
-        }
-
-        // If user_id is being changed, verify permissions and existence
+        // If user_id is being changed, verify existence
         if (isset($data['user_id'])) {
             $newUser = User::query()->find($data['user_id']);
             if (!$newUser) {
                 throw new ModelNotFoundException('The specified user does not exist.');
             }
-
-            // Only mentors can reassign certificates to other users
-            if ($authUser->role !== 'mentor' && $data['user_id'] !== $authUser->id) {
-                throw new InvalidRoleException('You cannot assign this certificate to another user.');
-            }
         }
 
-
+        // Check for duplicate name if it was modified
         if (isset($data['name'])) {
             $duplicate = Certificate::query()
                 ->where('user_id', $data['user_id'] ?? $certificate->user_id)
                 ->where('name', $data['name'])
                 ->where('id', '!=', $certificateId)
+                ->where('deleted', false)
                 ->first();
 
             if ($duplicate) {
                 throw new DuplicatedResourceException(
-                    "An certificate named '{$data['name']}' already exists for this user."
+                    "A certificate named '{$data['name']}' already exists for this user."
                 );
             }
         }
@@ -132,80 +99,30 @@ class CertificateService implements CertificateServiceInterface
         return $certificate;
     }
 
-
-    /**
-     * Get all certificates of the currently authenticated user.
-     *
-     * @return Collection<int, Certificate>
-     *
-     * @throws InvalidRoleException
-     */
-    public function getCertificatesOfActiveUser(): Collection
-    {
-        /** @var User|null $authUser */
-        $authUser = Auth::user();
-
-        if (!$authUser) {
-            throw new InvalidRoleException('You must be logged in to view your certificates.');
-        }
-
-        return Certificate::query()->where('user_id', $authUser->id)
-            ->where('deleted', false)
-            ->orderByDesc('issue_date')
-            ->get();
-    }
-
     /**
      * Get all certificates of a specific user.
      *
      * @param int $userId
      * @return Collection<int, Certificate>
-     *
-     * @throws InvalidRoleException
-     * @throws ModelNotFoundException
      */
     public function getCertificatesByUser(int $userId): Collection
     {
-        /** @var User|null $authUser */
-        $authUser = Auth::user();
-
-        if (!$authUser) {
-            throw new InvalidRoleException('You must be logged in to view user certificates.');
-        }
-
-        $user = User::query()->find($userId);
-        if (!$user) {
-            throw new ModelNotFoundException('The specified user does not exist.');
-        }
-
-        // Allow viewing only your own certificates or if you're a mentor
-        if ($authUser->id !== $userId && $authUser->role !== 'mentor') {
-            throw new InvalidRoleException('You are not allowed to view certificates of other users.');
-        }
-
-        return Certificate::query()->where('user_id', $userId)
+        return Certificate::query()
+            ->where('user_id', $userId)
             ->where('deleted', false)
             ->orderByDesc('issue_date')
             ->get();
     }
 
     /**
-     * Get all certificates in the system (only mentors can access this).
+     * Get all certificates in the system.
      *
      * @return Collection<int, Certificate>
-     *
-     * @throws InvalidRoleException
      */
     public function getAllCertificates(): Collection
     {
-        /** @var User|null $authUser */
-        $authUser = Auth::user();
-
-        if (!$authUser || $authUser->role !== 'mentor') {
-            throw new InvalidRoleException('Only mentors can view all certificates.');
-        }
-
-        return Certificate::query()->where('deleted', false)
+        return Certificate::query()
+            ->where('deleted', false)
             ->orderByDesc('issue_date')
             ->get();
     }
@@ -217,18 +134,10 @@ class CertificateService implements CertificateServiceInterface
      * @param string $endDate    (format: Y-m-d)
      * @return Collection<int, Certificate>
      *
-     * @throws InvalidRoleException
      * @throws InvalidArgumentException
      */
     public function getCertificatesByDateRange(string $startDate, string $endDate): Collection
     {
-        /** @var User|null $authUser */
-        $authUser = Auth::user();
-
-        if (!$authUser || $authUser->role !== 'mentor') {
-            throw new InvalidRoleException('Only mentors can filter certificates by date range.');
-        }
-
         $start = Carbon::parse($startDate);
         $end = Carbon::parse($endDate);
 
@@ -236,7 +145,8 @@ class CertificateService implements CertificateServiceInterface
             throw new InvalidArgumentException('The end date cannot be earlier than the start date.');
         }
 
-        return Certificate::query()->whereBetween('issue_date', [$start, $end])
+        return Certificate::query()
+            ->whereBetween('issue_date', [$start, $end])
             ->where('deleted', false)
             ->orderBy('issue_date')
             ->get();
@@ -248,32 +158,15 @@ class CertificateService implements CertificateServiceInterface
      * @param int $certificateId
      * @return void
      *
-     * @throws InvalidRoleException
      * @throws ModelNotFoundException
-     */public function deleteCertificate(int $certificateId): void
+     */
+    public function deleteCertificate(int $certificateId): void
     {
-        /** @var User|null $authUser */
-        $authUser = Auth::user();
-
-        // Ensure the authenticated user exists
-        if (!$authUser) {
-            throw new InvalidRoleException('You must be logged in to delete a certificate.');
-        }
-
-
-        $certificate = Certificate::query()->where('id', $certificateId)->first();
-
+        $certificate = Certificate::query()->find($certificateId);
         if (!$certificate) {
             throw new ModelNotFoundException('The specified certificate does not exist.');
         }
 
-
-        if ($authUser->id !== $certificate->user_id && $authUser->role !== 'mentor') {
-            throw new InvalidRoleException('You are not allowed to delete this certificate.');
-        }
-
-
         $certificate->delete();
     }
-
 }

@@ -7,11 +7,13 @@ use App\Exceptions\InvalidRoleException;
 use App\Models\ExternalEvent;
 use App\Models\User;
 use App\Services\Contracts\ExternalEventServiceInterface;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use InvalidArgumentException;
+use Symfony\Component\Routing\Exception\ResourceNotFoundException;
 
 class ExternalEventService implements ExternalEventServiceInterface
 {
@@ -23,7 +25,7 @@ class ExternalEventService implements ExternalEventServiceInterface
      *
      * @throws InvalidRoleException
      * @throws DuplicatedResourceException
-     * @throws ModelNotFoundException
+     * @throws ResourceNotFoundException
      */
     public function addExternalEvent(array $data): ExternalEvent
     {
@@ -36,26 +38,29 @@ class ExternalEventService implements ExternalEventServiceInterface
 
         $user = User::query()->find($data['user_id']);
         if (!$user) {
-            throw new ModelNotFoundException('The specified user does not exist.');
+            throw new ResourceNotFoundException('The specified user does not exist.');
         }
 
-        // Only same user or mentor can create an external event
+        // Only the same user or a mentor can create an external event
         if ($authUser->id !== $user->id && $authUser->role !== 'mentor') {
             throw new InvalidRoleException('You are not allowed to create external events for other users.');
         }
 
-        // Check for duplicate event name for this user within same date range
-        $existingEvent = ExternalEvent::query()
+        // Check for duplicate name within same date range
+        $existing = ExternalEvent::query()
             ->where('user_id', $data['user_id'])
             ->where('name', $data['name'])
             ->whereBetween('start_date', [$data['start_date'], $data['end_date']])
             ->first();
 
-        if ($existingEvent) {
+        if ($existing) {
             throw new DuplicatedResourceException(
                 "An external event named '{$data['name']}' already exists for this user within the same date range."
             );
         }
+
+        $data['start_date'] = Carbon::parse($data['start_date'])->toDateTimeString();
+        $data['end_date'] = Carbon::parse($data['end_date'])->toDateTimeString();
 
         $event = new ExternalEvent();
         $event->fill($data);
@@ -72,8 +77,8 @@ class ExternalEventService implements ExternalEventServiceInterface
      * @return ExternalEvent
      *
      * @throws InvalidRoleException
-     * @throws ModelNotFoundException
      * @throws DuplicatedResourceException
+     * @throws ResourceNotFoundException
      */
     public function updateExternalEvent(int $eventId, array $data): ExternalEvent
     {
@@ -86,18 +91,19 @@ class ExternalEventService implements ExternalEventServiceInterface
 
         $event = ExternalEvent::query()->find($eventId);
         if (!$event) {
-            throw new ModelNotFoundException('The specified external event does not exist.');
+            throw new ResourceNotFoundException('The specified external event does not exist.');
         }
 
-        // Only the event owner or a mentor can update it
+        // Only the owner or mentor can update
         if ($authUser->id !== $event->user_id && $authUser->role !== 'mentor') {
             throw new InvalidRoleException('You are not allowed to update this external event.');
         }
 
+        // Validate reassignment of user_id
         if (isset($data['user_id'])) {
             $newUser = User::query()->find($data['user_id']);
             if (!$newUser) {
-                throw new ModelNotFoundException('The specified user does not exist.');
+                throw new ResourceNotFoundException('The specified user does not exist.');
             }
 
             if ($authUser->role !== 'mentor' && $data['user_id'] !== $authUser->id) {
@@ -105,12 +111,12 @@ class ExternalEventService implements ExternalEventServiceInterface
             }
         }
 
-        // Avoid duplicate names for the same user
+        // Check for duplicate name for same user
         if (isset($data['name'])) {
             $duplicate = ExternalEvent::query()
                 ->where('user_id', $data['user_id'] ?? $event->user_id)
                 ->where('name', $data['name'])
-                ->where('id', '!=', $eventId)
+                ->where('id', '<>', $eventId)
                 ->first();
 
             if ($duplicate) {
@@ -118,6 +124,14 @@ class ExternalEventService implements ExternalEventServiceInterface
                     "An external event named '{$data['name']}' already exists for this user."
                 );
             }
+        }
+
+        if (isset($data['start_date'])) {
+            $data['start_date'] = Carbon::parse($data['start_date'])->toDateTimeString();
+        }
+
+        if (isset($data['end_date'])) {
+            $data['end_date'] = Carbon::parse($data['end_date'])->toDateTimeString();
         }
 
         $event->fill($data);
@@ -130,10 +144,8 @@ class ExternalEventService implements ExternalEventServiceInterface
      * Delete an existing external event.
      *
      * @param int $eventId
-     * @return void
-     *
      * @throws InvalidRoleException
-     * @throws ModelNotFoundException
+     * @throws ResourceNotFoundException
      */
     public function deleteExternalEvent(int $eventId): void
     {
@@ -146,7 +158,7 @@ class ExternalEventService implements ExternalEventServiceInterface
 
         $event = ExternalEvent::query()->find($eventId);
         if (!$event) {
-            throw new ModelNotFoundException('The specified external event does not exist.');
+            throw new ResourceNotFoundException('The specified external event does not exist.');
         }
 
         if ($authUser->id !== $event->user_id && $authUser->role !== 'mentor') {
@@ -157,10 +169,9 @@ class ExternalEventService implements ExternalEventServiceInterface
     }
 
     /**
-     * Get all external events of the currently authenticated user.
+     * Get external events of the authenticated user.
      *
      * @return Collection<int, ExternalEvent>
-     *
      * @throws InvalidRoleException
      */
     public function getExternalEventsOfActiveUser(): Collection
@@ -179,13 +190,12 @@ class ExternalEventService implements ExternalEventServiceInterface
     }
 
     /**
-     * Get all external events of a specific user.
+     * Get external events by user ID.
      *
      * @param int $userId
      * @return Collection<int, ExternalEvent>
-     *
      * @throws InvalidRoleException
-     * @throws ModelNotFoundException
+     * @throws ResourceNotFoundException
      */
     public function getExternalEventsByUser(int $userId): Collection
     {
@@ -198,11 +208,11 @@ class ExternalEventService implements ExternalEventServiceInterface
 
         $user = User::query()->find($userId);
         if (!$user) {
-            throw new ModelNotFoundException('The specified user does not exist.');
+            throw new ResourceNotFoundException('The specified user does not exist.');
         }
 
         if ($authUser->id !== $userId && $authUser->role !== 'mentor') {
-            throw new InvalidRoleException('You are not allowed to view external events of other users.');
+            throw new AuthorizationException('You are not allowed to view external events of other users.');
         }
 
         return ExternalEvent::query()
@@ -212,11 +222,10 @@ class ExternalEventService implements ExternalEventServiceInterface
     }
 
     /**
-     * Get all external events in the system (only mentors can access this).
+     * Get all external events (only mentors).
      *
      * @return Collection<int, ExternalEvent>
-     *
-     * @throws InvalidRoleException
+     * @throws AuthorizationException
      */
     public function getAllExternalEvents(): Collection
     {
@@ -224,7 +233,7 @@ class ExternalEventService implements ExternalEventServiceInterface
         $authUser = Auth::user();
 
         if (!$authUser || $authUser->role !== 'mentor') {
-            throw new InvalidRoleException('Only mentors can view all external events.');
+            throw new AuthorizationException('Only mentors can view all external events.');
         }
 
         return ExternalEvent::query()
@@ -239,8 +248,8 @@ class ExternalEventService implements ExternalEventServiceInterface
      * @param string $endDate
      * @return Collection<int, ExternalEvent>
      *
-     * @throws InvalidRoleException
      * @throws InvalidArgumentException
+     * @throws AuthorizationException
      */
     public function getExternalEventsByDateRange(string $startDate, string $endDate): Collection
     {
@@ -248,7 +257,7 @@ class ExternalEventService implements ExternalEventServiceInterface
         $authUser = Auth::user();
 
         if (!$authUser || $authUser->role !== 'mentor') {
-            throw new InvalidRoleException('Only mentors can filter external events by date range.');
+            throw new AuthorizationException('Only mentors can filter external events by date range.');
         }
 
         $start = Carbon::parse($startDate);

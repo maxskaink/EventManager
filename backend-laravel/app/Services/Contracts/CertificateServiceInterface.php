@@ -27,7 +27,7 @@ interface CertificateServiceInterface
     /**
      * @return Collection<int, Certificate>
      */
-    public function getCertificatesOfActiveUser(): Collection;
+    
 
     /**
      * @param int $userId

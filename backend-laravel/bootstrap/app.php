@@ -31,7 +31,7 @@ return Application::configure(basePath: dirname(__DIR__))
             ], 403);
         });
 
-        $exceptions->render(function (\InvalidArgumentException $e, Request $request) {
+        $exceptions->render(function (InvalidArgumentException $e, Request $request) {
             return response()->json([
                 'error' => class_basename($e),
                 'message' => $e->getMessage(),
@@ -77,7 +77,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->render(function (NotFoundHttpException $e, Request $request) {
             return response()->json([
                 'error' => class_basename($e),
-                'message' => 'Resource not found.',
+                'message' => 'Petition resource not found. ' . $e->getMessage(),
             ], 404);
         });
 

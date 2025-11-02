@@ -3,43 +3,41 @@
 namespace App\Services\Implementations;
 
 use App\Exceptions\DuplicatedResourceException;
-use App\Exceptions\InvalidRoleException;
 use App\Models\Event;
 use App\Models\Participation;
 use App\Models\User;
 use App\Services\Contracts\EventServiceInterface;
-use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Nette\Schema\ValidationException;
 use Symfony\Component\Routing\Exception\ResourceNotFoundException;
+use InvalidArgumentException;
 
 class EventService implements EventServiceInterface
 {
+    /**
+     * Create and store a new event.
+     *
+     * @param array $data
+     * @return Event
+     *
+     * @throws DuplicatedResourceException
+     */
     public function addEvent(array $data): Event
     {
-        /** @var User|null $authUser */
-        $authUser = Auth::user();
-
-        if (!$authUser || ($authUser->role !== 'mentor' && $authUser->role !== 'coordinator')) {
-            throw new InvalidRoleException('Only mentors or coordinators can create events.');
-        }
-
         $existingEvent = Event::query()->where('name', $data['name'])->first();
 
         if ($existingEvent) {
             throw new DuplicatedResourceException("A resource with the name: {$data['name']} already exists");
         }
+
         // Normalize dates
         $data['start_date'] = Carbon::parse($data['start_date'])->toDateTimeString();
         $data['end_date'] = Carbon::parse($data['end_date'])->toDateTimeString();
 
-        // Create event (the events table does not have user_id in current migrations,
-        // so we do not try to save it as user_id in the entity)
         $event = new Event();
         $event->fill($data);
         $event->save();
@@ -49,35 +47,26 @@ class EventService implements EventServiceInterface
 
     /**
      * List all events.
-     * @throws AuthorizationException
+     *
+     * @return Collection<int, Event>
      */
     public function listAllEvents(): Collection
     {
-        /** @var User|null $authUser */
-        $authUser = Auth::user();
-
-        if ($authUser && !in_array($authUser->role, ['mentor', 'coordinator'])) {
-            throw new AuthorizationException('You are not allowed to view all events.');
-        }
-
         return Event::query()->orderBy('start_date', 'asc')->get();
     }
 
     /**
      * List upcoming events (events that have not yet ended),
      * ordered from the soonest to the latest.
+     *
+     * @return Collection<int, Event>
      */
     public function listUpcomingEvents(): Collection
     {
-        /** @var User|null $authUser */
-        $authUser = Auth::user();
-
-        if (!$authUser) {
-            throw new InvalidRoleException('Only authenticated users can list published publications.');
-        }
-
         $now = Carbon::now();
-        return Event::query()->where('end_date', '>=', $now)
+
+        return Event::query()
+            ->where('end_date', '>=', $now)
             ->orderBy('start_date', 'asc')
             ->get();
     }
@@ -85,20 +74,15 @@ class EventService implements EventServiceInterface
     /**
      * List past events (events that already ended),
      * ordered from most recent to oldest.
-     * @throws AuthorizationException
+     *
+     * @return Collection<int, Event>
      */
     public function listPastEvents(): Collection
     {
-        /** @var User|null $authUser */
-        $authUser = Auth::user();
-
-        if ($authUser && !in_array($authUser->role, ['mentor', 'coordinator'])) {
-            throw new AuthorizationException('You are not allowed to view all events.');
-        }
-
-
         $now = Carbon::now();
-        return Event::query()->where('end_date', '<', $now)
+
+        return Event::query()
+            ->where('end_date', '<', $now)
             ->orderBy('end_date', 'desc')
             ->get();
     }
@@ -115,13 +99,6 @@ class EventService implements EventServiceInterface
      */
     public function updateEvent(int $id, array $data): Event
     {
-        /** @var User|null $authUser */
-        $authUser = Auth::user();
-
-        if (!$authUser || ($authUser->role !== 'mentor' && $authUser->role !== 'coordinator')) {
-            throw new InvalidRoleException('Only mentors or coordinators can update events.');
-        }
-
         $event = Event::query()->find($id);
 
         if (!$event) {
@@ -154,33 +131,29 @@ class EventService implements EventServiceInterface
         return $event;
     }
 
+    /**
+     * Enroll a user in an event.
+     *
+     * @param int $eventId
+     * @param int $userId
+     * @return Participation|Model
+     *
+     * @throws ModelNotFoundException
+     * @throws ResourceNotFoundException
+     * @throws DuplicatedResourceException
+     * @throws ValidationException
+     */
     public function enrollUserInEvent(int $eventId, int $userId): Participation|Model
     {
-        /** @var User|null $authUser */
-        $authUser = Auth::user();
-
-        // Ensure the authenticated user exists
-        if (!$authUser) {
-            throw new InvalidRoleException('You must be logged in to add a participation.');
-        }
-
-        // Ensure the user exists
         $user = User::query()->find($userId);
         if (!$user) {
             throw new ModelNotFoundException('The specified user does not exist.');
         }
 
-        // Restrict actions: only the same user or a mentor can add a certificate
-        if ($authUser->id !== $user->id && !in_array($authUser->role, ['mentor', 'coordinator'])) {
-            throw new InvalidRoleException('You are not allowed to enroll other users.');
-        }
-
         $event = Event::query()->find($eventId);
-
         if (!$event) {
             throw new ResourceNotFoundException('Event not found.');
         }
-
 
         if (now()->greaterThanOrEqualTo($event->start_date)) {
             throw new ValidationException('Event has already started. Enrollment is closed.');
@@ -218,29 +191,25 @@ class EventService implements EventServiceInterface
         ]);
     }
 
+    /**
+     * Cancel a user's enrollment in an event.
+     *
+     * @param int $eventId
+     * @param int $userId
+     * @return Participation|Model
+     *
+     * @throws ModelNotFoundException
+     * @throws ResourceNotFoundException
+     * @throws ValidationException
+     */
     public function cancelUserEnrollment(int $eventId, int $userId): Participation|Model
     {
-        /** @var User|null $authUser */
-        $authUser = Auth::user();
-
-        // Ensure the authenticated user exists
-        if (!$authUser) {
-            throw new InvalidRoleException('You must be logged in to cancel a participation.');
-        }
-
-        // Ensure the user exists
         $user = User::query()->find($userId);
         if (!$user) {
             throw new ModelNotFoundException('The specified user does not exist.');
         }
 
-        // Restrict actions: only the same user or a mentor can add a certificate
-        if ($authUser->id !== $user->id && !in_array($authUser->role, ['mentor', 'coordinator'])) {
-            throw new InvalidRoleException('You are not allowed to cancel other users enrollment.');
-        }
-
         $event = Event::query()->find($eventId);
-
         if (!$event) {
             throw new ResourceNotFoundException('Event not found.');
         }
@@ -267,18 +236,19 @@ class EventService implements EventServiceInterface
         return $participation;
     }
 
-
+    /**
+     * Mark users as attended for an event.
+     *
+     * @param int $eventId
+     * @param array $userIds
+     * @return array
+     *
+     * @throws ResourceNotFoundException
+     * @throws ValidationException
+     */
     public function markUsersAsAttended(int $eventId, array $userIds): array
     {
-        /** @var User $authUser */
-        $authUser = auth()->user();
-
-        if (!$authUser || !in_array($authUser->role, ['mentor', 'coordinator'])) {
-            throw new InvalidRoleException('Only mentors or coordinators can mark attendance for others.');
-        }
-
         $event = Event::query()->find($eventId);
-
         if (!$event) {
             throw new ResourceNotFoundException('Event not found.');
         }
@@ -288,7 +258,6 @@ class EventService implements EventServiceInterface
         }
 
         $results = [];
-
 
         DB::transaction(function () use ($eventId, $userIds, &$results) {
             foreach ($userIds as $userId) {
@@ -320,17 +289,19 @@ class EventService implements EventServiceInterface
         return $results;
     }
 
+    /**
+     * Mark users as absent for an event.
+     *
+     * @param int $eventId
+     * @param array $userIds
+     * @return array
+     *
+     * @throws ResourceNotFoundException
+     * @throws ValidationException
+     */
     public function markUsersAsAbsent(int $eventId, array $userIds): array
     {
-        /** @var User $authUser */
-        $authUser = auth()->user();
-
-        if (!$authUser || !in_array($authUser->role, ['mentor', 'coordinator'])) {
-            throw new InvalidRoleException('Only mentors or coordinators can mark absences for others.');
-        }
-
         $event = Event::query()->find($eventId);
-
         if (!$event) {
             throw new ResourceNotFoundException('Event not found.');
         }
@@ -370,5 +341,4 @@ class EventService implements EventServiceInterface
 
         return $results;
     }
-
 }

@@ -1,54 +1,53 @@
 <?php
+
 namespace App\Services\Implementations;
 
-
-use App\Exceptions\InvalidRoleException;
 use App\Models\Profile;
 use App\Models\ProfileInterest;
-use App\Models\User;
 use App\Services\Contracts\ProfileServiceInterface;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class ProfileService implements ProfileServiceInterface
 {
-
+    /**
+     * Update or create a user profile.
+     *
+     * @param int $userId
+     * @param array $data
+     * @return Profile
+     */
     public function updateProfile(int $userId, array $data): Profile
     {
-        /** @var User|null $authUser */
-        $authUser = Auth::user();
-
-        if ($authUser && $authUser->id !== $userId) {
-            throw new InvalidRoleException('You cannot modify other users.');
-        }
-
         $profile = Profile::query()->firstOrNew(['user_id' => $userId]);
+
         $profile->fill($data);
         $profile->save();
 
         return $profile;
     }
 
+    /**
+     * Get a user profile or create a new one if not exists.
+     *
+     * @param int $userId
+     * @return Profile
+     */
     public function getProfile(int $userId): Profile
     {
         return Profile::query()->firstOrNew(['user_id' => $userId]);
     }
 
-    public function addProfileInterests(array $interestIds): array
+    /**
+     * Add interests to a user's profile.
+     *
+     * @param int $userId
+     * @param array $interestIds
+     * @return array
+     */
+    public function addProfileInterests(int $userId, array $interestIds): array
     {
-        /** @var User|null $authUser */
-        $authUser = Auth::user();
-
-        if (!$authUser) {
-            throw new InvalidRoleException('You cannot modify other users.');
-        }
-
-        $userId = Auth::id();
-
-        // Use a transaction to ensure atomicity
         DB::transaction(function () use ($userId, $interestIds) {
             foreach ($interestIds as $interestId) {
-                // Avoid duplicates
                 $exists = ProfileInterest::query()
                     ->where('user_id', $userId)
                     ->where('interest_id', $interestId)
@@ -63,7 +62,6 @@ class ProfileService implements ProfileServiceInterface
             }
         });
 
-        // Return updated list of interests
         return ProfileInterest::query()
             ->where('user_id', $userId)
             ->with('user')
