@@ -1,10 +1,12 @@
 <?php
 
 use App\Exceptions\DuplicatedResourceException;
+use App\Exceptions\InvalidActionException;
 use App\Exceptions\InvalidRoleException;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Validation\ValidationException;
+use PharIo\Manifest\InvalidEmailException;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -38,6 +40,14 @@ return Application::configure(basePath: dirname(__DIR__))
             ], 400);
         });
 
+        $exceptions->render(function (InvalidActionException $e, Request $request) { // ✅ Added
+            return response()->json([
+                'error' => class_basename($e),
+                'message' => $e->getMessage(),
+            ], 400);
+        });
+
+
         $exceptions->render(function (ValidationException $e, Request $request) {
             return response()->json([
                 'error' => class_basename($e),
@@ -68,6 +78,13 @@ return Application::configure(basePath: dirname(__DIR__))
         });
 
         $exceptions->render(function (AccessDeniedHttpException $e, Request $request) {
+            return response()->json([
+                'error' => class_basename($e),
+                'message' => $e->getMessage(),
+            ], 403);
+        });
+
+        $exceptions->render(function (InvalidEmailException $e, Request $request) {
             return response()->json([
                 'error' => class_basename($e),
                 'message' => $e->getMessage(),

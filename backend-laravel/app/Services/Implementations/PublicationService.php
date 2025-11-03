@@ -3,6 +3,7 @@
 namespace App\Services\Implementations;
 
 use App\Exceptions\DuplicatedResourceException;
+use App\Exceptions\InvalidActionException;
 use App\Models\Event;
 use App\Models\Publication;
 use App\Models\PublicationAccess;
@@ -24,7 +25,7 @@ class PublicationService implements PublicationServiceInterface
      *
      * @throws DuplicatedResourceException
      */
-    public function addPublication(array $data): Publication
+    public function addPublication(array $data,int $userId): Publication
     {
         // Check for duplicated title
         $existingPublication = Publication::query()->where('title', $data['title'])->first();
@@ -37,6 +38,7 @@ class PublicationService implements PublicationServiceInterface
 
         $publication = new Publication();
         $publication->fill($data);
+        $publication->author_id = $userId;
         $publication->save();
 
         return $publication;
@@ -81,15 +83,30 @@ class PublicationService implements PublicationServiceInterface
     /**
      * List all published publications (status = activo).
      */
-    public function listPublishedPublications(): Collection
+    public function listPublishedPublications(User $user): Collection
     {
+        // Mentors and coordinators can see all active publications
+        if (in_array($user->role, ['mentor', 'coordinator'], true)) {
+            return Publication::query()
+                ->where('status', 'activo')
+                ->orderBy('published_at', 'desc')
+                ->get();
+        }
+
+        // Regular users can see public publications + those they have access to
         return Publication::query()
-            ->where('status', '=', 'activo')
-            ->where('visibility', '=', 'public')
+            ->where('status', 'activo')
+            ->where(function ($query) use ($user) {
+                $query->where('visibility', 'public')
+                    ->orWhereIn('id', function ($subquery) use ($user) {
+                        $subquery->select('publication_id')
+                            ->from('publication_accesses')
+                            ->where('profile_id', $user->id);
+                    });
+            })
             ->orderBy('published_at', 'desc')
             ->get();
     }
-
     /**
      * List all draft publications (status = borrador).
      */
@@ -174,37 +191,46 @@ class PublicationService implements PublicationServiceInterface
             ->toArray();
     }
 
-    /**
-     * Grant access to one or more users or roles for a private publication.
-     *
-     * @param int $publicationId
-     * @param array $userIds
-     * @param array $roles
-     * @return array
-     *
-     * @throws ResourceNotFoundException
-     */
+
     public function grantPublicationAccess(int $publicationId, array $userIds = [], array $roles = []): array
     {
         $publication = Publication::query()->find($publicationId);
+
+        // Throw exception if publication does not exist
         if (!$publication) {
             throw new ResourceNotFoundException("The publication with ID {$publicationId} was not found.");
         }
 
+        // Prevent access grants for public publications
+        if ($publication->visibility === 'public') {
+            throw new InvalidActionException("Cannot grant access to a public publication.");
+        }
+
         $targetUsers = collect();
 
+        // Collect target users by IDs (excluding mentors and coordinators)
         if (!empty($userIds)) {
-            $usersById = User::query()->whereIn('id', $userIds)->get();
+            $usersById = User::query()
+                ->whereIn('id', $userIds)
+                ->whereNotIn('role', ['mentor', 'coordinator'])
+                ->get();
+
             $targetUsers = $targetUsers->merge($usersById);
         }
 
+        // Collect target users by roles (excluding mentors and coordinators)
         if (!empty($roles)) {
-            $usersByRole = User::query()->whereIn('role', $roles)->get();
+            $usersByRole = User::query()
+                ->whereIn('role', $roles)
+                ->whereNotIn('role', ['mentor', 'coordinator'])
+                ->get();
+
             $targetUsers = $targetUsers->merge($usersByRole);
         }
 
         $createdAccesses = [];
 
+        // Create access records inside a transaction
         DB::transaction(function () use ($publicationId, $targetUsers, &$createdAccesses) {
             foreach ($targetUsers as $user) {
                 $exists = PublicationAccess::query()
@@ -212,6 +238,7 @@ class PublicationService implements PublicationServiceInterface
                     ->where('profile_id', $user->id)
                     ->exists();
 
+                // Skip if access already exists
                 if (!$exists) {
                     $access = PublicationAccess::query()->create([
                         'publication_id' => $publicationId,
@@ -224,6 +251,7 @@ class PublicationService implements PublicationServiceInterface
 
         return $createdAccesses;
     }
+
 
     /**
      * Revoke access from one or more users or roles for a publication.

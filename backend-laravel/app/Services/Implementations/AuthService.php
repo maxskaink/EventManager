@@ -90,6 +90,10 @@ class AuthService implements AuthServiceInterface
             ]);
         }
 
+        #Step 3.1: Update last login timestamp
+        $user->last_login_at = now();
+        $user->save();
+
         // Step 4: Create a Sanctum token
         $token = $user->createToken('access_token')->plainTextToken;
 

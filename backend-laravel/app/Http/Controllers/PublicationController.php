@@ -29,10 +29,11 @@ class PublicationController extends Controller
      */
     public function addPublication(AddPublicationRequest $request): JsonResponse
     {
+        $userId = request()->user()->id;
         $data = $request->validated();
         $this->authorize('create', Publication::class);
 
-        $newPublication = $this->publicationService->addPublication($data);
+        $newPublication = $this->publicationService->addPublication($data, $userId);
 
         return response()->json([
             'message' => 'Publication created successfully.',
@@ -79,9 +80,10 @@ class PublicationController extends Controller
      */
     public function listPublishedPublications(): JsonResponse
     {
+        $user = request()->user();
         // Public — no policy needed
         return response()->json([
-            'publications' => $this->publicationService->listPublishedPublications(),
+            'publications' => $this->publicationService->listPublishedPublications($user),
         ]);
     }
 
