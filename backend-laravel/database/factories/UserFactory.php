@@ -25,11 +25,12 @@ class UserFactory extends Factory
     {
         return [
             'name' => $this->faker->name(),
-            'email' => $this->faker->unique()->safeEmail(),
+            'email' => $this->faker->unique()->userName() . '@unicauca.edu.co',
             'email_verified_at' => now(),
-            'google_id' => 'dev_' . uniqid(),
-            'avatar' => 'https://via.placeholder.com/150',
+            'google_id' => 'test_' . fake()->uuid(),
+            'avatar' => fake()->imageUrl(),
             'role' => $this->faker->randomElement(['interested', 'member', 'mentor', 'coordinator']),
+            'remember_token' => Str::random(10),
         ];
 
     }

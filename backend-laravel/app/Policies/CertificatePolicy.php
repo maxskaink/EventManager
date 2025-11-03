@@ -36,4 +36,9 @@ class CertificatePolicy
     {
         return $authUser->id === $certificate->user_id || $authUser->role === 'mentor' || $authUser->role === 'coordinator';
     }
+
+    public function filterByDateRange(User $authUser): bool
+    {
+        return $authUser->role === 'mentor' || $authUser->role === 'coordinator';
+    }
 }

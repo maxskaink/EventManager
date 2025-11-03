@@ -23,6 +23,7 @@ class UpdateCertificateRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'user_id' => ['sometimes', 'integer', 'exists:users,id'],
             'name' => ['sometimes', 'string', 'max:255'],
             'description' => ['sometimes', 'string', 'max:1000'],
             'issue_date' => ['sometimes', 'date', 'before_or_equal:today'],

@@ -37,4 +37,14 @@ class EventPolicy
     {
         return in_array($authUser->role, ['mentor', 'coordinator'], true);
     }
+
+    public function viewUpcoming(User $user): bool
+    {
+        return $user->role === 'mentor' || $user->role === 'coordinator';
+    }
+
+    public function viewPast(User $user): bool
+    {
+        return $user->role === 'mentor' || $user->role === 'coordinator';
+    }
 }

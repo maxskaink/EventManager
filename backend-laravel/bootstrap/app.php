@@ -52,14 +52,15 @@ return Application::configure(basePath: dirname(__DIR__))
             return response()->json([
                 'error' => class_basename($e),
                 'message' => $e->getMessage(),
-            ], 400);
+                'errors' => $e->errors(),
+            ], 422);
         });
 
         $exceptions->render(function (DuplicatedResourceException $e, Request $request) {
             return response()->json([
                 'error' => class_basename($e),
                 'message' => $e->getMessage(),
-            ], 400);
+            ], 409);
         });
 
         $exceptions->render(function (AuthenticationException $e, Request $request) {

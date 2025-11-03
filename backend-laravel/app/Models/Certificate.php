@@ -24,13 +24,6 @@ class Certificate extends Model
     use HasFactory;
 
     /**
-     * The primary key associated with the table.
-     *
-     * @var string
-     */
-    protected $primaryKey = 'user_id';
-
-    /**
      * Indicates if the IDs are auto-incrementing.
      *
      * @var bool
