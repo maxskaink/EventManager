@@ -8,9 +8,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 
 /**
- * @property int $interest_id
+ * @property int $id
  * @property int $publication_id
- * @property string $interest
+ * @property int $interest_id
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
@@ -23,7 +23,7 @@ class PublicationInterest extends Model
      *
      * @var string
      */
-    protected $primaryKey = 'interest_id';
+    protected $primaryKey = 'id';
 
     /**
      * Indicates if the IDs are auto-incrementing.
@@ -39,7 +39,7 @@ class PublicationInterest extends Model
      */
     protected $fillable = [
         'publication_id',
-        'interest',
+        'interest_id',
     ];
 
     /**
@@ -50,8 +50,9 @@ class PublicationInterest extends Model
     protected function casts(): array
     {
         return [
-            'interest_id' => 'integer',
+            'id',
             'publication_id' => 'integer',
+            'interest_id' => 'integer',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
         ];

@@ -11,7 +11,7 @@ return new class extends Migration
             $table->id(); // use an independent primary key
             $table->unsignedBigInteger('event_id');
             $table->unsignedBigInteger('user_id');
-            $table->string('status', 50);
+            $table->enum('status', ['inscrito', 'asistio', 'ausente', 'cancelado'])->default('inscrito');
             $table->timestamps();
         });
     }

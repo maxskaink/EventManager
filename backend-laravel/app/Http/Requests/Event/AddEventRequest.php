@@ -10,7 +10,10 @@ class AddEventRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return auth()->check();
+        /** @var User|null $user */
+        $user = auth()->user();
+
+        return $user && ($user->getRoleAttribute() === 'mentor' || $user->getRoleAttribute() === 'coordinator');
     }
 
     /**
@@ -25,7 +28,7 @@ class AddEventRequest extends FormRequest
             'description' => ['required', 'string', 'max:1000'],
             'start_date' => ['required', 'date', 'before_or_equal:end_date'],
             'end_date' => ['required', 'date', 'after_or_equal:start_date'],
-            'event_type' => ['required', 'string', 'max:255'],
+            'event_type' => ['required', 'string', 'in:charla,curso,convocatoria'],
             'modality' => ['required', 'string', 'in:presencial,virtual,mixta'],
             'location' => ['nullable', 'string', 'max:255'],
             'status' => ['required', 'string', 'max:50', 'in:activo,inactivo,pendiente,cancelado'],

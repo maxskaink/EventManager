@@ -5,14 +5,18 @@ namespace App\Http\Controllers;
 use App\Http\Requests\Article\AddArticleRequest;
 use App\Http\Requests\Article\ListArticlesByDateRangeRequest;
 use App\Http\Requests\Article\UpdateArticleRequest;
-use App\Services\ArticleService;
+
+use App\Services\Contracts\ArticleServiceInterface;
+use App\Models\Article;
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class ArticleController extends Controller
 {
-    protected ArticleService $articleService;
+    protected ArticleServiceInterface $articleService;
 
-    public function __construct(ArticleService $articleService)
+    public function __construct(ArticleServiceInterface $articleService)
     {
         $this->articleService = $articleService;
     }
@@ -24,6 +28,9 @@ class ArticleController extends Controller
     public function addArticle(AddArticleRequest $request): JsonResponse
     {
         $data = $request->validated();
+
+        // Authorization: allow user to create for themselves or mentor to create for others
+        $this->authorize('create', [Article::class, $data['user_id']]);
 
         $newArticle = $this->articleService->addArticle($data);
 
@@ -40,6 +47,13 @@ class ArticleController extends Controller
     {
         $data = $request->validated();
 
+        $article = Article::query()->find($articleId);
+        if (!$article) {
+            throw new NotFoundHttpException('Article not found.');
+        }
+
+        $this->authorize('update', $article);
+
         $updatedArticle = $this->articleService->updateArticle($articleId, $data);
 
         return response()->json([
@@ -53,7 +67,10 @@ class ArticleController extends Controller
      */
     public function listMyArticles(): JsonResponse
     {
-        $articles = $this->articleService->getArticlesOfActiveUser();
+        $userId = request()->user()->id;
+        $this->authorize('viewByUser', [Article::class, $userId]);
+
+        $articles = $this->articleService->getArticlesByUser($userId);
 
         return response()->json([
             'articles' => $articles,
@@ -65,6 +82,14 @@ class ArticleController extends Controller
      */
     public function listArticlesByUser(int $userId): JsonResponse
     {
+        $targetUser = User::query()->find($userId);
+
+        if (!$targetUser) {
+            throw new NotFoundHttpException('User not found.');
+        }
+
+        $this->authorize('viewByUser', [Article::class, $targetUser]);
+
         $articles = $this->articleService->getArticlesByUser($userId);
 
         return response()->json([
@@ -77,6 +102,8 @@ class ArticleController extends Controller
      */
     public function listAllArticles(): JsonResponse
     {
+        $this->authorize('viewAny', Article::class);
+
         $articles = $this->articleService->getAllArticles();
 
         return response()->json([
@@ -93,6 +120,8 @@ class ArticleController extends Controller
             'start_date' => ['required', 'date'],
             'end_date' => ['required', 'date'],
         ]);
+        // Only mentors can filter by date range
+        $this->authorize('filterByDateRange', Article::class);
 
         $articles = $this->articleService->getArticlesByDateRange(
             $request->input('start_date'),
@@ -109,6 +138,9 @@ class ArticleController extends Controller
      */
     public function deleteArticle(int $articleId): JsonResponse
     {
+        $article = Article::query()->findOrFail($articleId);
+        $this->authorize('delete', $article);
+
         $this->articleService->deleteArticle($articleId);
 
         return response()->json([

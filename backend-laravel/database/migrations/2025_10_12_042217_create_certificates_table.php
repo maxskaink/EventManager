@@ -13,7 +13,7 @@ return new class extends Migration
             $table->string('name');
             $table->string('description');
             $table->date('issue_date');
-            $table->string('document_url')->nullable();
+            $table->string('document_url');
             $table->string('comment')->nullable();
             $table->boolean('deleted')->default(false);
             $table->timestamps();

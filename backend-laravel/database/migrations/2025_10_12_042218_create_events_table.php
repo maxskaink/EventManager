@@ -9,12 +9,13 @@ return new class extends Migration
     public function up(): void {
         Schema::create('events', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('publication_id')->nullable();
             $table->string('name');
             $table->string('description');
             $table->dateTime('start_date');
             $table->dateTime('end_date');
-            $table->string('event_type');
-            $table->string('modality');
+            $table->enum('event_type', ['charla', 'curso', 'convocatoria'])->default('charla');
+            $table->enum('modality', ['presencial', 'virtual', 'mixta'])->default('presencial');
             $table->string('location')->nullable();
             $table->string('status', 50);
             $table->integer('capacity')->nullable();

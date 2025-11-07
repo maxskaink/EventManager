@@ -8,7 +8,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 
 /**
- * @property int $id
  * @property int $user_id
  * @property string|null $university
  * @property string|null $academic_program
@@ -19,6 +18,27 @@ use Illuminate\Support\Carbon;
 class Profile extends Model
 {
     use HasFactory;
+
+    /**
+     * The primary key associated with the table.
+     *
+     * @var string
+     */
+    protected $primaryKey = 'user_id';
+
+    /**
+     * Indicates if the IDs are auto-incrementing.
+     *
+     * @var bool
+     */
+    public $incrementing = false;
+
+    /**
+     * The data type of the primary key.
+     *
+     * @var string
+     */
+    protected $keyType = 'int';
 
     /**
      * The attributes that are mass assignable.
@@ -51,17 +71,16 @@ class Profile extends Model
      */
     public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     public function __toString(): string
     {
         return sprintf(
             "Profile #%d: %s (%s)",
-            $this->id ?? $this->getKey(),
+            $this->user_id,
             $this->user?->name ?? 'Unknown user',
             $this->academic_program ?? $this->university ?? 'No academic info'
         );
     }
-
 }
