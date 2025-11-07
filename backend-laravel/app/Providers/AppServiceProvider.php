@@ -20,6 +20,7 @@ use App\Services\Implementations\InterestService;
 use App\Services\Implementations\ProfileService;
 use App\Services\Implementations\PublicationService;
 use App\Services\Implementations\UserService;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Gate;
 use App\Models\Article;
@@ -69,5 +70,7 @@ class AppServiceProvider extends ServiceProvider
     Gate::policy(Publication::class, PublicationPolicy::class);
     Gate::policy(Profile::class, ProfilePolicy::class);
     Gate::policy(User::class, UserPolicy::class);
+        Config::set('cors.allowed_origins', ['http://localhost:5173']);
+        Config::set('cors.supports_credentials', true);
     }
 }
