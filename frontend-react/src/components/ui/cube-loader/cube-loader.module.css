@@ -1,0 +1,61 @@
+.spinner {
+  /* size can be overridden via --size CSS variable (set from component). */
+  width: var(--size, 70.4px);
+  height: var(--size, 70.4px);
+  --clr: var(--color-blue-500);
+  --clr-alpha: var(--color-blue-100);
+  animation: spinner 1.6s infinite ease;
+  transform-style: preserve-3d;
+}
+
+.spinner > div {
+  background-color: var(--clr-alpha);
+  height: 100%;
+  position: absolute;
+  width: 100%;
+  /* border scales with size; default ~5% of size (3.5px of 70.4px) */
+  border: calc(var(--size, 70.4px) * 0.05) solid var(--clr);
+}
+
+.spinner div:nth-of-type(1) {
+  transform: translateZ(calc(var(--size, 70.4px) * -0.5)) rotateY(180deg);
+}
+
+.spinner div:nth-of-type(2) {
+  transform: rotateY(-270deg) translateX(50%);
+  transform-origin: top right;
+}
+
+.spinner div:nth-of-type(3) {
+  transform: rotateY(270deg) translateX(-50%);
+  transform-origin: center left;
+}
+
+.spinner div:nth-of-type(4) {
+  transform: rotateX(90deg) translateY(-50%);
+  transform-origin: top center;
+}
+
+.spinner div:nth-of-type(5) {
+  transform: rotateX(-90deg) translateY(50%);
+  transform-origin: bottom center;
+}
+
+.spinner div:nth-of-type(6) {
+  transform: translateZ(calc(var(--size, 70.4px) * 0.5));
+}
+
+@keyframes spinner {
+  0% {
+    transform: rotate(45deg) rotateX(-25deg) rotateY(25deg);
+  }
+
+  50% {
+    transform: rotate(45deg) rotateX(-385deg) rotateY(25deg);
+  }
+
+  100% {
+    transform: rotate(45deg) rotateX(-385deg) rotateY(385deg);
+  }
+}
+

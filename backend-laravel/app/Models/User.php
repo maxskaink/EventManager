@@ -2,15 +2,20 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Carbon;
+use Laravel\Sanctum\HasApiTokens;
 
+/**
+ * @property int $id
+ * @property string|null $role
+ */
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable, SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -20,7 +25,11 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'email',
-        'password',
+        'google_id',
+        'avatar',
+        'role',
+        'last_login_at',
+        'email_verified_at',
     ];
 
     /**
@@ -29,12 +38,11 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $hidden = [
-        'password',
         'remember_token',
     ];
 
     /**
-     * Get the attributes that should be cast.
+     * The attributes that should be cast.
      *
      * @return array<string, string>
      */
@@ -42,7 +50,36 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
-            'password' => 'hashed',
+            'last_login_at' => 'datetime',
         ];
+    }
+
+    public function getRoleAttribute(): string
+    {
+        return $this->attributes['role'] ?? 'interested';
+    }
+
+    public function setRoleAttribute(string $value): void
+    {
+        $this->attributes['role'] = $value;
+    }
+
+    public function __toString(): string
+    {
+        return sprintf(
+            "User #%d: %s <%s> (%s)",
+            $this->id ?? $this->getKey(),
+            $this->name ?? 'Unknown',
+            $this->email ?? 'no-email',
+            $this->role ?? 'interested'
+        );
+    }
+
+    /**
+     * Relation: a user has one profile
+     */
+    public function profile()
+    {
+        return $this->hasOne(Profile::class, 'user_id');
     }
 }

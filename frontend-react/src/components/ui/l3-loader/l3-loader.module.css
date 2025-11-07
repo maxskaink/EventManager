@@ -1,0 +1,29 @@
+.loader {
+  /* width can be overridden via --size (set from component). Height scales proportionally (~40/45). */
+  width: var(--size, 45px);
+  height: calc(var(--size, 45px) * 0.8889);
+  background:
+    linear-gradient(#0000 calc(1 * 100% / 6), var(--color-blue-500) 0 calc(3 * 100% / 6), #0000 0),
+    linear-gradient(#0000 calc(2 * 100% / 6), var(--color-blue-500) 0 calc(4 * 100% / 6), #0000 0),
+    linear-gradient(#0000 calc(3 * 100% / 6), var(--color-blue-500) 0 calc(5 * 100% / 6), #0000 0);
+  /* stripe width scales relative to the width. 10px of original 45px is ~0.2222 */
+  background-size: calc(var(--size, 45px) * 0.2222) 400%;
+  background-repeat: no-repeat;
+  animation: matrix 1s infinite linear;
+}
+
+@keyframes matrix {
+  0% {
+    background-position:
+      0% 100%,
+      50% 100%,
+      100% 100%;
+  }
+
+  100% {
+    background-position:
+      0% 0%,
+      50% 0%,
+      100% 0%;
+  }
+}
