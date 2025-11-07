@@ -6,18 +6,23 @@ async function addEvent(data: Payloads.AddEvent) {
 }
 
 async function listAllEvents() {
-  const response = await axiosInstance.get<EventAPI.ListEventsRes>('/event/all');
-  return response.data;
+  const response = await axiosInstance.get<{ events: API.Event[] }>('/event/all');
+  return response.data.events;
 }
 
 async function listUpcomingEvents() {
-  const response = await axiosInstance.get<EventAPI.ListEventsRes>('/event/active');
-  return response.data;
+  const response = await axiosInstance.get<{ events: API.Event[] }>('/event/active');
+  return response.data.events;
 }
 
 async function listPastEvents() {
-  const response = await axiosInstance.get<EventAPI.ListEventsRes>('/event/past');
-  return response.data;
+  const response = await axiosInstance.get<{ events: API.Event[] }>('/event/past');
+  return response.data.events;
+}
+
+async function getEventById(eventId: number) {
+  const response = await axiosInstance.get<{ event: API.Event }>(`/event/${eventId}`);
+  return response.data.event;
 }
 
 export default {
@@ -25,4 +30,5 @@ export default {
   listAllEvents,
   listUpcomingEvents,
   listPastEvents,
+  getEventById,
 };

@@ -1,6 +1,5 @@
 import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader } from "../ui/card";
-import { ImageWithFallback } from "../figma/ImageWithFallback";
 import { useNavigate } from "react-router";
 import { AxiosError } from "axios";
 import { AuthAPI } from "../../services/api";
@@ -36,15 +35,15 @@ export function LoginScreen() {
         <Card className="w-full">
           <CardHeader className="text-center space-y-4">
             <div className="flex justify-center">
-            <ImageWithFallback
-              src="https://images.unsplash.com/photo-1695556575317-9d49e3dccf75?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx1bml2ZXJzaXR5JTIwbG9nbyUyMGFjYWRlbWljfGVufDF8fHx8MTc1NjA1NTkwMnww&ixlib=rb-4.1.0&q=80&w=1080"
-              alt="Logo del Semillero"
-              className="h-20 w-20 rounded-full object-cover"
-            />
-          </div>
-          <h1>Semillero Académico</h1>
-          <p className="text-muted-foreground">Inicia sesión en tu cuenta</p>
-        </CardHeader>
+              <img
+                src="/banner.png"
+                alt="Logo del Semillero"
+                className="max-w-full h-auto"
+              />
+            </div>
+            <h1>Semillero Académico</h1>
+            <p className="text-muted-foreground">Inicia sesión en tu cuenta</p>
+          </CardHeader>
 
         <CardContent className="space-y-4">
           {/*
@@ -79,26 +78,6 @@ export function LoginScreen() {
           <Button onClick={handleLogin} className="w-full">
             Iniciar sesión con Google
           </Button>
-          {/*
-          <Button variant="outline" onClick={handleGuestLogin} className="w-full">
-            Ingresar como invitado
-          </Button>
-          */}
-
-          <div className="text-center">
-            <button onClick={() => navigate("/forgot-password")} className="text-sm text-primary hover:underline">
-              ¿Olvidaste tu contraseña?
-            </button>
-          </div>
-
-          <div className="text-center">
-            <button
-              onClick={() => navigate("/register")}
-              className="text-sm text-muted-foreground hover:text-foreground"
-            >
-              No tienes cuenta? <span className="text-primary">Regístrate</span>
-            </button>
-          </div>
 
         </CardContent>
         </Card>

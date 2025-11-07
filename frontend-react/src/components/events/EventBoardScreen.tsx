@@ -10,6 +10,29 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "../ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "../ui/alert-dialog";
 import { BNavBarMentor } from "../ui/b-navbar-mentor";
 import { BNavBarMember } from "../ui/b-navbar-member";
 import { BNavBarCoordinator } from "../ui/b-navbar-coordinator";
@@ -22,6 +45,7 @@ import {
   Trash2,
   Eye,
   Search,
+  AlertTriangle,
   Users,
   Calendar,
   MapPin,
@@ -30,15 +54,17 @@ import {
   MoreVertical,
   Pin,
   Share,
+  Info,
 } from "lucide-react";
-import { useNavigate } from "react-router";
+import { useNavigate, useLocation } from "react-router";
 import { getDashboardRouteFromRole } from "../../services/navigation/redirects";
-import { EventAPI, ArticleAPI } from "../../services/api";
+import { EventAPI, ArticleAPI, PublicationAPI } from "../../services/api";
 import { toast } from "sonner";
 
 export function EventBoardScreen() {
   const { user } = useApp();
-  const navigate = useNavigate()
+  const navigate = useNavigate();
+  const location = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
   const [filterCategory, setFilterCategory] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
@@ -46,36 +72,141 @@ export function EventBoardScreen() {
   const [loading, setLoading] = useState(true);
   const [events, setEvents] = useState<API.Event[]>([]);
   const [articles, setArticles] = useState<API.Article[]>([]);
+  const [selectedItem, setSelectedItem] = useState<{
+    id: string;
+    type: string;
+    title: string;
+    description: string;
+    date: string;
+    time?: string;
+    location?: string;
+    status: string;
+    capacity?: number;
+    enrolled?: number;
+    views?: number;
+  } | null>(null);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<{
+    id: string;
+    type: string;
+    title: string;
+  } | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+
+  const handleViewDetails = (item: typeof selectedItem) => {
+    setSelectedItem(item);
+    setIsDetailModalOpen(true);
+  };
+
+  const handleDeleteClick = (item: { id: string; type: string; title: string }) => {
+    setItemToDelete(item);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!itemToDelete) return;
+
+    try {
+      if (itemToDelete.type === 'articulo') {
+        // Extraer el ID numérico del artículo (el formato es "article-{id}")
+        const articleId = parseInt(itemToDelete.id.replace('article-', ''));
+        await ArticleAPI.deleteArticle(articleId);
+        toast.success('✅ Artículo eliminado exitosamente');
+      } else {
+        // Para eventos, necesitaríamos un endpoint de delete
+        // Por ahora, mostrar un mensaje
+        toast.error('La funcionalidad de eliminar eventos aún no está disponible');
+        setIsDeleteDialogOpen(false);
+        setItemToDelete(null);
+        return;
+      }
+
+      // Recargar el contenido
+      await loadContent();
+      setIsDeleteDialogOpen(false);
+      setItemToDelete(null);
+    } catch (error: any) {
+      console.error('Error deleting item:', error);
+      const message = error.response?.data?.message || 'Error al eliminar el elemento';
+      toast.error(message);
+    }
+  };
 
   // Mock pinned content (TODO: implement pinning feature)
   const [pinnedContent] = useState<string[]>([]);
 
   // Load events and articles from API
+  // Recargar cuando se navega a esta página (útil después de crear un evento)
   useEffect(() => {
     loadContent();
-  }, []);
+  }, [location.pathname]);
 
   const loadContent = async () => {
     try {
       setLoading(true);
-      const [eventsData, articlesData] = await Promise.all([
-        EventAPI.listAllEvents(),
-        ArticleAPI.listAllArticles(),
-      ]);
-      setEvents(eventsData);
+      
+      // Cargar eventos
+      const eventsData = await EventAPI.listAllEvents();
+      setEvents(Array.isArray(eventsData) ? eventsData : []);
+      
+      // Cargar artículos/publicaciones según el rol del usuario
+      // Los coordinadores usan Publications, los mentores usan Articles
+      let articlesData: any[] = [];
+      if (user?.role === 'coordinator') {
+        try {
+          const publicationsData = await PublicationAPI.listAllPublications();
+          articlesData = Array.isArray(publicationsData) ? publicationsData : [];
+        } catch (pubError: any) {
+          console.error('Error loading publications:', pubError);
+          // Si falla, intentar con articles propios
+          try {
+            articlesData = await ArticleAPI.listMyArticles();
+            articlesData = Array.isArray(articlesData) ? articlesData : [];
+          } catch (articleError) {
+            console.error('Error loading my articles:', articleError);
+            articlesData = [];
+          }
+        }
+      } else if (user?.role === 'mentor') {
+        // Los mentores pueden ver todos los artículos
+        try {
+          articlesData = await ArticleAPI.listAllArticles();
+          articlesData = Array.isArray(articlesData) ? articlesData : [];
+        } catch (error) {
+          console.error('Error loading articles:', error);
+          articlesData = [];
+        }
+      } else {
+        // Para otros roles, usar sus propios artículos
+        try {
+          articlesData = await ArticleAPI.listMyArticles();
+          articlesData = Array.isArray(articlesData) ? articlesData : [];
+        } catch (error) {
+          console.error('Error loading my articles:', error);
+          articlesData = [];
+        }
+      }
+      
       setArticles(articlesData);
     } catch (error) {
       console.error('Error loading content:', error);
       toast.error('Error al cargar el contenido');
+      // En caso de error, asegurar que sean arrays vacíos
+      setEvents([]);
+      setArticles([]);
     } finally {
       setLoading(false);
     }
   };
 
   // Transform API data to match the old content format
+  // Asegurar que events y articles sean arrays antes de hacer map
+  const safeEvents = Array.isArray(events) ? events : [];
+  const safeArticles = Array.isArray(articles) ? articles : [];
+  
   const content = [
     // Events
-    ...events.map(event => ({
+    ...safeEvents.map(event => ({
       id: event.id.toString(),
       type: event.event_type,
       title: event.name,
@@ -90,20 +221,39 @@ export function EventBoardScreen() {
       enrolled: 0, // TODO: implement enrollment tracking
       views: undefined,
     })),
-    // Articles as publications
-    ...articles.map(article => ({
-      id: `article-${article.id}`,
-      type: 'articulo',
-      title: article.title,
-      description: article.description || '',
-      date: article.publication_date,
-      time: undefined,
-      location: undefined,
-      status: 'published',
-      capacity: undefined,
-      enrolled: undefined,
-      views: 0, // TODO: implement view tracking
-    })),
+    // Articles or Publications as publications
+    ...safeArticles.map(item => {
+      // Si es una Publication (tiene published_at o author_id)
+      if (item.published_at || item.author_id) {
+        return {
+          id: `publication-${item.id}`,
+          type: item.type || 'publicacion',
+          title: item.title,
+          description: item.summary || item.content || '',
+          date: item.published_at || item.created_at,
+          time: undefined,
+          location: undefined,
+          status: item.status === 'published' ? 'published' : 'draft',
+          capacity: undefined,
+          enrolled: undefined,
+          views: 0,
+        };
+      }
+      // Si es un Article (tiene publication_date y authors)
+      return {
+        id: `article-${item.id}`,
+        type: 'articulo',
+        title: item.title,
+        description: item.description || '',
+        date: item.publication_date,
+        time: undefined,
+        location: undefined,
+        status: 'published',
+        capacity: undefined,
+        enrolled: undefined,
+        views: 0, // TODO: implement view tracking
+      };
+    }),
   ];
 
   const filteredContent = content.filter((item) => {
@@ -375,7 +525,7 @@ export function EventBoardScreen() {
                 <Users className="h-6 w-6 text-green-600" />
               </div>
               <h3 className="text-2xl">
-                {loading ? "..." : events.length}
+                {loading ? "..." : safeEvents.length}
               </h3>
               <p className="text-sm text-muted-foreground">
                 Eventos
@@ -389,7 +539,7 @@ export function EventBoardScreen() {
                 <Pin className="h-6 w-6 text-purple-600" />
               </div>
               <h3 className="text-2xl">
-                {loading ? "..." : articles.length}
+                {loading ? "..." : safeArticles.length}
               </h3>
               <p className="text-sm text-muted-foreground">
                 Artículos
@@ -465,9 +615,26 @@ export function EventBoardScreen() {
                           {isPinned && (
                             <Pin className="h-4 w-4 text-blue-500" />
                           )}
-                          <Button size="sm" variant="ghost">
-                            <MoreVertical className="h-4 w-4" />
-                          </Button>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button size="sm" variant="ghost">
+                                <MoreVertical className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem
+                                variant="destructive"
+                                onClick={() => handleDeleteClick({
+                                  id: item.id,
+                                  type: item.type,
+                                  title: item.title
+                                })}
+                              >
+                                <Trash2 className="h-4 w-4 mr-2" />
+                                Eliminar
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </div>
                       </div>
 
@@ -521,6 +688,7 @@ export function EventBoardScreen() {
                           size="sm"
                           variant="outline"
                           className="flex-1"
+                          onClick={() => handleViewDetails(item)}
                         >
                           <Eye className="h-4 w-4 mr-1" />
                           Ver
@@ -624,7 +792,11 @@ export function EventBoardScreen() {
                         </div>
 
                         <div className="flex gap-1">
-                          <Button size="sm" variant="ghost">
+                          <Button 
+                            size="sm" 
+                            variant="ghost"
+                            onClick={() => handleViewDetails(item)}
+                          >
                             <Eye className="h-4 w-4" />
                           </Button>
                           <Button size="sm" variant="ghost">
@@ -692,6 +864,184 @@ export function EventBoardScreen() {
       {user && user.role === "guest" && <BNavBarGuest />}
       {user && user.role === "member" && <BNavBarMember />}
       {user && user.role === "mentor" && <BNavBarMentor />}
+
+      {/* Detail Modal */}
+      <Dialog open={isDetailModalOpen} onOpenChange={setIsDetailModalOpen}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl">
+              {selectedItem?.title}
+            </DialogTitle>
+            <DialogDescription>
+              {selectedItem && (
+                <div className="flex gap-2 mt-2">
+                  <Badge className={getTypeColor(selectedItem.type)}>
+                    {selectedItem.type}
+                  </Badge>
+                  <Badge className={getStatusColor(selectedItem.status)}>
+                    {getStatusLabel(selectedItem.status)}
+                  </Badge>
+                </div>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+
+          {selectedItem && (
+            <div className="space-y-6 mt-4">
+            {/* Descripción */}
+            <div>
+              <h3 className="font-semibold mb-2 flex items-center gap-2">
+                <Info className="h-5 w-5" />
+                Descripción
+              </h3>
+              <p className="text-muted-foreground whitespace-pre-wrap">
+                {selectedItem.description}
+              </p>
+            </div>
+
+            {/* Información de Fecha y Hora */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
+                <Calendar className="h-5 w-5 text-primary" />
+                <div>
+                  <p className="text-sm text-muted-foreground">Fecha</p>
+                  <p className="font-medium">
+                    {new Date(selectedItem.date).toLocaleDateString("es-ES", {
+                      weekday: "long",
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    })}
+                  </p>
+                </div>
+              </div>
+              {selectedItem.time && (
+                <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
+                  <Clock className="h-5 w-5 text-primary" />
+                  <div>
+                    <p className="text-sm text-muted-foreground">Hora</p>
+                    <p className="font-medium">{selectedItem.time}</p>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Información específica de eventos */}
+            {isEventType(selectedItem.type) && (
+              <>
+                {selectedItem.location && (
+                  <div className="flex items-start gap-3 p-3 bg-muted rounded-lg">
+                    <MapPin className="h-5 w-5 text-primary mt-0.5" />
+                    <div>
+                      <p className="text-sm text-muted-foreground mb-1">Ubicación / Modalidad</p>
+                      <p className="font-medium">{selectedItem.location}</p>
+                    </div>
+                  </div>
+                )}
+                {selectedItem.capacity && (
+                  <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
+                    <Users className="h-5 w-5 text-primary" />
+                    <div className="flex-1">
+                      <p className="text-sm text-muted-foreground mb-1">Capacidad</p>
+                      <div className="flex items-center gap-2">
+                        <p className="font-medium">
+                          {selectedItem.enrolled || 0} / {selectedItem.capacity} participantes
+                        </p>
+                        {selectedItem.enrolled !== undefined && selectedItem.capacity && (
+                          <div className="flex-1 bg-background rounded-full h-2 max-w-xs">
+                            <div
+                              className="bg-primary h-2 rounded-full"
+                              style={{
+                                width: `${(selectedItem.enrolled / selectedItem.capacity) * 100}%`,
+                              }}
+                            />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+
+            {/* Información específica de artículos */}
+            {selectedItem.type === "articulo" && selectedItem.views !== undefined && (
+              <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
+                <Eye className="h-5 w-5 text-primary" />
+                <div>
+                  <p className="text-sm text-muted-foreground">Visualizaciones</p>
+                  <p className="font-medium">{selectedItem.views} vistas</p>
+                </div>
+              </div>
+            )}
+
+            {/* Información adicional */}
+            <div className="border-t pt-4">
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <p className="text-muted-foreground">ID</p>
+                  <p className="font-medium">{selectedItem.id}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Estado</p>
+                  <Badge className={getStatusColor(selectedItem.status)}>
+                    {getStatusLabel(selectedItem.status)}
+                  </Badge>
+                </div>
+              </div>
+            </div>
+          </div>
+          )}
+
+          <div className="flex justify-end gap-2 mt-6 pt-4 border-t">
+            <Button
+              variant="outline"
+              onClick={() => setIsDetailModalOpen(false)}
+            >
+              Cerrar
+            </Button>
+            {selectedItem && isEventType(selectedItem.type) && (
+              <Button onClick={() => {
+                // TODO: Implementar inscripción al evento
+                toast.info("Funcionalidad de inscripción próximamente");
+              }}>
+                Inscribirse
+              </Button>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-destructive" />
+              ¿Eliminar {itemToDelete?.type === 'articulo' ? 'artículo' : 'evento'}?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción no se puede deshacer. Se eliminará permanentemente{" "}
+              <strong>"{itemToDelete?.title}"</strong>.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => {
+              setIsDeleteDialogOpen(false);
+              setItemToDelete(null);
+            }}>
+              Cancelar
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

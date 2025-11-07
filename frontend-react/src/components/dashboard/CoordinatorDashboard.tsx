@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { Button } from '../ui/button';
 import { Card, CardContent, } from '../ui/card';
 import { Badge } from '../ui/badge';
@@ -17,16 +18,118 @@ import {
   Settings,
 } from 'lucide-react';
 import { useNavigate } from 'react-router';
+import { EventAPI, PublicationAPI, ArticleAPI } from '../../services/api';
+import { toast } from 'sonner';
 
 export function CoordinatorDashboard() {
-  const { user, events } = useApp();
-  const navigate = useNavigate()
+  const { user } = useApp();
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  const [loadingArticles, setLoadingArticles] = useState(true);
+  const [events, setEvents] = useState<API.Event[]>([]);
+  const [publications, setPublications] = useState<any[]>([]);
+  const [articles, setArticles] = useState<API.Article[]>([]);
 
-  const totalEvents = events.length;
-  const totalEnrolled = events.reduce((sum, event) => sum + event.enrolled, 0);
-  const averageParticipation = Math.round((totalEnrolled / (events.reduce((sum, event) => sum + event.capacity, 0))) * 100);
+  // Cargar eventos y artículos desde la API
+  useEffect(() => {
+    loadEvents();
+    loadArticles();
+  }, []);
 
-  const upcomingEvents = events.filter(event => event.status === 'upcoming');
+  const loadEvents = async () => {
+    try {
+      setLoading(true);
+      const eventsData = await EventAPI.listUpcomingEvents();
+      setEvents(Array.isArray(eventsData) ? eventsData : []);
+    } catch (error) {
+      console.error('Error loading events:', error);
+      toast.error('Error al cargar eventos');
+      setEvents([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadArticles = async () => {
+    try {
+      setLoadingArticles(true);
+      
+      // Cargar tanto Publications como Articles
+      // El formulario crea Articles, así que necesitamos cargar ambos
+      const [publicationsData, articlesData] = await Promise.all([
+        PublicationAPI.listAllPublications().catch(() => []),
+        ArticleAPI.listMyArticles().catch(() => []),
+      ]);
+      
+      const publicationsArray = Array.isArray(publicationsData) ? publicationsData : [];
+      const articlesArray = Array.isArray(articlesData) ? articlesData : [];
+      
+      console.log('Publications data received:', publicationsArray);
+      console.log('Articles data received:', articlesArray);
+      
+      setPublications(publicationsArray);
+      setArticles(articlesArray);
+    } catch (error: any) {
+      console.error('Error loading publications/articles:', error);
+      console.error('Error response:', error.response);
+      if (error.response?.status === 403) {
+        toast.error('No tienes permisos para ver publicaciones');
+      } else {
+        toast.error('Error al cargar publicaciones');
+      }
+      setPublications([]);
+      setArticles([]);
+    } finally {
+      setLoadingArticles(false);
+    }
+  };
+
+  // Transformar eventos de la API al formato esperado
+  const transformedEvents = events.map(event => ({
+    id: event.id.toString(),
+    title: event.name,
+    category: event.event_type,
+    date: event.start_date.split('T')[0],
+    time: event.start_date.split('T')[1]?.substring(0, 5) || '',
+    status: event.status === 'activo' ? 'upcoming' : 
+            event.status === 'inactivo' ? 'completed' : 
+            event.status === 'cancelado' ? 'cancelled' : 'upcoming',
+    enrolled: 0, // TODO: implementar conteo de inscritos
+    capacity: event.capacity || 0,
+  }));
+
+  const totalEvents = transformedEvents.length;
+  const totalEnrolled = transformedEvents.reduce((sum, event) => sum + (event.enrolled || 0), 0);
+  const totalCapacity = transformedEvents.reduce((sum, event) => sum + (event.capacity || 0), 0);
+  const averageParticipation = totalCapacity > 0 ? Math.round((totalEnrolled / totalCapacity) * 100) : 0;
+
+  const upcomingEvents = transformedEvents.filter(event => event.status === 'upcoming');
+
+  // Combinar Publications y Articles, y ordenar por fecha (más recientes primero)
+  const allPublications = [
+    // Publications
+    ...publications.map(pub => ({
+      id: `pub-${pub.id}`,
+      title: pub.title,
+      summary: pub.summary || pub.content,
+      published_at: pub.published_at,
+      author: pub.author,
+      type: pub.type || 'publicacion',
+    })),
+    // Articles (creados desde el formulario)
+    ...articles.map(article => ({
+      id: `article-${article.id}`,
+      title: article.title,
+      summary: article.description,
+      published_at: article.publication_date,
+      author: { name: article.authors },
+      type: 'articulo',
+    })),
+  ].sort((a, b) => {
+    const dateA = a.published_at ? new Date(a.published_at).getTime() : 0;
+    const dateB = b.published_at ? new Date(b.published_at).getTime() : 0;
+    return dateB - dateA;
+  }).slice(0, 3);
 
   return (
     <div className="min-h-screen bg-background pb-20">
@@ -176,48 +279,153 @@ export function CoordinatorDashboard() {
             <h2>Próximos Eventos</h2>
             <Button
               variant="outline"
-              onClick={() => navigate('/events')}
+              onClick={() => navigate('/event-board')}
             >
               Gestionar todos
             </Button>
           </div>
 
           <div className="space-y-3">
-            {upcomingEvents.slice(0, 3).map(event => (
-              <Card key={event.id}>
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h4 className="line-clamp-1">{event.title}</h4>
-                        <Badge variant="outline" className="text-xs">
-                          {event.category}
-                        </Badge>
-                      </div>
-                      <p className="text-sm text-muted-foreground">
-                        {new Date(event.date).toLocaleDateString('es-ES')} • {event.time}
-                      </p>
-                      <div className="flex items-center gap-4 mt-2 text-sm">
-                        <span className="text-muted-foreground">
-                          {event.enrolled}/{event.capacity} inscritos
-                        </span>
-                        <span className="text-muted-foreground">
-                          {Math.round((event.enrolled / event.capacity) * 100)}% ocupación
-                        </span>
-                      </div>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button size="sm" variant="outline">
-                        <Settings className="h-4 w-4" />
-                      </Button>
-                      <Button size="sm" variant="outline">
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
+            {loading ? (
+              <Card>
+                <CardContent className="p-4 text-center">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2"></div>
+                  <p className="text-sm text-muted-foreground">Cargando eventos...</p>
                 </CardContent>
               </Card>
-            ))}
+            ) : upcomingEvents.length === 0 ? (
+              <Card>
+                <CardContent className="p-4 text-center">
+                  <Calendar className="h-12 w-12 mx-auto text-muted-foreground mb-2" />
+                  <p className="text-sm text-muted-foreground">No hay eventos próximos</p>
+                </CardContent>
+              </Card>
+            ) : (
+              upcomingEvents.slice(0, 3).map(event => {
+                const occupancy = event.capacity > 0 
+                  ? Math.round((event.enrolled / event.capacity) * 100) 
+                  : 0;
+                
+                return (
+                  <Card key={event.id}>
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h4 className="line-clamp-1">{event.title}</h4>
+                            <Badge variant="outline" className="text-xs">
+                              {event.category}
+                            </Badge>
+                          </div>
+                          <p className="text-sm text-muted-foreground">
+                            {new Date(event.date).toLocaleDateString('es-ES')} • {event.time}
+                          </p>
+                          {event.capacity > 0 && (
+                            <div className="flex items-center gap-4 mt-2 text-sm">
+                              <span className="text-muted-foreground">
+                                {event.enrolled}/{event.capacity} inscritos
+                              </span>
+                              <span className="text-muted-foreground">
+                                {occupancy}% ocupación
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex gap-2">
+                          <Button size="sm" variant="outline">
+                            <Settings className="h-4 w-4" />
+                          </Button>
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            onClick={() => navigate('/event-board')}
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })
+            )}
+          </div>
+        </section>
+
+        {/* Publicaciones recientes */}
+        <section>
+          <div className="flex items-center justify-between mb-4">
+            <h2>Publicaciones Recientes</h2>
+            <Button
+              variant="outline"
+              onClick={() => navigate('/event-board')}
+            >
+              Gestionar todas
+            </Button>
+          </div>
+
+          <div className="space-y-3">
+            {loadingArticles ? (
+              <Card>
+                <CardContent className="p-4 text-center">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2"></div>
+                  <p className="text-sm text-muted-foreground">Cargando publicaciones...</p>
+                </CardContent>
+              </Card>
+            ) : allPublications.length === 0 ? (
+              <Card>
+                <CardContent className="p-4 text-center">
+                  <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-2" />
+                  <p className="text-sm text-muted-foreground">No hay publicaciones</p>
+                </CardContent>
+              </Card>
+            ) : (
+              allPublications.map(publication => (
+                <Card key={publication.id}>
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <h4 className="line-clamp-1">{publication.title}</h4>
+                          <Badge variant="outline" className="text-xs">
+                            {publication.type || 'Publicación'}
+                          </Badge>
+                        </div>
+                        {publication.summary && (
+                          <p className="text-sm text-muted-foreground line-clamp-2 mb-2">
+                            {publication.summary}
+                          </p>
+                        )}
+                        <div className="flex items-center gap-4 text-sm">
+                          {publication.published_at && (
+                            <span className="text-muted-foreground">
+                              {new Date(publication.published_at).toLocaleDateString('es-ES')}
+                            </span>
+                          )}
+                          {publication.author && (
+                            <span className="text-muted-foreground">
+                              Por: {publication.author.name || publication.author.email || publication.author}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button size="sm" variant="outline">
+                          <Settings className="h-4 w-4" />
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => navigate('/event-board')}
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            )}
           </div>
         </section>
 

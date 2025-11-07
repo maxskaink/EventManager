@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader } from "../ui/card";
 import { Badge } from "../ui/badge";
@@ -26,16 +26,67 @@ import { ImageWithFallback } from "../figma/ImageWithFallback";
 import { useNavigate } from "react-router";
 import BottomNavbarWrapper from "../nav/BottomNavbarWrapper";
 import { useAuthStore } from "../../stores/auth.store";
+import { EventAPI } from "../../services/api";
 import { toast } from "sonner";
 
 export function EventsScreen() {
-  const { user, events, registerEvent } = useApp();
+  const { user } = useApp();
   const someUser = useAuthStore(s => s.user)
   const role = someUser?.role ?? ""
   const navigate = useNavigate()
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] =
-    useState("todos");
+  const [selectedCategory, setSelectedCategory] = useState("todos");
+  const [loading, setLoading] = useState(true);
+  const [apiEvents, setApiEvents] = useState<API.Event[]>([]);
+
+  // Imágenes predefinidas para reutilizar
+  const eventImages = [
+    "https://images.unsplash.com/photo-1582192904915-d89c7250b235?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjb25mZXJlbmNlJTIwcHJlc2VudGF0aW9uJTIwdGVjaHxlbnwxfHx8fDE3NTYwMTQ3OTF8MA&ixlib=rb-4.1.0&q=80&w=1080",
+    "https://images.unsplash.com/photo-1623121608226-ca93dec4d94e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx3b3Jrc2hvcCUyMHRyYWluaW5nJTIwbWVldGluZ3xlbnwxfHx8fDE3NTYwNTU5MDN8MA&ixlib=rb-4.1.0&q=80&w=1080",
+    "https://images.unsplash.com/photo-1650784853619-0845742430b7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxhY2FkZW1pYyUyMHJlc2VhcmNoJTIwdGVhbXxlbnwxfHx8fDE3NTYwNTU5MDN8MA&ixlib=rb-4.1.0&q=80&w=1080",
+  ];
+
+  // Función para obtener imagen rotativa
+  const getEventImage = (index: number) => {
+    return eventImages[index % eventImages.length];
+  };
+
+  // Cargar eventos desde la API
+  useEffect(() => {
+    loadEvents();
+  }, []);
+
+  const loadEvents = async () => {
+    try {
+      setLoading(true);
+      const eventsData = await EventAPI.listUpcomingEvents();
+      setApiEvents(Array.isArray(eventsData) ? eventsData : []);
+    } catch (error) {
+      console.error('Error loading events:', error);
+      toast.error('Error al cargar eventos');
+      setApiEvents([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Transformar eventos de la API al formato esperado
+  const transformedEvents = apiEvents.map((event, index) => ({
+    id: event.id.toString(),
+    title: event.name,
+    description: event.description,
+    date: event.start_date.split('T')[0],
+    time: event.start_date.split('T')[1]?.substring(0, 5) || '',
+    category: event.event_type,
+    modality: event.modality,
+    location: event.location,
+    status: event.status === 'activo' ? 'upcoming' : 
+            event.status === 'inactivo' ? 'completed' : 
+            event.status === 'cancelado' ? 'cancelled' : 'upcoming',
+    capacity: event.capacity || 0,
+    enrolled: 0, // TODO: implementar conteo de inscritos
+    image: getEventImage(index), // Asignar imagen rotativa
+  }));
 
   // Función para detectar si un evento está próximo (dentro de 7 días)
   const isEventComingSoon = (eventDate: string) => {
@@ -48,7 +99,7 @@ export function EventsScreen() {
     return diffDays >= 0 && diffDays <= 7;
   };
 
-  const filteredEvents = events.filter((event) => {
+  const filteredEvents = transformedEvents.filter((event) => {
     const matchesSearch =
       event.title
         .toLowerCase()
@@ -116,7 +167,14 @@ export function EventsScreen() {
             value={selectedCategory}
             className="mt-6"
           >
-            {filteredEvents.length === 0 ? (
+            {loading ? (
+              <Card>
+                <CardContent className="p-8 text-center">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+                  <p className="text-muted-foreground">Cargando eventos...</p>
+                </CardContent>
+              </Card>
+            ) : filteredEvents.length === 0 ? (
               <Card>
                 <CardContent className="p-8 text-center">
                   <p className="text-muted-foreground">
@@ -127,7 +185,7 @@ export function EventsScreen() {
               </Card>
             ) : (
               <div className="grid gap-4 md:grid-cols-2">
-                {filteredEvents.map((event) => (
+                {filteredEvents.map((event, index) => (
                   <Card
                     key={event.id}
                     className="hover:shadow-md transition-shadow"
@@ -156,10 +214,20 @@ export function EventsScreen() {
                             🔥 ¡Pronto!
                           </Badge>
                         )}
-                      {event.status === "upcoming" &&
+                        {event.status === "upcoming" &&
                         !isEventComingSoon(event.date) && (
                           <Badge className="absolute top-2 left-2 bg-green-500 text-white">
                             Próximo
+                          </Badge>
+                        )}
+                        {event.status === "completed" && (
+                          <Badge className="absolute top-2 left-2 bg-gray-500 text-white">
+                            Finalizado
+                          </Badge>
+                        )}
+                        {event.status === "cancelled" && (
+                          <Badge className="absolute top-2 left-2 bg-red-500 text-white">
+                            Cancelado
                           </Badge>
                         )}
                     </div>
@@ -213,6 +281,9 @@ export function EventsScreen() {
                           <span className="capitalize">
                             {event.modality}
                           </span>
+                          {event.location && event.modality === 'presencial' && (
+                            <span className="text-xs">• {event.location}</span>
+                          )}
                         </div>
 
                         <div className="flex items-center gap-2 text-muted-foreground">
