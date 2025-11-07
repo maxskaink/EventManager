@@ -1,16 +1,18 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\Implementations;
 
+use App\Models\Profile;
 use App\Models\User;
+use App\Services\Contracts\AuthServiceInterface;
 use Exception;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Http;
-use Laravel\Socialite\Facades\Socialite;
 use Laravel\Socialite\Contracts\User as SocialiteUser;
+use Laravel\Socialite\Facades\Socialite;
 use Laravel\Socialite\Two\GoogleProvider;
 
-class AuthService
+class AuthService implements AuthServiceInterface
 {
     /**
      * Generate a stateless Google OAuth redirect URL.
@@ -81,6 +83,20 @@ class AuthService
                 'role' => 'interested',
             ]
         );
+
+        // Step 3.1: Ensure the user has a profile
+        if (!$user->profile) {
+            Profile::query()->create([
+                'user_id' => $user->id,
+                'university' => null,
+                'academic_program' => null,
+                'phone' => null,
+            ]);
+        }
+
+        #Step 3.1: Update last login timestamp
+        $user->last_login_at = now();
+        $user->save();
 
         // Step 4: Create a Sanctum token
         $token = $user->createToken('access_token')->plainTextToken;

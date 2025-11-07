@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Profile;
 use App\Models\User;
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
@@ -37,7 +38,15 @@ class GenerateAuthToken extends Command
                     'avatar' => 'https://via.placeholder.com/150',
                     'role' => $role,
                 ]);
-
+                // Step 3.1: Ensure the user has a profile
+                if (!$user->profile) {
+                    Profile::query()->create([
+                        'user_id' => $user->id,
+                        'university' => null,
+                        'academic_program' => null,
+                        'phone' => null,
+                    ]);
+                }
                 $token = $user->createToken('dev_token')->plainTextToken;
 
                 $this->info("Role: $role");
@@ -66,6 +75,15 @@ class GenerateAuthToken extends Command
                 ]
             );
 
+        // Step 3.1: Ensure the user has a profile
+        if (!$user->profile) {
+            Profile::query()->create([
+                'user_id' => $user->id,
+                'university' => null,
+                'academic_program' => null,
+                'phone' => null,
+            ]);
+        }
         // Revocar tokens anteriores
         $user->tokens()->delete();
 

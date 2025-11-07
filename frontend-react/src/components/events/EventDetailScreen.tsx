@@ -17,6 +17,8 @@ import { BNavBarCoordinator } from "../ui/b-navbar-coordinator";
 import { BNavBarGuest } from "../ui/b-navbar-guest";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
+import { EventAPI } from "../../services/api";
+import { useState, useEffect } from "react";
 
 interface EventDetailScreenProps {
   eventId: string;
@@ -25,18 +27,68 @@ interface EventDetailScreenProps {
 export function EventDetailScreen({
   eventId,
 }: EventDetailScreenProps) {
-  const { user, events, registerEvent } =useApp();
-  const navigate = useNavigate()
+  const { user, registerEvent } = useApp();
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  const [event, setEvent] = useState<API.Event | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  const event = events.find((e) => e.id === eventId);
+  // Imágenes predefinidas para reutilizar
+  const eventImages = [
+    "https://images.unsplash.com/photo-1582192904915-d89c7250b235?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjb25mZXJlbmNlJTIwcHJlc2VudGF0aW9uJTIwdGVjaHxlbnwxfHx8fDE3NTYwMTQ3OTF8MA&ixlib=rb-4.1.0&q=80&w=1080",
+    "https://images.unsplash.com/photo-1623121608226-ca93dec4d94e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx3b3Jrc2hvcCUyMHRyYWluaW5nJTIwbWVldGluZ3xlbnwxfHx8fDE3NTYwNTU5MDN8MA&ixlib=rb-4.1.0&q=80&w=1080",
+    "https://images.unsplash.com/photo-1650784853619-0845742430b7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxhY2FkZW1pYyUyMHJlc2VhcmNoJTIwdGVhbXxlbnwxfHx8fDE3NTYwNTU5MDN8MA&ixlib=rb-4.1.0&q=80&w=1080",
+  ];
 
-  if (!event) {
+  // Función para obtener imagen rotativa
+  const getEventImage = (id: number) => {
+    return eventImages[id % eventImages.length];
+  };
+
+  useEffect(() => {
+    loadEvent();
+  }, [eventId]);
+
+  const loadEvent = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const eventIdNum = parseInt(eventId, 10);
+      if (isNaN(eventIdNum)) {
+        setError("ID de evento inválido");
+        return;
+      }
+      const eventData = await EventAPI.getEventById(eventIdNum);
+      setEvent(eventData);
+    } catch (err: any) {
+      console.error('Error loading event:', err);
+      setError(err.response?.status === 404 ? "Evento no encontrado" : "Error al cargar el evento");
+      setEvent(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <Card>
+          <CardContent className="p-8 text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Cargando evento...</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (error || !event) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <Card>
           <CardContent className="p-8 text-center">
             <p className="text-muted-foreground mb-4">
-              Evento no encontrado
+              {error || "Evento no encontrado"}
             </p>
             <Button onClick={() => navigate("/events")}>
               Volver a eventos
@@ -47,16 +99,34 @@ export function EventDetailScreen({
     );
   }
 
-  const isEventFull = event.capacity && event.enrolled ? event.enrolled >= event.capacity : false;
+  // Transformar evento de la API al formato esperado
+  const transformedEvent = {
+    id: event.id.toString(),
+    title: event.name,
+    description: event.description,
+    date: event.start_date.split('T')[0],
+    time: event.start_date.split('T')[1]?.substring(0, 5) || '',
+    type: event.event_type,
+    modality: event.modality,
+    location: event.location,
+    status: event.status === 'activo' ? 'upcoming' : 
+            event.status === 'inactivo' ? 'completed' : 
+            event.status === 'cancelado' ? 'cancelled' : 'upcoming',
+    capacity: event.capacity || 0,
+    enrolled: 0, // TODO: implementar conteo de inscritos
+    image: getEventImage(event.id), // Asignar imagen rotativa
+  };
+
+  const isEventFull = transformedEvent.capacity && transformedEvent.enrolled ? transformedEvent.enrolled >= transformedEvent.capacity : false;
   const canRegister =
     user && user.role !== "guest" && !isEventFull;
 
   const handleRegister = () => {
     if (canRegister) {
-      registerEvent(event.id);
+      registerEvent(transformedEvent.id);
       // Success feedback with toast
       toast.success("🎉 ¡Te has inscrito exitosamente al evento!", {
-        description: `Ahora eres parte de: ${event.title}`,
+        description: `Ahora eres parte de: ${transformedEvent.title}`,
         duration: 4000,
       });
     }
@@ -85,25 +155,35 @@ export function EventDetailScreen({
         {/* Imagen principal */}
         <div className="aspect-video relative overflow-hidden">
           <ImageWithFallback
-            src={event.image}
-            alt={event.title}
+            src={transformedEvent.image}
+            alt={transformedEvent.title}
             className="w-full h-full object-cover"
           />
           <Badge
             className="absolute top-4 right-4"
             variant={
-              event.type === "curso"
+              transformedEvent.type === "curso"
                 ? "default"
-                : event.type === "charla"
+                : transformedEvent.type === "charla"
                   ? "secondary"
                   : "outline"
             }
           >
-            {event.type}
+            {transformedEvent.type}
           </Badge>
-          {event.status === "upcoming" && (
+          {transformedEvent.status === "upcoming" && (
             <Badge className="absolute top-4 left-4 bg-green-500">
               Próximo
+            </Badge>
+          )}
+          {transformedEvent.status === "completed" && (
+            <Badge className="absolute top-4 left-4 bg-gray-500">
+              Finalizado
+            </Badge>
+          )}
+          {transformedEvent.status === "cancelled" && (
+            <Badge className="absolute top-4 left-4 bg-red-500">
+              Cancelado
             </Badge>
           )}
         </div>
@@ -111,9 +191,9 @@ export function EventDetailScreen({
         <div className="p-4 space-y-6">
           {/* Información principal */}
           <section>
-            <h1 className="mb-2">{event.title}</h1>
+            <h1 className="mb-2">{transformedEvent.title}</h1>
             <p className="text-muted-foreground">
-              {event.description}
+              {transformedEvent.description}
             </p>
           </section>
 
@@ -135,7 +215,7 @@ export function EventDetailScreen({
                       </p>
                       <p>
                         {new Date(
-                          event.date,
+                          transformedEvent.date,
                         ).toLocaleDateString("es-ES", {
                           weekday: "long",
                           year: "numeric",
@@ -154,7 +234,7 @@ export function EventDetailScreen({
                       <p className="text-sm text-muted-foreground">
                         Hora
                       </p>
-                      <p>{event.time}</p>
+                      <p>{transformedEvent.time}</p>
                     </div>
                   </div>
 
@@ -167,7 +247,10 @@ export function EventDetailScreen({
                         Modalidad
                       </p>
                       <p className="capitalize">
-                        {event.modality}
+                        {transformedEvent.modality}
+                        {transformedEvent.location && transformedEvent.modality === 'presencial' && (
+                          <span className="text-xs ml-2">• {transformedEvent.location}</span>
+                        )}
                       </p>
                     </div>
                   </div>
@@ -181,14 +264,14 @@ export function EventDetailScreen({
                         Cupos
                       </p>
                       <p>
-                        {event.enrolled}/{event.capacity}{" "}
+                        {transformedEvent.enrolled}/{transformedEvent.capacity}{" "}
                         inscritos
                       </p>
                       <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
                         <div
                           className="bg-orange-500 h-2 rounded-full"
                           style={{
-                            width: event.capacity && event.enrolled ? `${(event.enrolled / event.capacity) * 100}%` : '0%',
+                            width: transformedEvent.capacity && transformedEvent.enrolled ? `${(transformedEvent.enrolled / transformedEvent.capacity) * 100}%` : '0%',
                           }}
                         ></div>
                       </div>

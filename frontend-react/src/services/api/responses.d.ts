@@ -37,7 +37,9 @@ namespace UserAPI {
 }
 
 namespace ProfileAPI {
-    type GetProfileRes = API.Profile[]; // API returns an array
+    type GetProfileRes = {
+        profile: API.Profile
+    }
     type UpdateProfileRes = {
         message: string;
         profile: API.Profile

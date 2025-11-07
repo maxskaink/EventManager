@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Auth;
  * @property string $name
  * @property string $description
  * @property Carbon $issue_date
- * @property string|null $document_url
+ * @property string $document_url
  * @property string|null $comment
  * @property bool $deleted
  * @property Carbon|null $created_at
@@ -22,13 +22,6 @@ use Illuminate\Support\Facades\Auth;
 class Certificate extends Model
 {
     use HasFactory;
-
-    /**
-     * The primary key associated with the table.
-     *
-     * @var string
-     */
-    protected $primaryKey = 'user_id';
 
     /**
      * Indicates if the IDs are auto-incrementing.

@@ -55,7 +55,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "../ui/alert-dialog";
-import { ImageWithFallback } from "../figma/ImageWithFallback";
+import brainImage from "../../assets/brain.png";
 import { useApp } from "../context/AppContext";
 import { UserAPI } from "../../services/api";
 import { toast } from "sonner";
@@ -284,10 +284,10 @@ export function MentorDashboard() {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <ImageWithFallback
-                src="https://images.unsplash.com/photo-1695556575317-9d49e3dccf75?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx1bml2ZXJzaXR5JTIwbG9nbyUyMGFjYWRlbWljfGVufDF8fHx8MTc1NjA1NTkwMnww&ixlib=rb-4.1.0&q=80&w=1080"
+              <img
+                src={brainImage}
                 alt="Logo del Semillero"
-                className="h-10 w-10 rounded-full object-cover"
+                className="h-10 w-10 object-contain"
               />
               <div>
                 <h1>Panel de Mentor</h1>
@@ -360,13 +360,13 @@ export function MentorDashboard() {
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center gap-4">
-                <FileText className="h-8 w-8 text-primary" />
+                <Users className="h-8 w-8 text-primary" />
                 <div>
                   <p className="text-sm text-muted-foreground">
-                    Pendientes
+                    Mentores
                   </p>
                   <p className="text-2xl font-semibold">
-                    {pendingSubmissions.length}
+                    {loading ? "..." : users.filter(u => u.role === "mentor").length}
                   </p>
                 </div>
               </div>
@@ -1515,7 +1515,7 @@ export function MentorDashboard() {
                   className="justify-start"
                   onClick={() => {
                     setIsSettingsOpen(false);
-                    navigate("/notifications");
+                    setIsNotificationsOpen(true);
                   }}
                 >
                   <Bell className="h-4 w-4 mr-2" />

@@ -8,9 +8,9 @@ return new class extends Migration
 {
     public function up(): void {
         Schema::create('publication_interests', function (Blueprint $table) {
-            $table->id('interest_id');
+            $table->id();
             $table->unsignedBigInteger('publication_id');
-            $table->string('interest');
+            $table->unsignedBigInteger('interest_id');
             $table->timestamps();
         });
     }

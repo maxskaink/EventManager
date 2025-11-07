@@ -52,6 +52,7 @@ export default function CreateEventPage() {
 
   const formatDateTime = (date: string, time: string): string => {
     if (!date) return '';
+    // Formatear como ISO 8601 para Laravel: YYYY-MM-DDTHH:mm:ss
     const dateTime = time ? `${date}T${time}:00` : `${date}T00:00:00`;
     return dateTime;
   };
