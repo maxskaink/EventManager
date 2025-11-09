@@ -24,23 +24,25 @@ class ListCertificatesByDateRangeRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'start_date' => ['required', 'date', 'before_or_equal:end_date'],
-            'end_date' => ['required', 'date', 'after_or_equal:start_date'],
+            // Filter certificates by issue date range
+            'issue_start_date' => ['required', 'date', 'before_or_equal:issue_end_date'],
+            'issue_end_date' => ['required', 'date', 'after_or_equal:issue_start_date'],
         ];
     }
 
     /**
-     * Custom validation messages (optional)
+     * Custom validation messages.
      */
     public function messages(): array
     {
         return [
-            'start_date.required' => 'The start date is required.',
-            'start_date.date' => 'The start date must be a valid date.',
-            'start_date.before_or_equal' => 'The start date must be before or equal to the end date.',
-            'end_date.required' => 'The end date is required.',
-            'end_date.date' => 'The end date must be a valid date.',
-            'end_date.after_or_equal' => 'The end date must be after or equal to the start date.',
+            'issue_start_date.required' => 'The issue start date is required.',
+            'issue_start_date.date' => 'The issue start date must be a valid date.',
+            'issue_start_date.before_or_equal' => 'The issue start date must be before or equal to the issue end date.',
+
+            'issue_end_date.required' => 'The issue end date is required.',
+            'issue_end_date.date' => 'The issue end date must be a valid date.',
+            'issue_end_date.after_or_equal' => 'The issue end date must be after or equal to the issue start date.',
         ];
     }
 }

@@ -27,7 +27,7 @@ class CertificateController extends Controller
     {
         $data = $request->validated();
 
-        // Allow user to add their own certificate or mentor to add for others
+        // Allow user to add their own certificate or mentors to add for others
         $this->authorize('create', [Certificate::class, $data['user_id']]);
 
         $newCertificate = $this->certificateService->addCertificate($data);
@@ -107,7 +107,7 @@ class CertificateController extends Controller
     }
 
     /**
-     * List all certificates in the system (mentor only).
+     * List all certificates in the system (mentors only).
      */
     public function listAllCertificates(): JsonResponse
     {
@@ -121,21 +121,18 @@ class CertificateController extends Controller
     }
 
     /**
-     * List all certificates issued within a date range (mentor only).
+     * List all certificates issued within a specific issue date range (mentors only).
      */
     public function listCertificatesByDateRange(ListCertificatesByDateRangeRequest $request): JsonResponse
     {
-        $request->validate([
-            'start_date' => ['required', 'date'],
-            'end_date' => ['required', 'date'],
-        ]);
+        $data = $request->validated();
 
-        // Only mentors can filter by date range
+        // Only mentors can filter by issue date range
         $this->authorize('filterByDateRange', Certificate::class);
 
         $certificates = $this->certificateService->getCertificatesByDateRange(
-            $request->input('start_date'),
-            $request->input('end_date')
+            $data['issue_start_date'],
+            $data['issue_end_date']
         );
 
         return response()->json([

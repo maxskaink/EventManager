@@ -23,12 +23,13 @@ class UpdateCertificateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'user_id' => ['sometimes', 'integer', 'exists:users,id'],
-            'name' => ['sometimes', 'string', 'max:255'],
-            'description' => ['sometimes', 'string', 'max:1000'],
-            'issue_date' => ['sometimes', 'date', 'before_or_equal:today'],
-            'document_url' => ['nullable', 'url', 'max:255'],
-            'comment' => ['nullable', 'string', 'max:500']
+            'name' => ['required', 'string', 'max:255'],
+            'issuing_organization' => ['required', 'string', 'max:255'],
+            'issue_date' => ['required', 'date', 'before_or_equal:today'],
+            'expiration_date' => ['nullable', 'date', 'after_or_equal:issue_date'],
+            'credential_id' => ['nullable', 'string', 'max:255'],
+            'credential_url' => ['nullable', 'url', 'max:255'],
+            'does_not_expire' => ['boolean']
         ];
     }
 
@@ -38,16 +39,12 @@ class UpdateCertificateRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'name.string' => 'The certificate name must be a valid string.',
-            'name.max' => 'The certificate name cannot exceed 255 characters.',
-            'description.string' => 'The certificate description must be a valid string.',
-            'description.max' => 'The certificate description cannot exceed 1000 characters.',
-            'issue_date.date' => 'The issue date must be a valid date.',
+            'name.required' => 'The certificate name is required.',
+            'issuing_organization.required' => 'The issuing organization is required.',
+            'issue_date.required' => 'The issue date is required.',
             'issue_date.before_or_equal' => 'The issue date cannot be in the future.',
-            'document_url.url' => 'The document URL must be a valid URL.',
-            'document_url.max' => 'The document URL cannot exceed 255 characters.',
-            'comment.string' => 'The comment must be a valid string.',
-            'comment.max' => 'The comment cannot exceed 500 characters.'
+            'expiration_date.after_or_equal' => 'The expiration date cannot be earlier than the issue date.',
+            'credential_url.url' => 'The credential URL must be a valid URL.',
         ];
     }
 }
