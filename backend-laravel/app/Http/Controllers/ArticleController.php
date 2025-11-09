@@ -68,7 +68,8 @@ class ArticleController extends Controller
     public function listMyArticles(): JsonResponse
     {
         $userId = request()->user()->id;
-        $this->authorize('viewByUser', [Article::class, $userId]);
+        $user = request()->user();
+        $this->authorize('viewByUser', [Article::class, $user]);
 
         $articles = $this->articleService->getArticlesByUser($userId);
 

@@ -48,10 +48,11 @@ class PublicationController extends Controller
      */
     public function addEventPublication(AddPublicationRequest $request, int $eventId): JsonResponse
     {
+        $userId = request()->user()->id;
         $data = $request->validated();
         $this->authorize('create', Publication::class);
 
-        $newPublication = $this->publicationService->addEventPublication($data, $eventId);
+        $newPublication = $this->publicationService->addEventPublication($data, $eventId, $userId);
 
         return response()->json([
             'message' => 'Event publication created successfully.',

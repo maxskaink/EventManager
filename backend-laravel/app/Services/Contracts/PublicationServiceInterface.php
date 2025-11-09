@@ -10,7 +10,7 @@ interface PublicationServiceInterface
 {
     public function addPublication(array $data, int $userId): Publication;
 
-    public function addEventPublication(array $data, int $eventId): Publication;
+    public function addEventPublication(array $data, int $eventId, int $userId): Publication;
 
     /**
      * @return Collection<int, Publication>

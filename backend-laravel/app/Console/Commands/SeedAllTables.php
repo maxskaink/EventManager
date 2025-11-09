@@ -212,20 +212,6 @@ class SeedAllTables extends Command
                 }
             }
 
-            $this->info('Creating notifications...');
-            foreach (range(1, 8) as $i) {
-                $profileId = $faker->randomElement($profileIds);
-                Notification::query()->create([
-                    'profile_id' => $profileId,
-                    'title' => 'Test notification ' . $i,
-                    'message' => $faker->sentence(8),
-                    'type' => $faker->randomElement(['info', 'warning', 'success']),
-                    'status' => $faker->randomElement(['unread', 'read']),
-                    'read_at' => $faker->optional()->dateTimeBetween('-1 month', 'now'),
-                    'url' => $faker->optional()->url(),
-                ]);
-            }
-
             $this->info('Creating external events...');
             foreach (range(1, 6) as $i) {
                 $organizer = $users->random();
