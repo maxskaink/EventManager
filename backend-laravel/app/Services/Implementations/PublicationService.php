@@ -13,9 +13,12 @@ use App\Models\User;
 use App\Notifications\NewPublicationNotification;
 use App\Services\Contracts\PublicationServiceInterface;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Symfony\Component\Routing\Exception\ResourceNotFoundException;
 
 class PublicationService implements PublicationServiceInterface
@@ -24,21 +27,53 @@ class PublicationService implements PublicationServiceInterface
      * Create a new publication.
      *
      * @param array $data
+     * @param int $userId
      * @return Publication
      *
-     * @throws DuplicatedResourceException
+     * @throws \Exception
      */
-    public function addPublication(array $data,int $userId): Publication
+    public function addPublication(array $data, int $userId): Publication
     {
-        // Check for duplicated title
-        $existingPublication = Publication::query()->where('title', $data['title'])->first();
-        if ($existingPublication) {
-            throw new DuplicatedResourceException("A publication with the title: {$data['title']} already exists");
+        // Validate image (you can move this to a FormRequest if you prefer)
+        if (isset($data['image']) && $data['image'] instanceof UploadedFile) {
+            $image = $data['image'];
+
+            // Check file size (max 2MB)
+            if ($image->getSize() > 2 * 1024 * 1024) {
+                throw new \Exception("The image size must not exceed 2MB.");
+            }
+
+            // Check mime type
+            $allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp'];
+            if (!in_array($image->getMimeType(), $allowedMimeTypes)) {
+                throw new \Exception("Invalid image type. Only JPEG, PNG, or WEBP are allowed.");
+            }
+
+            // Generate unique name
+            $filename = Str::uuid() . '.' . $image->getClientOriginalExtension();
+
+            // Store the file in "public/publications"
+            $path = $image->storeAs('public/publications', $filename);
+
+            // Convert storage path to public URL
+            $data['image_url'] = Storage::url($path);
         }
 
         // Normalize date
-        $data['published_at'] = Carbon::parse($data['published_at'])->toDateString();
+        $data['published_at'] = \Carbon\Carbon::parse($data['published_at'])->toDateString();
 
+        // Check for duplicated title
+        $existingPublication = Publication::query()
+            ->where('title', $data['title'])
+            ->first();
+
+        if ($existingPublication) {
+            throw new \App\Exceptions\DuplicatedResourceException(
+                "A publication with the title '{$data['title']}' already exists."
+            );
+        }
+
+        // Create publication
         $publication = new Publication();
         $publication->fill($data);
         $publication->author_id = $userId;
@@ -52,13 +87,14 @@ class PublicationService implements PublicationServiceInterface
      *
      * @param array $data
      * @param int $eventId
+     * @param int $userId
      * @return Publication
      */
     public function addEventPublication(array $data, int $eventId, int $userId): Publication
     {
         $existingEvent = Event::query()->find($eventId);
         if (!$existingEvent) {
-            throw new ResourceNotFoundException("An event with the id: {$eventId} was not found");
+            throw new ResourceNotFoundException("An event with the id: $eventId was not found");
         }
 
         if ($existingEvent->publication_id) {
@@ -136,7 +172,7 @@ class PublicationService implements PublicationServiceInterface
         $publication = Publication::query()->find($id);
 
         if (!$publication) {
-            throw new ResourceNotFoundException("The publication with ID {$id} was not found.");
+            throw new ResourceNotFoundException("The publication with ID $id was not found.");
         }
 
         // Prevent duplicate title if being updated
@@ -214,7 +250,7 @@ class PublicationService implements PublicationServiceInterface
 
         // Throw exception if publication does not exist
         if (!$publication) {
-            throw new ResourceNotFoundException("The publication with ID {$publicationId} was not found.");
+            throw new ResourceNotFoundException("The publication with ID $publicationId was not found.");
         }
 
         // Prevent access grants for public publications
@@ -310,7 +346,7 @@ class PublicationService implements PublicationServiceInterface
     {
         $publication = Publication::query()->find($publicationId);
         if (!$publication) {
-            throw new ResourceNotFoundException("The publication with ID {$publicationId} was not found.");
+            throw new ResourceNotFoundException("The publication with ID $publicationId was not found.");
         }
 
         $targetUserIds = collect($userIds);
