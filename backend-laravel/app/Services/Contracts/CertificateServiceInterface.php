@@ -27,7 +27,7 @@ interface CertificateServiceInterface
     /**
      * @return Collection<int, Certificate>
      */
-    
+
 
     /**
      * @param int $userId
@@ -48,4 +48,6 @@ interface CertificateServiceInterface
     public function getCertificatesByDateRange(string $startDate, string $endDate): Collection;
 
     public function deleteCertificate(int $certificateId): void;
+
+    public function getAllTrustedOrganizations() : array;
 }

@@ -236,4 +236,9 @@ class CertificateService implements CertificateServiceInterface
 
         $certificate->update(['deleted' => true]);
     }
+
+    public function getAllTrustedOrganizations(): array
+    {
+        return $this->trustedOrganizations;
+    }
 }

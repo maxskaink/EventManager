@@ -139,4 +139,17 @@ class CertificateController extends Controller
             'certificates' => $certificates,
         ]);
     }
+
+
+    /**
+     * Get all trusted organizations (public endpoint).
+     */
+    public function getAllTrustedOrganizations(): JsonResponse
+    {
+        $trustedOrganizations = $this->certificateService->getAllTrustedOrganizations();
+
+        return response()->json([
+            'trusted_organizations' => $trustedOrganizations,
+        ]);
+    }
 }

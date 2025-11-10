@@ -11,4 +11,5 @@ Route::middleware('auth:sanctum')->prefix('external-event')->group(function () {
     Route::get('/user/{userId}', [ExternalEventController::class, 'listExternalEventsByUser']);
     Route::get('/all', [ExternalEventController::class, 'listAllExternalEvents']);
     Route::get('/date-range', [ExternalEventController::class, 'listExternalEventsByDateRange']);
+    Route::get('/organizations', [ExternalEventController::class, 'getAllTrustedOrganizations']);
 });

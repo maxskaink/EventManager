@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
 
+
 class ArticleService implements ArticleServiceInterface
 {
     /** @var array<string> */
@@ -221,4 +222,15 @@ class ArticleService implements ArticleServiceInterface
 
         $article->delete();
     }
+
+    /**
+     * Get all trusted organizations.
+     *
+     * @return array
+     */
+    public function getAllTrustedOrganizations(): array
+    {
+        return $this->trustedOrganizations;
+    }
+
 }

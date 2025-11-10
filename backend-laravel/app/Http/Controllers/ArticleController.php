@@ -9,6 +9,7 @@ use App\Http\Requests\Article\UpdateArticleRequest;
 use App\Services\Contracts\ArticleServiceInterface;
 use App\Models\Article;
 use App\Models\User;
+use App\Services\Implementations\ArticleService;
 use Illuminate\Http\JsonResponse;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -146,6 +147,18 @@ class ArticleController extends Controller
 
         return response()->json([
             'message' => 'Article deleted successfully.',
+        ]);
+    }
+
+    /**
+     * Get all trusted organizations (public endpoint).
+     */
+    public function getAllTrustedOrganizations(): JsonResponse
+    {
+        $trustedOrganizations = $this->articleService->getAllTrustedOrganizations();
+
+        return response()->json([
+            'trusted_organizations' => $trustedOrganizations,
         ]);
     }
 

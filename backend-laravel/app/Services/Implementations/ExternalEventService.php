@@ -291,7 +291,7 @@ class ExternalEventService implements ExternalEventServiceInterface
      * @param int $userId
      * @return Collection<int, ExternalEvent>
      * @throws InvalidRoleException
-     * @throws ResourceNotFoundException
+     * @throws ResourceNotFoundException|AuthorizationException
      */
     public function getExternalEventsByUser(int $userId): Collection
     {
@@ -367,5 +367,10 @@ class ExternalEventService implements ExternalEventServiceInterface
             ->whereBetween('start_date', [$start, $end])
             ->orderBy('start_date')
             ->get();
+    }
+
+    public function getAllTrustedOrganizations(): array
+    {
+        return $this->trustedOrganizations;
     }
 }
