@@ -70,7 +70,7 @@ class ArticleController extends Controller
     {
         $userId = request()->user()->id;
         $user = request()->user();
-        $this->authorize('viewByUser', [Article::class, $user]);
+        $this->authorize('viewByUser', [Article::class, $user, $user]);
 
         $articles = $this->articleService->getArticlesByUser($userId);
 

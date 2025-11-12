@@ -9,6 +9,8 @@ Route::middleware('auth:sanctum')->prefix('event')->group(function () {
     Route::get('/active', [EventController::class, 'listUpcomingEvents']);
     Route::get('/past', [EventController::class, 'listPastEvents']);
     Route::patch('{eventId}', [EventController::class, 'updateEvent']);
+    Route::get('/{id}', [EventController::class, 'getEventById']);
+
 
     // Participations
     Route::post('{eventId}/participation', [EventController::class, 'enrollUser']);

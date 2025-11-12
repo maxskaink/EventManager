@@ -74,4 +74,13 @@ interface EventServiceInterface
      * @return array
      */
     public function markUsersAsAbsent(int $eventId, array $userIds): array;
+
+    /**
+     * Get a specific event by its ID.
+     *
+     * @param int $id
+     * @return Event
+     */
+    public function getEventById(int $id): Event;
+
 }

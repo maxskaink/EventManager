@@ -89,14 +89,20 @@ class SeedAllTables extends Command
             $this->info('Creating interests...');
             $keywords = ['Data Science', 'AI', 'Web', 'Mobile', 'Security', 'Networking', 'Databases'];
             $interestModels = [];
+            $interestIds = [];
             foreach ($keywords as $kw) {
-                $interestModels[] = Interest::query()->create(['keyword' => $kw]);
+                $model = Interest::query()->create(['keyword' => $kw]);
+                $interestModels[] = $model;
+                $interestIds[] = $model->id;
             }
 
             $this->info('Linking profile interests...');
             $profileIds = DB::table('profiles')->pluck('user_id')->toArray();
             foreach ($profileIds as $pid) {
-                $sample = $faker->randomElements(array_column($interestModels, 'id'), $faker->numberBetween(1, 3));
+                // pick between 1 and up to 3 interests but not more than available
+                $max = min(count($interestIds), 3);
+                $count = $faker->numberBetween(1, max(1, $max));
+                $sample = (array)$faker->randomElements($interestIds, $count);
                 foreach ($sample as $intId) {
                     DB::table('profile_interests')->insert([
                         'user_id' => $pid,
@@ -165,17 +171,25 @@ class SeedAllTables extends Command
                 Certificate::query()->create([
                     'user_id' => $user->id,
                     'name' => 'Certificate ' . $i,
-                    'description' => $faker->sentence(),
+                    // migrations expect issuing_organization (keep compatibility)
+                    'issuing_organization' => $faker->company(),
+                    'description' => $faker->optional()->sentence(),
                     'issue_date' => $faker->date(),
+                    'expiration_date' => $faker->optional()->date(),
+                    'credential_id' => $faker->optional()->regexify('[A-Z0-9]{8}'),
                     'document_url' => "assets/certificates/certificate_$i.pdf",
-                    'comment' => null,
+                    'credential_url' => $faker->optional()->url(),
+                    'does_not_expire' => $faker->boolean(20),
+                    'comment' => $faker->optional()->sentence(),
                     'deleted' => false,
                 ]);
             }
 
             $this->info('Linking publications with interests...');
             foreach ($publicationIds as $pid) {
-                $sample = $faker->randomElements(array_column($interestModels, 'id'), $faker->numberBetween(1, 3));
+                $max = min(count($interestIds), 3);
+                $count = $faker->numberBetween(1, max(1, $max));
+                $sample = (array)$faker->randomElements($interestIds, $count);
                 foreach ($sample as $intId) {
                     PublicationInterest::query()->create([
                         'publication_id' => $pid,
@@ -200,7 +214,9 @@ class SeedAllTables extends Command
 
             $this->info('Creating publication access records...');
             foreach ($publicationIds as $pubId) {
-                $viewers = (array)$faker->randomElements($profileIds, min(count($profileIds), $faker->numberBetween(1, max(1, min(4, count($profileIds))))));
+                $maxViewers = min(count($profileIds), 4);
+                $numViewers = $faker->numberBetween(1, max(1, $maxViewers));
+                $viewers = (array)$faker->randomElements($profileIds, $numViewers);
                 foreach ($viewers as $pid) {
                     try {
                         PublicationAccess::query()->create([
@@ -208,6 +224,7 @@ class SeedAllTables extends Command
                             'publication_id' => $pubId,
                         ]);
                     } catch (\Throwable $e) {
+                        // ignore duplicates or FK issues
                     }
                 }
             }

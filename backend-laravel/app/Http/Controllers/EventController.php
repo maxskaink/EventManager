@@ -53,8 +53,6 @@ class EventController extends Controller
      */
     public function listUpcomingEvents(): JsonResponse
     {
-        $this->authorize('viewUpcoming', Event::class);
-
         $events = $this->eventService->listUpcomingEvents();
 
         return response()->json([
@@ -158,4 +156,18 @@ class EventController extends Controller
             'results' => $results,
         ]);
     }
+
+    /**
+     * Get a specific event by ID.
+     */
+    public function getEventById(int $id): JsonResponse
+    {
+
+        $event = $this->eventService->getEventById($id);
+
+        return response()->json([
+            'event' => $event,
+        ]);
+    }
+
 }

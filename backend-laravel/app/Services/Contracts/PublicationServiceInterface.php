@@ -35,4 +35,14 @@ interface PublicationServiceInterface
     public function grantPublicationAccess(int $publicationId, array $userIds = [], array $roles = []): array;
 
     public function revokePublicationAccess(int $publicationId, array $userIds = [], array $roles = []): array;
+
+    /**
+     * Get a specific publication by ID.
+     *
+     * @param int $id
+     * @param User $user
+     * @return Publication
+     */
+    public function getPublicationById(int $id, User $user): Publication;
+
 }

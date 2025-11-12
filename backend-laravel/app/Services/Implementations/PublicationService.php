@@ -387,4 +387,41 @@ class PublicationService implements PublicationServiceInterface
 
         return $revokedUserIds;
     }
+
+    /**
+     * Get a specific publication by ID if the user has access to it.
+     *
+     * @param int $id
+     * @param User $user
+     * @return Publication
+     *
+     * @throws ResourceNotFoundException
+     */
+    public function getPublicationById(int $id, User $user): Publication
+    {
+        $publication = Publication::query()->find($id);
+
+        if (!$publication) {
+            throw new ResourceNotFoundException("The publication with ID $id was not found.");
+        }
+
+        // 🔹 Mentors and coordinators can view everything
+        if (in_array($user->role, ['mentor', 'coordinator'], true)) {
+            return $publication;
+        }
+
+        // 🔹 For other users, check if it's public or accessible
+        $hasAccess = $publication->visibility === 'public'
+            || PublicationAccess::query()
+                ->where('publication_id', $id)
+                ->where('profile_id', $user->id)
+                ->exists();
+
+        if (!$hasAccess) {
+            throw new ResourceNotFoundException("You don't have access to this publication.");
+        }
+
+        return $publication;
+    }
+
 }

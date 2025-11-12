@@ -186,4 +186,20 @@ class PublicationController extends Controller
             'revoked' => $revokedAccess,
         ]);
     }
+
+    /**
+     * Get a specific publication by ID.
+     *
+     */
+    public function getPublicationById(int $id): JsonResponse
+    {
+
+        $user = request()->user();
+        $publication = $this->publicationService->getPublicationById($id, $user);
+
+        return response()->json([
+            'publication' => $publication,
+        ]);
+    }
+
 }

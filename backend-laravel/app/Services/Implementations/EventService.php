@@ -341,4 +341,24 @@ class EventService implements EventServiceInterface
 
         return $results;
     }
+
+    /**
+     * Get a specific event by its ID.
+     *
+     * @param int $id
+     * @return Event
+     *
+     * @throws ResourceNotFoundException
+     */
+    public function getEventById(int $id): Event
+    {
+        $event = Event::query()->find($id);
+
+        if (!$event) {
+            throw new ResourceNotFoundException("The event with ID {$id} was not found.");
+        }
+
+        return $event;
+    }
+
 }
