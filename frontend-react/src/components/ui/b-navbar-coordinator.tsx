@@ -33,7 +33,7 @@ const BNavBarCoordinator = () => {
         </Button>
         <Button
           variant="ghost"
-          onClick={() => navigate("/publications")}
+          onClick={() => navigate("/event-board")}
           className="flex flex-col items-center gap-1 h-auto py-2"
         >
           <MessageSquare className="h-5 w-5" />

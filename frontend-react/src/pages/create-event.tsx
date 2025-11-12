@@ -451,7 +451,7 @@ export default function CreateEventPage() {
         </div>
       </div>
 
-      <BottomNavbarWrapper />
+      <BottomNavbarWrapper role={user?.role ?? ""} />
     </div>
   );
 }

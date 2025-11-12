@@ -290,30 +290,9 @@ export function CreatePublicationScreen() {
           </Button>
         </div>
       </div>
-
-      {/* Navigation Bar */}
-      <div className="fixed bottom-0 left-0 right-0 bg-background border-t p-4">
-        <div className="max-w-4xl mx-auto flex justify-around">
-          <Button variant="ghost" onClick={() => navigate('/dashboard-coordinator')}>
-            Dashboard
-          </Button>
-          <Button variant="ghost" onClick={() => navigate('/events')}>
-            Eventos
-          </Button>
-          <Button variant="ghost" onClick={() => navigate('/publications')}>
-            Publicaciones
-          </Button>
-          <Button variant="ghost" onClick={() => navigate('/reports')}>
-            Reportes
-          </Button>
-          <Button variant="ghost" onClick={() => navigate('/profile')}>
-            Perfil
-          </Button>
-        </div>
-      </div>
-
+      
       {/* Navigation bar */}
-      <BottomNavbarWrapper />
+      <BottomNavbarWrapper role={authUser?.role ?? ""} />
 
     </div>
   );
