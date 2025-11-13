@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Carbon;
 
 /**
@@ -83,4 +84,15 @@ class Profile extends Model
             $this->academic_program ?? $this->university ?? 'No academic info'
         );
     }
+
+    public function interests(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            Interest::class,
+            'profile_interests',   // pivot
+            'user_id',             // este fk en pivot refiere a profiles.user_id
+            'interest_id'          // este fk en pivot refiere a interests.id
+        );
+    }
+
 }

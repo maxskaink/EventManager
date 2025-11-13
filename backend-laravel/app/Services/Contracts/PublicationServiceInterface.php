@@ -30,7 +30,7 @@ interface PublicationServiceInterface
 
     public function updatePublication(int $id, array $data): Publication;
 
-    public function addPublicationInterests(int $id, array $interestIds): array;
+    public function addPublicationInterests(int $publicationId, array $interestIds): array;
 
     public function grantPublicationAccess(int $publicationId, array $userIds = [], array $roles = []): array;
 

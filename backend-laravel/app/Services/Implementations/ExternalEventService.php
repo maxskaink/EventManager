@@ -6,10 +6,10 @@ use App\Exceptions\DuplicatedResourceException;
 use App\Exceptions\InvalidRoleException;
 use App\Models\ExternalEvent;
 use App\Models\User;
+use App\Repositories\Contracts\ExternalEventRepositoryInterface;
 use App\Services\Contracts\ExternalEventServiceInterface;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
@@ -19,31 +19,20 @@ use Symfony\Component\Routing\Exception\ResourceNotFoundException;
 
 class ExternalEventService implements ExternalEventServiceInterface
 {
+    private ExternalEventRepositoryInterface $repository;
+
     /** @var array<string> */
     private array $trustedOrganizations;
 
-    public function __construct()
+    public function __construct(ExternalEventRepositoryInterface $repository)
     {
-        // Load trusted host organizations and URL domains from config/external_events.php
+        $this->repository = $repository;
         $this->trustedOrganizations = config('trusted_events.organizations', []);
     }
 
-    /**
-     * Create and store a new external event for a user.
-     *
-     * @param array $data
-     * @return ExternalEvent
-     *
-     * @throws InvalidRoleException
-     * @throws DuplicatedResourceException
-     * @throws ResourceNotFoundException
-     * @throws InvalidArgumentException
-     */
     public function addExternalEvent(array $data): ExternalEvent
     {
-        /** @var User|null $authUser */
         $authUser = Auth::user();
-
         if (!$authUser) {
             throw new InvalidRoleException('You must be logged in to add an external event.');
         }
@@ -53,128 +42,50 @@ class ExternalEventService implements ExternalEventServiceInterface
             throw new ResourceNotFoundException('The specified user does not exist.');
         }
 
-        // Only the same user or a mentor can create an external event
         if ($authUser->id !== $user->id && $authUser->role !== 'mentor') {
             throw new InvalidRoleException('You are not allowed to create external events for other users.');
         }
 
-        // Check for duplicate event name for the same user in same date range
-        $existing = ExternalEvent::query()
-            ->where('user_id', $data['user_id'])
-            ->where('name', $data['name'])
-            ->whereBetween('start_date', [$data['start_date'], $data['end_date']])
-            ->first();
+        $duplicate = $this->repository->findDuplicate(
+            $data['user_id'],
+            $data['name'],
+            $data['start_date'],
+            $data['end_date']
+        );
 
-        if ($existing) {
+        if ($duplicate) {
             throw new DuplicatedResourceException(
-                "An external event named '{$data['name']}' already exists for this user within this date range."
+                "An external event named '{$data['name']}' already exists."
             );
         }
 
-        // ✅ Validate host organization credibility
         $this->validateHostOrganization($data['host_organization']);
 
-        // ✅ Validate URL credibility if provided
         if (!empty($data['participation_url'])) {
             $this->validateParticipationUrl($data['participation_url']);
         }
 
-        // ✅ Validate date logic
-        $start = Carbon::parse($data['start_date']);
-        $end = Carbon::parse($data['end_date']);
+        $this->validateDates($data);
 
-        if ($end->isBefore($start)) {
-            throw new InvalidArgumentException('The end date cannot be earlier than the start date.');
-        }
-
-        $event = new ExternalEvent();
-        $event->fill($data);
-        $event->save();
-
-        return $event;
+        return $this->repository->create($data);
     }
 
-    /**
-     * Validate that the host organization is trusted or partially matches a known entity.
-     */
-    private function validateHostOrganization(string $organization): void
+    public function updateExternalEvent(int $eventId, array $data) : ExternalEvent
     {
-        $isTrusted = collect($this->trustedOrganizations)
-            ->contains(fn($trusted) => Str::contains(Str::lower($organization), Str::lower($trusted)));
-
-        if (!$isTrusted) {
-            throw new InvalidArgumentException(
-                "The organization '{$organization}' is not recognized as a trusted event organizer."
-            );
-        }
-    }
-
-    /**
-     * Validate that the participation URL is from a credible domain and accessible.
-     */
-    private function validateParticipationUrl(string $url): void
-    {
-        $domain = parse_url($url, PHP_URL_HOST);
-
-        if (!$domain) {
-            throw new InvalidArgumentException('The provided participation URL is invalid.');
-        }
-
-        // Check if domain matches any trusted organization domain
-        $isTrusted = collect($this->trustedOrganizations)
-            ->contains(fn($trusted) => Str::endsWith($domain, $trusted));
-
-        if (!$isTrusted) {
-            throw new InvalidArgumentException(
-                "The participation URL domain '{$domain}' is not from a trusted organization."
-            );
-        }
-
-        // Verify the URL is reachable
-        try {
-            $response = Http::timeout(5)->head($url);
-            if ($response->failed()) {
-                throw new InvalidArgumentException(
-                    "The participation URL '{$url}' could not be reached or returned an error."
-                );
-            }
-        } catch (\Throwable $e) {
-            throw new InvalidArgumentException("The participation URL '{$url}' is not accessible.");
-        }
-    }
-
-    /**
-     * Update an existing external event.
-     *
-     * @param int $eventId
-     * @param array $data
-     * @return ExternalEvent
-     *
-     * @throws InvalidRoleException
-     * @throws DuplicatedResourceException
-     * @throws ResourceNotFoundException
-     * @throws InvalidArgumentException
-     */
-    public function updateExternalEvent(int $eventId, array $data): ExternalEvent
-    {
-        /** @var User|null $authUser */
         $authUser = Auth::user();
-
         if (!$authUser) {
             throw new InvalidRoleException('You must be logged in to update an external event.');
         }
 
-        $event = ExternalEvent::query()->find($eventId);
+        $event = $this->repository->findById($eventId);
         if (!$event) {
             throw new ResourceNotFoundException('The specified external event does not exist.');
         }
 
-        // Only the owner or mentor can update
-        if ($authUser->id !== $event->user_id && $authUser->role !== 'mentor') {
+        if ($authUser->id!== $event->user_id && $authUser->role !== 'mentor') {
             throw new InvalidRoleException('You are not allowed to update this external event.');
         }
 
-        // Validate reassignment of user_id
         if (isset($data['user_id'])) {
             $newUser = User::query()->find($data['user_id']);
             if (!$newUser) {
@@ -186,13 +97,12 @@ class ExternalEventService implements ExternalEventServiceInterface
             }
         }
 
-        // Check for duplicate name for same user
         if (isset($data['name'])) {
-            $duplicate = ExternalEvent::query()
-                ->where('user_id', $data['user_id'] ?? $event->user_id)
-                ->where('name', $data['name'])
-                ->where('id', '<>', $eventId)
-                ->first();
+            $duplicate = $this->repository->findByNameForUser(
+                $data['user_id'] ?? $event->user_id,
+                $data['name'],
+                $eventId
+            );
 
             if ($duplicate) {
                 throw new DuplicatedResourceException(
@@ -201,58 +111,27 @@ class ExternalEventService implements ExternalEventServiceInterface
             }
         }
 
-        // Validate and normalize dates if provided
-        if (isset($data['start_date'])) {
-            $data['start_date'] = Carbon::parse($data['start_date'])->toDateTimeString();
-        }
+        $this->validateDates($data, true);
 
-        if (isset($data['end_date'])) {
-            $data['end_date'] = Carbon::parse($data['end_date'])->toDateTimeString();
-        }
-
-        if (isset($data['start_date']) && isset($data['end_date'])) {
-            $start = Carbon::parse($data['start_date']);
-            $end = Carbon::parse($data['end_date']);
-
-            if ($end->isBefore($start)) {
-                throw new InvalidArgumentException('The end date cannot be earlier than the start date.');
-            }
-        }
-
-        // ✅ Validate host organization credibility if changed
         if (isset($data['host_organization'])) {
             $this->validateHostOrganization($data['host_organization']);
         }
 
-        // ✅ Validate participation URL if changed
         if (!empty($data['participation_url'])) {
             $this->validateParticipationUrl($data['participation_url']);
         }
 
-        $event->fill($data);
-        $event->save();
-
-        return $event;
+        return $this->repository->update($eventId, $data);
     }
 
-
-    /**
-     * Delete an existing external event.
-     *
-     * @param int $eventId
-     * @throws InvalidRoleException
-     * @throws ResourceNotFoundException
-     */
     public function deleteExternalEvent(int $eventId): void
     {
-        /** @var User|null $authUser */
         $authUser = Auth::user();
-
         if (!$authUser) {
             throw new InvalidRoleException('You must be logged in to delete an external event.');
         }
 
-        $event = ExternalEvent::query()->find($eventId);
+        $event = $this->repository->findById($eventId);
         if (!$event) {
             throw new ResourceNotFoundException('The specified external event does not exist.');
         }
@@ -261,45 +140,25 @@ class ExternalEventService implements ExternalEventServiceInterface
             throw new InvalidRoleException('You are not allowed to delete this external event.');
         }
 
-        $event->delete();
+        $this->repository->delete($eventId);
     }
 
-    /**
-     * Get external events of the authenticated user.
-     *
-     * @return Collection<int, ExternalEvent>
-     * @throws InvalidRoleException
-     */
     public function getExternalEventsOfActiveUser(): Collection
     {
-        /** @var User|null $authUser */
         $authUser = Auth::user();
-
         if (!$authUser) {
             throw new InvalidRoleException('You must be logged in to view your external events.');
         }
 
-        return ExternalEvent::query()
-            ->where('user_id', $authUser->id)
-            ->orderByDesc('start_date')
-            ->get();
+        return $this->repository->findByUserId($authUser->id);
     }
 
-    /**
-     * Get external events by user ID.
-     *
-     * @param int $userId
-     * @return Collection<int, ExternalEvent>
-     * @throws InvalidRoleException
-     * @throws ResourceNotFoundException|AuthorizationException
-     */
     public function getExternalEventsByUser(int $userId): Collection
     {
-        /** @var User|null $authUser */
         $authUser = Auth::user();
 
         if (!$authUser) {
-            throw new InvalidRoleException('You must be logged in to view external events.');
+            throw new InvalidRoleException('You must be logged in.');
         }
 
         $user = User::query()->find($userId);
@@ -311,66 +170,88 @@ class ExternalEventService implements ExternalEventServiceInterface
             throw new AuthorizationException('You are not allowed to view external events of other users.');
         }
 
-        return ExternalEvent::query()
-            ->where('user_id', $userId)
-            ->orderByDesc('start_date')
-            ->get();
+        return $this->repository->findByUserId($userId);
     }
 
-    /**
-     * Get all external events (only mentors).
-     *
-     * @return Collection<int, ExternalEvent>
-     * @throws AuthorizationException
-     */
     public function getAllExternalEvents(): Collection
     {
-        /** @var User|null $authUser */
         $authUser = Auth::user();
 
         if (!$authUser || $authUser->role !== 'mentor') {
             throw new AuthorizationException('Only mentors can view all external events.');
         }
 
-        return ExternalEvent::query()
-            ->orderByDesc('start_date')
-            ->get();
+        return $this->repository->findAll();
     }
 
-    /**
-     * Get all external events within a specific date range.
-     *
-     * @param string $startDate
-     * @param string $endDate
-     * @return Collection<int, ExternalEvent>
-     *
-     * @throws InvalidArgumentException
-     * @throws AuthorizationException
-     */
     public function getExternalEventsByDateRange(string $startDate, string $endDate): Collection
     {
-        /** @var User|null $authUser */
         $authUser = Auth::user();
 
         if (!$authUser || $authUser->role !== 'mentor') {
-            throw new AuthorizationException('Only mentors can filter external events by date range.');
+            throw new AuthorizationException('Only mentors can filter external events by date.');
         }
 
-        $start = Carbon::parse($startDate);
-        $end = Carbon::parse($endDate);
-
-        if ($end->isBefore($start)) {
+        if (Carbon::parse($endDate)->isBefore(Carbon::parse($startDate))) {
             throw new InvalidArgumentException('The end date cannot be earlier than the start date.');
         }
 
-        return ExternalEvent::query()
-            ->whereBetween('start_date', [$start, $end])
-            ->orderBy('start_date')
-            ->get();
+        return $this->repository->findBetweenDates($startDate, $endDate);
     }
 
     public function getAllTrustedOrganizations(): array
     {
         return $this->trustedOrganizations;
+    }
+
+    private function validateDates(array $data, bool $partial = false): void
+    {
+        if (!$partial || (isset($data['start_date']) && isset($data['end_date']))) {
+            $startDate = Carbon::parse($data['start_date']);
+            $endDate = Carbon::parse($data['end_date']);
+
+            if ($endDate->isBefore($startDate)) {
+                throw new InvalidArgumentException('The end date cannot be earlier than the start date.');
+            }
+        }
+    }
+
+    private function validateHostOrganization(string $organization): void
+    {
+        $isTrusted = collect($this->trustedOrganizations)
+            ->contains(fn($trusted) => Str::contains(Str::lower($organization), Str::lower($trusted)));
+
+        if (!$isTrusted) {
+            throw new InvalidArgumentException(
+                "The organization '{$organization}' is not recognized as trusted."
+            );
+        }
+    }
+
+    private function validateParticipationUrl(string $url): void
+    {
+        $domain = parse_url($url, PHP_URL_HOST);
+
+        if (!$domain) {
+            throw new InvalidArgumentException('The provided participation URL is invalid.');
+        }
+
+        $isTrusted = collect($this->trustedOrganizations)
+            ->contains(fn($trusted) => Str::endsWith($domain, $trusted));
+
+        if (!$isTrusted) {
+            throw new InvalidArgumentException(
+                "The participation URL domain '{$domain}' is not trusted."
+            );
+        }
+
+        try {
+            $response = Http::timeout(5)->head($url);
+            if ($response->failed()) {
+                throw new InvalidArgumentException("The participation URL '{$url}' could not be reached.");
+            }
+        } catch (\Throwable) {
+            throw new InvalidArgumentException("The participation URL '{$url}' is not accessible.");
+        }
     }
 }

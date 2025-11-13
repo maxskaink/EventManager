@@ -5,6 +5,7 @@ namespace App\Services\Implementations;
 use App\Exceptions\DuplicatedResourceException;
 use App\Models\Article;
 use App\Models\User;
+use App\Repositories\Contracts\ArticleRepositoryInterface;
 use App\Services\Contracts\ArticleServiceInterface;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -13,15 +14,16 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
 
-
 class ArticleService implements ArticleServiceInterface
 {
     /** @var array<string> */
     private array $trustedOrganizations;
 
-    public function __construct()
+    protected ArticleRepositoryInterface $articleRepository;
+
+    public function __construct(ArticleRepositoryInterface $articleRepository)
     {
-        // Load trusted organizations from config
+        $this->articleRepository = $articleRepository;
         $this->trustedOrganizations = config('trusted_publications.organizations', []);
     }
 
@@ -44,10 +46,9 @@ class ArticleService implements ArticleServiceInterface
         }
 
         // Check for duplicate title within the same user
-        $existingArticle = Article::query()
-            ->where('user_id', $data['user_id'])
-            ->where('title', $data['title'])
-            ->first();
+        $existingArticle = $this->articleRepository
+            ->findByUserId($data['user_id'])
+            ->firstWhere('title', $data['title']);
 
         if ($existingArticle) {
             throw new DuplicatedResourceException(
@@ -55,12 +56,12 @@ class ArticleService implements ArticleServiceInterface
             );
         }
 
-        // ✅ Validate publication URL if provided
+        // Validate publication URL if provided
         if (!empty($data['publication_url'])) {
             $this->validatePublicationUrl($data['publication_url']);
         }
 
-        // ✅ Validate publication date (cannot be in the future)
+        // Validate publication date
         if (!empty($data['publication_date'])) {
             $publicationDate = Carbon::parse($data['publication_date']);
             if ($publicationDate->isFuture()) {
@@ -68,11 +69,8 @@ class ArticleService implements ArticleServiceInterface
             }
         }
 
-        $article = new Article();
-        $article->fill($data);
-        $article->save();
-
-        return $article;
+        // Create the article
+        return $this->articleRepository->create($data);
     }
 
     /**
@@ -88,7 +86,7 @@ class ArticleService implements ArticleServiceInterface
      */
     public function updateArticle(int $articleId, array $data): Article
     {
-        $article = Article::query()->find($articleId);
+        $article = $this->articleRepository->findById($articleId);
         if (!$article) {
             throw new ModelNotFoundException('The specified article does not exist.');
         }
@@ -103,25 +101,23 @@ class ArticleService implements ArticleServiceInterface
 
         // Check for duplicate title
         if (isset($data['title'])) {
-            $duplicate = Article::query()
-                ->where('user_id', $data['user_id'] ?? $article->user_id)
-                ->where('title', $data['title'])
-                ->where('id', '!=', $articleId)
-                ->first();
+            $duplicate = $this->articleRepository
+                ->findByUserId($data['user_id'] ?? $article->user_id)
+                ->firstWhere('title', $data['title']);
 
-            if ($duplicate) {
+            if ($duplicate && $duplicate->id !== $articleId) {
                 throw new DuplicatedResourceException(
                     "An article titled '{$data['title']}' already exists for this user."
                 );
             }
         }
 
-        // ✅ Validate publication URL if updated
+        // Validate publication URL if updated
         if (!empty($data['publication_url'])) {
             $this->validatePublicationUrl($data['publication_url']);
         }
 
-        // ✅ Validate publication date logic
+        // Validate publication date
         if (!empty($data['publication_date'])) {
             $publicationDate = Carbon::parse($data['publication_date']);
             if ($publicationDate->isFuture()) {
@@ -129,15 +125,15 @@ class ArticleService implements ArticleServiceInterface
             }
         }
 
-        $article->fill($data);
-        $article->save();
-
-        return $article;
+        return $this->articleRepository->update($articleId, $data);
     }
 
     /**
      * Validate that the publication URL belongs to a trusted organization
      * and that the link is accessible.
+     *
+     * @param string $url
+     * @throws InvalidArgumentException
      */
     private function validatePublicationUrl(string $url): void
     {
@@ -173,27 +169,33 @@ class ArticleService implements ArticleServiceInterface
 
     /**
      * Get all articles of a specific user.
+     *
+     * @param int $userId
+     * @return Collection<int, Article>
      */
     public function getArticlesByUser(int $userId): Collection
     {
-        return Article::query()
-            ->where('user_id', $userId)
-            ->orderByDesc('publication_date')
-            ->get();
+        return $this->articleRepository->findByUserId($userId);
     }
 
     /**
      * Get all articles in the system.
+     *
+     * @return Collection<int, Article>
      */
     public function getAllArticles(): Collection
     {
-        return Article::query()
-            ->orderByDesc('publication_date')
-            ->get();
+        return $this->articleRepository->findAll();
     }
 
     /**
      * Get all articles published within a specific date range.
+     *
+     * @param string $startDate
+     * @param string $endDate
+     * @return Collection<int, Article>
+     *
+     * @throws InvalidArgumentException
      */
     public function getArticlesByDateRange(string $startDate, string $endDate): Collection
     {
@@ -204,33 +206,32 @@ class ArticleService implements ArticleServiceInterface
             throw new InvalidArgumentException('The end date cannot be earlier than the start date.');
         }
 
-        return Article::query()
-            ->whereBetween('publication_date', [$start, $end])
-            ->orderBy('publication_date')
-            ->get();
+        return $this->articleRepository->findByDateRange($start->toDateString(), $end->toDateString());
     }
 
     /**
      * Delete an existing article.
+     *
+     * @param int $articleId
+     * @throws ModelNotFoundException
      */
     public function deleteArticle(int $articleId): void
     {
-        $article = Article::query()->find($articleId);
+        $article = $this->articleRepository->findById($articleId);
         if (!$article) {
             throw new ModelNotFoundException('The specified article does not exist.');
         }
 
-        $article->delete();
+        $this->articleRepository->delete($articleId);
     }
 
     /**
      * Get all trusted organizations.
      *
-     * @return array
+     * @return array<int, string>
      */
     public function getAllTrustedOrganizations(): array
     {
         return $this->trustedOrganizations;
     }
-
 }

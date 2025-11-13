@@ -4,68 +4,50 @@ namespace App\Services\Implementations;
 
 use App\Exceptions\DuplicatedResourceException;
 use App\Models\Interest;
+use App\Repositories\Contracts\InterestRepositoryInterface;
 use App\Services\Contracts\InterestServiceInterface;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class InterestService implements InterestServiceInterface
 {
+    public function __construct(
+        private readonly InterestRepositoryInterface $interestRepository
+    ) {}
+
     /**
-     * Create and store a new interest.
-     *
-     * @param array $data
-     * @return Interest
-     *
      * @throws DuplicatedResourceException
      */
     public function addInterest(array $data): Interest
     {
-        // Check if the keyword already exists (case-insensitive)
-        $existingInterest = Interest::query()
-            ->whereRaw('LOWER(keyword) = ?', [strtolower($data['keyword'])])
-            ->first();
+        // Check duplicate keyword
+        $existing = $this->interestRepository->findByKeyword($data['keyword']);
 
-        if ($existingInterest) {
+        if ($existing) {
             throw new DuplicatedResourceException(
                 "The interest '{$data['keyword']}' already exists."
             );
         }
 
-        $interest = new Interest();
-        $interest->fill($data);
-        $interest->save();
-
-        return $interest;
+        return $this->interestRepository->create($data);
     }
 
-    /**
-     * Get all interests in the system.
-     *
-     * @return Collection<int, Interest>
-     */
     public function getAllInterests(): Collection
     {
-        return Interest::query()
-            ->orderBy('keyword')
-            ->get();
+        return $this->interestRepository->findAll();
     }
 
     /**
-     * Delete an existing interest.
-     *
-     * @param int $interestId
-     * @return void
-     *
      * @throws ModelNotFoundException
      */
     public function deleteInterest(int $interestId): void
     {
-        $interest = Interest::query()->find($interestId);
+        $interest = $this->interestRepository->findById($interestId);
 
         if (!$interest) {
             throw new ModelNotFoundException('The specified interest does not exist.');
         }
 
-        $interest->delete();
+        $this->interestRepository->delete($interestId);
     }
 }
