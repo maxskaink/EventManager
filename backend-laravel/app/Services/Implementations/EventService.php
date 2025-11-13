@@ -361,4 +361,64 @@ class EventService implements EventServiceInterface
         return $event;
     }
 
+    /**
+     * List all participations for a given event.
+     *
+     * @param int $eventId
+     * @return Collection<int, Participation>
+     *
+     * @throws ResourceNotFoundException
+     */
+    public function listParticipationsByEvent(int $eventId): Collection
+    {
+        $event = Event::query()->find($eventId);
+        if (!$event) {
+            throw new ResourceNotFoundException("The event with ID {$eventId} was not found.");
+        }
+
+        return Participation::query()
+            ->where('event_id', $eventId)
+            ->orderBy('created_at', 'desc')
+            ->get();
+    }
+
+    /**
+     * List all participations for a given user.
+     *
+     * @param int $userId
+     * @return Collection<int, Participation>
+     *
+     * @throws ResourceNotFoundException
+     */
+    public function listParticipationsByUser(int $userId): Collection
+    {
+        $user = User::query()->find($userId);
+        if (!$user) {
+            throw new ResourceNotFoundException("The user with ID {$userId} was not found.");
+        }
+
+        return Participation::query()
+            ->where('user_id', $userId)
+            ->orderBy('created_at', 'desc')
+            ->get();
+    }
+
+    /**
+     * List all participations (optionally filtered by status).
+     *
+     * @param string|null $status
+     * @return Collection<int, Participation>
+     */
+    public function listAllParticipations(?string $status = null): Collection
+    {
+        $query = Participation::query();
+
+        if ($status) {
+            $query->where('status', $status);
+        }
+
+        return $query->orderBy('created_at', 'desc')->get();
+    }
+
+
 }

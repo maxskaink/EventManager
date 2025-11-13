@@ -3,6 +3,7 @@
 namespace App\Services\Contracts;
 
 use App\Models\Event;
+use App\Models\Participation;
 use Illuminate\Database\Eloquent\Collection;
 
 interface EventServiceInterface
@@ -83,4 +84,27 @@ interface EventServiceInterface
      */
     public function getEventById(int $id): Event;
 
+    /**
+     * List all participations for a given event.
+     *
+     * @param int $eventId
+     * @return Collection<int, Participation>
+     */
+    public function listParticipationsByEvent(int $eventId): Collection;
+
+    /**
+     * List all participations for a given user.
+     *
+     * @param int $userId
+     * @return Collection<int, Participation>
+     */
+    public function listParticipationsByUser(int $userId): Collection;
+
+    /**
+     * List all participations (optionally filtered by status).
+     *
+     * @param string|null $status
+     * @return Collection<int, Participation>
+     */
+    public function listAllParticipations(?string $status = null): Collection;
 }

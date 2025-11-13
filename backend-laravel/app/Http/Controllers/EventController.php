@@ -170,4 +170,52 @@ class EventController extends Controller
         ]);
     }
 
+    /**
+     * List all participations in the system (mentor or coordinator only).
+     */
+    public function listAllParticipations(): JsonResponse
+    {
+        $this->authorize('listAllParticipations', Event::class);
+
+        $status = request()->query('status'); // optional filter
+        $participations = $this->eventService->listAllParticipations($status);
+
+        return response()->json([
+            'participations' => $participations,
+        ]);
+    }
+
+    /**
+     * List all participations for a specific event (mentor or coordinator only).
+     */
+    public function listParticipationsByEvent(int $eventId): JsonResponse
+    {
+        $event = Event::query()->findOrFail($eventId);
+        $this->authorize('listParticipationsByEvent', $event);
+
+        $participations = $this->eventService->listParticipationsByEvent($eventId);
+
+        return response()->json([
+            'event_id' => $eventId,
+            'participations' => $participations,
+        ]);
+    }
+
+    /**
+     * List all participations for a specific user.
+     * The authenticated user can view their own participations,
+     * while mentors and coordinators can view anyone’s.
+     */
+    public function listParticipationsByUser(int $userId): JsonResponse
+    {
+        $authUser = request()->user();
+        $this->authorize('listParticipationsByUser', [Event::class, $userId]);
+
+        $participations = $this->eventService->listParticipationsByUser($userId);
+
+        return response()->json([
+            'user_id' => $userId,
+            'participations' => $participations,
+        ]);
+    }
 }

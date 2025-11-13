@@ -47,4 +47,32 @@ class EventPolicy
     {
         return $user->role === 'mentor' || $user->role === 'coordinator';
     }
+
+    /**
+     * Determine whether the user can list all participations.
+     * (Used in listAllParticipations)
+     */
+    public function listAllParticipations(User $user): bool
+    {
+        return in_array($user->role, ['mentor', 'coordinator'], true);
+    }
+
+    /**
+     * Determine whether the user can view participations of a specific event.
+     * (Used in listParticipationsByEvent)
+     */
+    public function listParticipationsByEvent(User $user, Event $event): bool
+    {
+        return in_array($user->role, ['mentor', 'coordinator'], true);
+    }
+
+    /**
+     * Determine whether the user can view participations of a specific user.
+     * (Used in listParticipationsByUser)
+     */
+    public function listParticipationsByUser(User $authUser, $targetUser): bool
+    {
+        $targetUserId = $targetUser instanceof User ? $targetUser->id : (int) $targetUser;
+        return $authUser->id === $targetUserId || in_array($authUser->role, ['mentor', 'coordinator'], true);
+    }
 }

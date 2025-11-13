@@ -24,7 +24,6 @@ class ArticleController extends Controller
 
     /**
      * Create a new article for a user.
-     * TODO: Should a article that was created and is identical into 2 users be shared? or there r 2 different articles entry's?
      */
     public function addArticle(AddArticleRequest $request): JsonResponse
     {
