@@ -18,7 +18,7 @@ class ToggleRoleRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'new_role' => 'required|string|in:interested,member,coordinator,mentor',
+            'new_role' => 'required|string|in:interested,active-member,seed,coordinator,mentor',
         ];
     }
 

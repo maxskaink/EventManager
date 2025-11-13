@@ -23,14 +23,21 @@ class UserFactory extends Factory
      */
     public function definition(): array
     {
+        // Generate a realistic full name and role-aware email domain
+        $name = $this->faker->name();
+        $role = $this->faker->randomElement(['interested', 'active-member', 'seed', 'coordinator', 'mentor']);
+        $localPart = strtolower(str_replace(' ', '.', $this->faker->unique()->firstName()));
+        $domain = in_array($role, ['seed', 'coordinator', 'mentor']) ? '@unicauca.edu.co' : '@gmail.com';
+
         return [
-            'name' => $this->faker->name(),
-            'email' => $this->faker->unique()->userName() . '@unicauca.edu.co',
+            'name' => $name,
+            'email' => $localPart . $domain,
             'email_verified_at' => now(),
-            'google_id' => 'test_' . fake()->uuid(),
-            'avatar' => fake()->imageUrl(),
-            'role' => $this->faker->randomElement(['interested', 'member', 'mentor', 'coordinator']),
-            'remember_token' => Str::random(10),
+            // google_id may be null for most users
+            'google_id' => $this->faker->boolean(25) ? 'google_' . $this->faker->uuid() : null,
+            'avatar' => $this->faker->optional(0.7)->imageUrl(400, 400, 'people'),
+            'role' => $role,
+            // Do not set password or remember_token here; the users table does not include a password column
         ];
 
     }

@@ -22,9 +22,25 @@ class ProfileFactory extends Factory
     {
         return [
             'user_id' => User::factory(),
-            'university' => fake()->optional()->company(),
-            'academic_program' => fake()->optional()->words(3, true),
-            'phone' => fake()->optional()->phoneNumber(),
+            // Prefer realistic Colombian universities when present
+            'university' => fake()->optional(0.85)->randomElement([
+                'Universidad del Cauca',
+                'Universidad de Antioquia',
+                'Universidad Nacional de Colombia',
+                'Universidad del Valle',
+                'Universidad ICESI',
+                'Universidad de los Andes',
+            ]),
+            // Academic program chosen from common programs
+            'academic_program' => fake()->optional(0.9)->randomElement([
+                'Ingeniería de Sistemas y Computación',
+                'Ingeniería de Software',
+                'Ciencia de Datos',
+                'Ingeniería Electrónica',
+                'Licenciatura en Matemáticas',
+            ]),
+            // Phone number may be empty for some profiles
+            'phone' => fake()->optional(0.7)->phoneNumber(),
         ];
     }
 }

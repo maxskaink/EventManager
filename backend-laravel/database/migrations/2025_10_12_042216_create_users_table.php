@@ -15,7 +15,7 @@ return new class extends Migration
             #$table->string('password')->nullable();
             $table->string('google_id')->nullable();
             $table->string('avatar')->nullable();
-            $table->enum('role', ['interested', 'member', 'coordinator', 'mentor'])->default('interested');
+            $table->enum('role', ['interested','active-member', 'seed', 'coordinator', 'mentor'])->default('interested');
             $table->timestamp('last_login_at')->nullable();
             $table->softDeletes();
             $table->rememberToken();

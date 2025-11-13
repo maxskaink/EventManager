@@ -52,6 +52,17 @@ class UserController extends Controller
     }
 
     /**
+     * List all active seeds.
+     *
+     * @throws AuthorizationException
+     */
+    public function listActiveSeeds(): JsonResponse
+    {
+        $this->authorize('viewAny', Auth::user());
+        return response()->json($this->userService->listActiveSeeds());
+    }
+
+    /**
      * List all active members.
      *
      * @throws AuthorizationException

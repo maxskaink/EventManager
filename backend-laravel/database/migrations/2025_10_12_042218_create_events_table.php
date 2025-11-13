@@ -11,7 +11,7 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('publication_id')->nullable();
             $table->string('name');
-            $table->string('description');
+            $table->text('description');
             $table->dateTime('start_date');
             $table->dateTime('end_date');
             $table->enum('event_type', ['charla', 'curso', 'convocatoria', 'taller', 'conferencia'])->default('charla');

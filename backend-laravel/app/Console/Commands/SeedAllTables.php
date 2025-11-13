@@ -2,17 +2,19 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Article;
-use App\Models\Certificate;
-use App\Models\Interest;
-use App\Models\Publication;
-use App\Models\PublicationInterest;
-use App\Models\Profile;
-use App\Models\PublicationAccess;
-use App\Models\Notification;
-use App\Models\ExternalEvent;
-use App\Models\User;
-use App\Models\Event;
+use App\Models\{
+    Article,
+    Certificate,
+    Interest,
+    Publication,
+    PublicationInterest,
+    Profile,
+    Participation,
+    PublicationAccess,
+    ExternalEvent,
+    User,
+    Event
+};
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -20,18 +22,29 @@ use Faker\Factory as Faker;
 
 class SeedAllTables extends Command
 {
-    protected $signature = 'db:seed-all {--force}';
-    protected $description = 'Generate seed/test data for main tables (development only).';
+    /**
+     * Signature with configurable options.
+     */
+    protected $signature = 'db:seed-all
+        {--force : Run even if not in local environment}
+        {--publications=10 : Number of publications to generate}
+        {--articles=8 : Number of articles to generate}
+        {--events=6 : Number of internal events to generate}
+        {--external=5 : Number of external events to generate}
+        {--certificates=5 : Number of certificates to generate}';
+
+    protected $description = 'Generate coherent seed/test data for all main tables (development only).';
 
     public function handle(): int
     {
         if (!app()->environment('local') && !$this->option('force')) {
-            $this->error('This command only runs in local environment. Use --force to override.');
+            $this->error('❌ This command only runs in local environment. Use --force to override.');
             return 1;
         }
 
-        $faker = Faker::create();
+        $faker = Faker::create('es_ES');
 
+        // Disable foreign keys to truncate safely
         Schema::disableForeignKeyConstraints();
 
         $tables = [
@@ -52,7 +65,7 @@ class SeedAllTables extends Command
             try {
                 DB::table($table)->truncate();
             } catch (\Throwable $e) {
-                // ignore missing table
+                // Ignore if the table doesn't exist
             }
         }
 
@@ -60,52 +73,50 @@ class SeedAllTables extends Command
 
         DB::beginTransaction();
         try {
-            $this->info('Creating users...');
+            $this->info('👤 Creating users with meaningful roles...');
+
+            // Define role distribution
             $users = collect();
-            for ($i = 0; $i < 8; $i++) {
-                $u = User::query()->create([
-                    'name' => $faker->name(),
-                    'email' => $faker->unique()->safeEmail(),
-                    'email_verified_at' => now(),
-                    'google_id' => 'dev_' . uniqid(),
-                    'avatar' => 'https://via.placeholder.com/150',
-                    'role' => $faker->randomElement(['interested', 'member', 'mentor', 'coordinator']),
-                ]);
-                $users->push($u);
+            $roles = [
+                'interested' => 4,
+                'active-member' => 4,
+                'seed' => 2,
+                'coordinator' => 1,
+                'mentor' => 1,
+            ];
+
+            // Create users and profiles
+            foreach ($roles as $role => $count) {
+                $created = User::factory()->count($count)->create(['role' => $role]);
+                foreach ($created as $user) {
+                    Profile::factory()->for($user)->create();
+                    $users->push($user);
+                }
             }
 
-            $this->info('Creating profiles...');
-            foreach ($users as $user) {
-                Profile::query()->firstOrCreate(
-                    ['user_id' => $user->id],
-                    [
-                        'university' => $faker->company(),
-                        'academic_program' => $faker->word(),
-                        'phone' => $faker->phoneNumber()
-                    ]
-                );
-            }
+            $this->info('📚 Creating thematic interests...');
+            $keywords = [
+                'Inteligencia Artificial',
+                'Desarrollo Web',
+                'Ciberseguridad',
+                'Ciencia de Datos',
+                'Redes',
+                'Bases de Datos',
+                'Internet de las Cosas'
+            ];
 
-            $this->info('Creating interests...');
-            $keywords = ['Data Science', 'AI', 'Web', 'Mobile', 'Security', 'Networking', 'Databases'];
-            $interestModels = [];
             $interestIds = [];
             foreach ($keywords as $kw) {
-                $model = Interest::query()->create(['keyword' => $kw]);
-                $interestModels[] = $model;
-                $interestIds[] = $model->id;
+                $interest = Interest::factory()->create(['keyword' => $kw]);
+                $interestIds[] = $interest->id;
             }
 
-            $this->info('Linking profile interests...');
-            $profileIds = DB::table('profiles')->pluck('user_id')->toArray();
-            foreach ($profileIds as $pid) {
-                // pick between 1 and up to 3 interests but not more than available
-                $max = min(count($interestIds), 3);
-                $count = $faker->numberBetween(1, max(1, $max));
-                $sample = (array)$faker->randomElements($interestIds, $count);
+            $this->info('🔗 Linking profiles with random interests...');
+            foreach (Profile::all() as $profile) {
+                $sample = (array) array_rand(array_flip($interestIds), rand(1, 3));
                 foreach ($sample as $intId) {
                     DB::table('profile_interests')->insert([
-                        'user_id' => $pid,
+                        'user_id' => $profile->user_id,
                         'interest_id' => $intId,
                         'created_at' => now(),
                         'updated_at' => now(),
@@ -113,148 +124,117 @@ class SeedAllTables extends Command
                 }
             }
 
-            $this->info('Creating publications...');
+
+            // Read counts from options
+            $pubCount = (int) $this->option('publications');
+            $artCount = (int) $this->option('articles');
+            $eventCount = (int) $this->option('events');
+            $extCount = (int) $this->option('external');
+            $certCount = (int) $this->option('certificates');
+
+            $this->info("📰 Creating {$pubCount} publications...");
             $publicationIds = [];
-            foreach (range(1, 10) as $i) {
-                $author = $users->random();
-                $pub = Publication::query()->create([
-                    'author_id' => $author->id,
-                    'title' => $faker->sentence(6),
-                    'content' => $faker->paragraph(4),
-                    'type' => $faker->randomElement(['articulo', 'aviso', 'comunicado', 'material', 'evento']),
-                    'published_at' => $faker->date(),
-                    'status' => $faker->randomElement(['activo', 'inactivo', 'borrador', 'pendiente']),
-                    'last_modified' => now(),
-                    'image_url' => null,
-                    'summary' => $faker->sentence(10),
-                    'visibility' => 'public',
-                ]);
+            for ($i = 0; $i < $pubCount; $i++) {
+                $author = $users->whereIn('role', ['active-member', 'seed', 'mentor'])->random();
+                $pub = Publication::factory()->create(['author_id' => $author->id]);
                 $publicationIds[] = $pub->id;
             }
 
-            $this->info('Creating articles...');
-            foreach (range(1, 8) as $i) {
-                $author = $users->random();
-                Article::query()->create([
-                    'user_id' => $author->id,
-                    'title' => $faker->sentence(5),
-                    'description' => $faker->sentence(10),
-                    'publication_date' => $faker->date(),
-                    'authors' => $author->name,
-                    'publication_url' => $faker->url(),
-                ]);
+            $this->info("📄 Creating {$artCount} research articles...");
+            for ($i = 0; $i < $artCount; $i++) {
+                $author = $users->whereIn('role', ['active-member', 'seed', 'mentor'])->random();
+                Article::factory()->create(['user_id' => $author->id]);
             }
 
-            $this->info('Creating events...');
+            $this->info("🎓 Creating {$eventCount} internal university events...");
             $eventIds = [];
-            foreach (range(1, 6) as $i) {
-                $start = $faker->dateTimeBetween('-1 month', '+2 months');
-                $end = (clone $start)->modify('+' . $faker->numberBetween(1, 3) . ' hours');
-                $ev = Event::query()->create([
-                    'publication_id' => null,
-                    'name' => $faker->sentence(4),
-                    'description' => $faker->paragraph(),
-                    'start_date' => $start,
-                    'end_date' => $end,
-                    'event_type' => $faker->randomElement(['charla', 'curso', 'convocatoria']),
-                    'modality' => $faker->randomElement(['presencial', 'virtual', 'mixta']),
-                    'location' => $faker->city(),
-                    'status' => $faker->randomElement(['scheduled', 'cancelled', 'finished']),
-                    'capacity' => $faker->numberBetween(10, 200),
-                ]);
-                $eventIds[] = $ev->id;
+            for ($i = 0; $i < $eventCount; $i++) {
+                $event = Event::factory()->create();
+                $eventIds[] = $event->id;
             }
 
-            $this->info('Creating certificates...');
-            foreach (range(1, 5) as $i) {
-                $user = $users->random();
-                Certificate::query()->create([
-                    'user_id' => $user->id,
-                    'name' => 'Certificate ' . $i,
-                    // migrations expect issuing_organization (keep compatibility)
-                    'issuing_organization' => $faker->company(),
-                    'description' => $faker->optional()->sentence(),
-                    'issue_date' => $faker->date(),
-                    'expiration_date' => $faker->optional()->date(),
-                    'credential_id' => $faker->optional()->regexify('[A-Z0-9]{8}'),
-                    'document_url' => "assets/certificates/certificate_$i.pdf",
-                    'credential_url' => $faker->optional()->url(),
-                    'does_not_expire' => $faker->boolean(20),
-                    'comment' => $faker->optional()->sentence(),
-                    'deleted' => false,
-                ]);
+            $this->info('👥 Creating participation records...');
+            foreach ($eventIds as $eventId) {
+                $attendees = $users->whereIn('role', ['interested', 'active-member'])
+                    ->random(rand(2, min(6, $users->count())))
+                    ->pluck('id')
+                    ->toArray();
+
+                foreach ($attendees as $userId) {
+                    Participation::factory()->create([
+                        'event_id' => $eventId,
+                        'user_id' => $userId,
+                    ]);
+                }
             }
 
-            $this->info('Linking publications with interests...');
-            foreach ($publicationIds as $pid) {
-                $max = min(count($interestIds), 3);
-                $count = $faker->numberBetween(1, max(1, $max));
-                $sample = (array)$faker->randomElements($interestIds, $count);
+            $this->info("🌍 Creating {$extCount} external academic events...");
+            for ($i = 0; $i < $extCount; $i++) {
+                $organizer = $users->whereIn('role', ['mentor', 'coordinator'])->random();
+                ExternalEvent::factory()->create(['user_id' => $organizer->id]);
+            }
+
+            $this->info("🏅 Creating {$certCount} certificates...");
+            for ($i = 0; $i < $certCount; $i++) {
+                $user = $users->whereIn('role', ['active-member', 'seed', 'mentor'])->random();
+                Certificate::factory()->create(['user_id' => $user->id]);
+            }
+
+            $this->info('🧩 Linking publications with interests...');
+            foreach ($publicationIds as $pubId) {
+                $sample = (array) array_rand(array_flip($interestIds), rand(1, 3));
                 foreach ($sample as $intId) {
-                    PublicationInterest::query()->create([
-                        'publication_id' => $pid,
+                    // Avoid duplicates in unique(publication_id, interest_id)
+                    PublicationInterest::firstOrCreate([
+                        'publication_id' => $pubId,
                         'interest_id' => $intId,
                     ]);
                 }
             }
 
-            $this->info('Creating participations...');
-            foreach ($eventIds as $eid) {
-                $attendees = $users->random(min(3, $users->count()))->pluck('id')->toArray();
-                foreach ($attendees as $uid) {
-                    DB::table('participations')->insert([
-                        'event_id' => $eid,
-                        'user_id' => $uid,
-                        'status' => $faker->randomElement(['inscrito', 'asistio', 'ausente', 'cancelado']),
+            $this->info('🔐 Creating publication access entries...');
+            foreach (Publication::all() as $publication) {
+                $randomProfile = Profile::inRandomOrder()->first();
+
+                // Profile uses user_id as primary key; use getKey() to obtain the correct id
+                $profileId = $randomProfile ? $randomProfile->getKey() : null;
+
+                if ($profileId) {
+                    DB::table('publication_accesses')->insert([
+                        'profile_id' => $profileId,
+                        'publication_id' => $publication->id,
                         'created_at' => now(),
                         'updated_at' => now(),
                     ]);
+                } else {
+                    $this->warn("⚠️ Skipping publication {$publication->id} — no valid profile found.");
                 }
             }
 
-            $this->info('Creating publication access records...');
-            foreach ($publicationIds as $pubId) {
-                $maxViewers = min(count($profileIds), 4);
-                $numViewers = $faker->numberBetween(1, max(1, $maxViewers));
-                $viewers = (array)$faker->randomElements($profileIds, $numViewers);
-                foreach ($viewers as $pid) {
-                    try {
-                        PublicationAccess::query()->create([
-                            'profile_id' => $pid,
-                            'publication_id' => $pubId,
-                        ]);
-                    } catch (\Throwable $e) {
-                        // ignore duplicates or FK issues
-                    }
-                }
-            }
-
-            $this->info('Creating external events...');
-            foreach (range(1, 6) as $i) {
-                $organizer = $users->random();
-                $start = $faker->dateTimeBetween('-2 months', '+3 months');
-                $end = (clone $start)->modify('+' . $faker->numberBetween(1, 72) . ' hours');
-                ExternalEvent::query()->create([
-                    'user_id' => $organizer->id,
-                    'name' => $faker->sentence(4),
-                    'description' => $faker->paragraph(),
-                    'start_date' => $start,
-                    'end_date' => $end,
-                    'modality' => $faker->randomElement(['presencial', 'virtual', 'mixta']),
-                    'host_organization' => $faker->company(),
-                    'location' => $faker->optional()->city(),
-                    'participation_url' => $faker->optional()->url(),
-                ]);
-            }
 
             DB::commit();
+
+            // Quick stats
+            $this->line('');
+            $this->info('📊 Final dataset summary:');
+            $this->line(' - Users: ' . User::count());
+            $this->line(' - Profiles: ' . Profile::count());
+            $this->line(' - Publications: ' . Publication::count());
+            $this->line(' - Articles: ' . Article::count());
+            $this->line(' - Events: ' . Event::count());
+            $this->line(' - External Events: ' . ExternalEvent::count());
+            $this->line(' - Certificates: ' . Certificate::count());
+            $this->line(' - Interests: ' . Interest::count());
+            $this->line(' - PublicationAccess: ' . PublicationAccess::count());
+            $this->line('');
+
+            $this->info('✅ Seeding finished successfully with coherent, meaningful data.');
+            return 0;
+
         } catch (\Throwable $e) {
             DB::rollBack();
-            $this->error("Error: " . $e->getMessage());
+            $this->error("❌ Error: " . $e->getMessage());
             return 1;
         }
-
-        $this->info('✅ Seeding finished successfully.');
-        return 0;
     }
 }
