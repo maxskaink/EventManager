@@ -78,4 +78,85 @@ class ProfileController extends Controller
             'interests' => $addedInterests,
         ]);
     }
+
+    /**
+     * View a profile by user ID.
+     *
+     * @param int $userId
+     * @return JsonResponse
+     * @throws AuthorizationException
+     */
+    public function getProfileById(int $userId): JsonResponse
+    {
+        $authUser = Auth::user();
+
+        $this->authorize('view', [Profile::class, User::query()->findOrFail($userId)]);
+
+        $profile = $this->profileService->getProfile($userId);
+
+        return response()->json([
+            'profile' => $profile,
+        ]);
+    }
+
+    /**
+     * List all interests of the authenticated user's profile.
+     *
+     * @return JsonResponse
+     */
+    public function listProfileInterests(): JsonResponse
+    {
+        $authUser = Auth::user();
+        $this->authorize('view', [Profile::class, $authUser]);
+
+        $interests = $this->profileService->getAllProfileInterests($authUser->id);
+
+        return response()->json([
+            'interests' => $interests,
+        ]);
+    }
+
+    /**
+     * Get a specific interest by its ID for the authenticated user's profile.
+     *
+     * @param int $interestId
+     * @return JsonResponse
+     */
+    public function getProfileInterestByUserId(int $userId): JsonResponse
+    {
+        $authUser = Auth::user();
+        $this->authorize('view', [Profile::class, $authUser]);
+
+        $interest = $this->profileService->getAllProfileInterests($userId);
+
+        return response()->json([
+            'interest' => $interest,
+        ]);
+    }
+
+    /**
+     * Remove an interest from the authenticated user's profile.
+     *
+     * @param int $interestId
+     * @return JsonResponse
+     * @throws AuthorizationException
+     */
+    public function removeProfileInterest(int $interestId): JsonResponse
+    {
+        $authUser = Auth::user();
+        $this->authorize('update', [Profile::class, $authUser]);
+
+        $deleted = $this->profileService->removeProfileInterest($authUser->id, $interestId);
+
+        if (!$deleted) {
+            return response()->json([
+                'message' => 'Interest not found or could not be deleted.'
+            ], 404);
+        }
+
+        return response()->json([
+            'message' => 'Interest removed successfully.',
+        ]);
+    }
+
 }

@@ -12,4 +12,5 @@ Route::middleware('auth:sanctum')->prefix('user')->group(function () {
     Route::get('mentor', [UserController::class, 'listActiveMentors']);
     Route::get('inactive', [UserController::class, 'listInactiveUsers']);
     Route::get('active', [UserController::class, 'listActiveUsers']);
+    Route::get('{user}', [UserController::class, 'getUserById']);
 });

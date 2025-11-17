@@ -35,9 +35,9 @@ class AddPublicationInterestRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'interests.required' => 'At least one interest must be provided.',
+            'interests.required' => 'At least one valid interest must be provided.',
             'interests.array' => 'The interests field must be an array.',
-            'interests.min' => 'You must provide at least one interest.',
+            'interests.min' => 'You must provide at least one valid interest.',
             'interests.*.integer' => 'Each interest ID must be an integer.',
             'interests.*.exists' => 'Some provided interests do not exist.',
         ];

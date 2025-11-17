@@ -31,4 +31,10 @@ interface ProfileServiceInterface
      * @return array
      */
     public function addProfileInterests(int $userId, array $interestIds): array;
+
+    public function getAllProfileInterests(int $userId): array;
+
+    public function getProfileInterestById(int $userId, int $interestId): ?array;
+
+    public function removeProfileInterest(int $userId, int $interestId): bool;
 }

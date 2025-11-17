@@ -17,6 +17,7 @@ return new class extends Migration
             $table->enum('event_type', ['charla', 'curso', 'convocatoria', 'taller', 'conferencia'])->default('charla');
             $table->enum('modality', ['presencial', 'virtual', 'mixta'])->default('presencial');
             $table->string('location')->nullable();
+            $table->string('virtual_url')->nullable();
             $table->string('status', 50);
             $table->integer('capacity')->nullable();
             $table->timestamps();

@@ -35,7 +35,7 @@ class CertificateController extends Controller
         return response()->json([
             'message' => 'Certificate created successfully.',
             'certificate' => $newCertificate,
-        ]);
+        ],201);
     }
 
     /**

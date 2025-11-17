@@ -37,7 +37,7 @@ class ArticleController extends Controller
         return response()->json([
             'message' => 'Article created successfully.',
             'article' => $newArticle,
-        ]);
+        ], 201);
     }
 
     /**
@@ -88,8 +88,6 @@ class ArticleController extends Controller
         if (!$targetUser) {
             throw new NotFoundHttpException('User not found.');
         }
-
-        $this->authorize('viewByUser', [Article::class, $targetUser]);
 
         $articles = $this->articleService->getArticlesByUser($userId);
 

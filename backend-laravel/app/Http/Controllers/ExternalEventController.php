@@ -34,7 +34,7 @@ class ExternalEventController extends Controller
 
         return response()->json([
             'message' => "External event created successfully: {$newEvent}"
-        ]);
+        ],201);
     }
 
     /**

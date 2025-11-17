@@ -17,6 +17,7 @@ use Illuminate\Support\Carbon;
  * @property string $event_type
  * @property string $modality
  * @property string|null $location
+ * @property string|null $virtual_url
  * @property string $status
  * @property int|null $capacity
  * @property Carbon|null $created_at
@@ -40,6 +41,7 @@ class Event extends Model
         'event_type',
         'modality',
         'location',
+        'virtual_url',
         'status',
         'capacity',
     ];
@@ -56,6 +58,7 @@ class Event extends Model
             'end_date' => 'datetime',
             'capacity' => 'integer',
             'publication_id' => 'integer',
+            'virtual_url' => 'string',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
         ];

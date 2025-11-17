@@ -151,20 +151,6 @@ class ArticleService implements ArticleServiceInterface
                 "The publication domain '{$domain}' is not from a trusted source."
             );
         }
-
-        // Verify the URL is reachable
-        try {
-            $response = Http::timeout(5)->head($url);
-            if ($response->failed()) {
-                throw new InvalidArgumentException(
-                    "The publication URL '{$url}' could not be reached or returned an error."
-                );
-            }
-        } catch (\Throwable $e) {
-            throw new InvalidArgumentException(
-                "The publication URL '{$url}' is not accessible."
-            );
-        }
     }
 
     /**
