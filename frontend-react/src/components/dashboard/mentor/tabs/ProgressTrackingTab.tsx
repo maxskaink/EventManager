@@ -1,13 +1,11 @@
 import React from "react";
 import { Button } from "../../../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../../../ui/card";
-import { Badge } from "../../../ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "../../../ui/avatar";
-import { Calendar, Award, BarChart3 } from "lucide-react";
+import { Calendar, Award } from "lucide-react";
 
 type MemberProgressData = API.User & {
   joinDate: string;
-  progress: number;
   eventsAttended: number;
   certificatesEarned: number;
 };
@@ -25,7 +23,7 @@ export const ProgressTrackingTab: React.FC<ProgressTrackingTabProps> = ({
   onViewProfile,
   onGenerateReport,
 }) => {
-  const memberUsers = users.filter((user) => user.role === "miembro");
+  const memberUsers = users.filter((user) => user.role === "active-member" || user.role === "seed");
 
   return (
     <Card>
@@ -41,7 +39,6 @@ export const ProgressTrackingTab: React.FC<ProgressTrackingTabProps> = ({
           <div className="space-y-6">
             {memberUsers.map((user) => {
               // Datos mock para métricas (como en el original)
-              const progress = Math.floor(Math.random() * 40) + 40;
               const eventsAttended = Math.floor(Math.random() * 10) + 1;
               const certificatesEarned = Math.floor(Math.random() * 5);
               const memberData = {
@@ -49,7 +46,6 @@ export const ProgressTrackingTab: React.FC<ProgressTrackingTabProps> = ({
                 joinDate: user.email_verified_at
                   ? new Date(user.email_verified_at).toLocaleDateString()
                   : "N/A",
-                progress,
                 eventsAttended,
                 certificatesEarned,
               } as MemberProgressData;
@@ -74,10 +70,9 @@ export const ProgressTrackingTab: React.FC<ProgressTrackingTabProps> = ({
                         </p>
                       </div>
                     </div>
-                    <Badge variant="outline">{progress}% Completado</Badge>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="text-center p-3 bg-muted rounded-lg">
                       <Calendar className="h-6 w-6 mx-auto mb-2 text-primary" />
                       <p className="text-sm text-muted-foreground">
@@ -94,16 +89,7 @@ export const ProgressTrackingTab: React.FC<ProgressTrackingTabProps> = ({
                         {certificatesEarned}
                       </p>
                     </div>
-                    <div className="text-center p-3 bg-muted rounded-lg">
-                      <BarChart3 className="h-6 w-6 mx-auto mb-2 text-primary" />
-                      <p className="text-sm text-muted-foreground">Progreso</p>
-                      <div className="w-full bg-background rounded-full h-2 mt-2">
-                        <div
-                          className="bg-primary h-2 rounded-full"
-                          style={{ width: `${progress}%` }}
-                        ></div>
-                      </div>
-                    </div>
+               
                   </div>
 
                   <div className="mt-4 flex gap-2">

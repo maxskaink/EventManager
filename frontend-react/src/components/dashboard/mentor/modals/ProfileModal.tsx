@@ -7,7 +7,6 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 // Tipo duplicado para mantener el componente aislado
 type MemberProgressData = (API.User & {
   joinDate: string;
-  progress: number;
   eventsAttended: number;
   certificatesEarned: number;
 }) | null;
@@ -47,10 +46,6 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ open, onOpenChange, 
             <div className="p-4 bg-muted rounded-lg">
               <p className="text-sm text-muted-foreground mb-1">Fecha de Ingreso</p>
               <p className="text-lg font-semibold">{member.joinDate}</p>
-            </div>
-            <div className="p-4 bg-muted rounded-lg">
-              <p className="text-sm text-muted-foreground mb-1">Progreso</p>
-              <p className="text-lg font-semibold">{member.progress}%</p>
             </div>
             <div className="p-4 bg-muted rounded-lg">
               <p className="text-sm text-muted-foreground mb-1">Eventos Asistidos</p>

@@ -10,7 +10,7 @@ import {
   GeneralReportModal,
   NotificationsModal,
   ProfileModal,
-  ReportModal,
+  ProfileReportModal,
   SettingsModal,
   type Submission,
 } from "../../components/dashboard/mentor";
@@ -200,7 +200,7 @@ export function MentorDashboardPage() {
         member={selectedMember}
       />
 
-      <ReportModal
+      <ProfileReportModal
         open={isReportModalOpen}
         onOpenChange={setIsReportModalOpen}
         member={selectedMember}

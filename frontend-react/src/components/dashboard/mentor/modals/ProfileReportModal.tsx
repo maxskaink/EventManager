@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button } from '../../../ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '../../../ui/dialog';
-import { Users, BarChart3, Calendar, Award, TrendingUp } from 'lucide-react';
+import { Users, BarChart3, Calendar, Award } from 'lucide-react';
 import { toast } from 'sonner';
 
 type MemberProgressData = (API.User & {
@@ -17,7 +17,7 @@ interface ReportModalProps {
   member: MemberProgressData;
 }
 
-export const ReportModal: React.FC<ReportModalProps> = ({ open, onOpenChange, member }) => {
+export const ProfileReportModal: React.FC<ReportModalProps> = ({ open, onOpenChange, member }) => {
   if (!member) return null;
 
   return (
@@ -30,7 +30,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({ open, onOpenChange, me
         
         <div className="space-y-6">
           {/* Información General */}
-          <div className="border-b pb-4">
+          <div className="border-b pb-2">
             <h4 className="font-semibold mb-3 flex items-center gap-2"><Users /> Información General</h4>
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div><p className="text-muted-foreground">Nombre:</p><p className="font-medium">{member.name}</p></div>
@@ -43,32 +43,23 @@ export const ReportModal: React.FC<ReportModalProps> = ({ open, onOpenChange, me
           {/* Métricas de Desempeño */}
           <div className="border-b pb-4">
             <h4 className="font-semibold mb-3 flex items-center gap-2"><BarChart3 /> Métricas</h4>
-            <div className="space-y-4">
-              <div>
-                <div className="flex justify-between mb-2">
-                  <span className="text-sm">Progreso General</span>
-                  <span className="text-sm font-semibold">{member.progress}%</span>
-                </div>
-                <div className="w-full bg-muted rounded-full h-3">
-                  <div className="bg-primary h-3 rounded-full" style={{ width: `${member.progress}%` }} />
-                </div>
-              </div>
-              <div className="grid grid-cols-3 gap-4">
+            <div className="space-y-4">              
+              <div className="grid grid-cols-2 gap-4">
                 <div className="text-center p-3 bg-blue-50 rounded-lg"><Calendar className="mx-auto" /><p>{member.eventsAttended}</p><p>Eventos</p></div>
                 <div className="text-center p-3 bg-green-50 rounded-lg"><Award className="mx-auto" /><p>{member.certificatesEarned}</p><p>Certificados</p></div>
-                <div className="text-center p-3 bg-purple-50 rounded-lg"><TrendingUp className="mx-auto" /><p>{member.progress}%</p><p>Completado</p></div>
               </div>
             </div>
           </div>
 
           {/* Resumen */}
+          {/*
           <div className="bg-muted p-4 rounded-lg">
             <h4 className="font-semibold mb-2">📊 Resumen</h4>
             <p className="text-sm text-muted-foreground">
               {member.name} ha completado el {member.progress}% de sus actividades.
             </p>
           </div>
-
+*/}
           <div className="flex gap-2 justify-end">
             <Button variant="outline" onClick={() => onOpenChange(false)}>Cerrar</Button>
             <Button onClick={() => {
