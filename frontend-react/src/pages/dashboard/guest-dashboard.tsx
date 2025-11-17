@@ -1,18 +1,18 @@
 import React from "react";
-import { Button } from "../ui/button";
-import { Card, CardContent, CardHeader } from "../ui/card";
-import { Badge } from "../ui/badge";
-import { BNavBarGuest } from "../ui/b-navbar-guest";
-import { useApp } from "../context/AppContext";
+import { Button } from "../../components/ui/button";
+import { Card, CardContent, CardHeader } from "../../components/ui/card";
+import { Badge } from "../../components/ui/badge";
+import { BNavBarGuest } from "../../components/ui/b-navbar-guest";
+import { useApp } from "../../components/context/AppContext";
 import {
   Calendar,
   Clock,
   Users,
   MapPin,
 } from "lucide-react";
-import { ImageWithFallback } from "../figma/ImageWithFallback";
+import { ImageWithFallback } from "../../components/figma/ImageWithFallback";
 import { useNavigate } from "react-router";
-import { BNavBarInterested } from "../ui/b-navbar-interested";
+import { BNavBarInterested } from "../../components/ui/b-navbar-interested";
 
 export function GuestDashboard() {
   const { user, events } = useApp();

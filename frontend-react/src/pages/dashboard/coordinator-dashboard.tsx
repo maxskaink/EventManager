@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
-import { Button } from '../ui/button';
-import { Card, CardContent, } from '../ui/card';
-import { Badge } from '../ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
-import { BNavBarCoordinator } from "../ui/b-navbar-coordinator"
-import { useApp } from '../context/AppContext';
+import { Button } from '../../components/ui/button';
+import { Card, CardContent, } from '../../components/ui/card';
+import { Badge } from '../../components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '../../components/ui/avatar';
+import { BNavBarCoordinator } from "../../components/ui/b-navbar-coordinator"
+import { useApp } from '../../components/context/AppContext';
 import {
   Users,
   Calendar,

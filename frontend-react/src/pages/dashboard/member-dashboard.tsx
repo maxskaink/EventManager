@@ -1,11 +1,11 @@
-import { Button } from "../ui/button";
-import { Card, CardContent, CardHeader } from "../ui/card";
-import { Badge } from "../ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-import { BNavBarMember } from "../ui/b-navbar-member";
-import { useApp } from "../context/AppContext";
+import { Button } from "../../components/ui/button";
+import { Card, CardContent, CardHeader } from "../../components/ui/card";
+import { Badge } from "../../components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "../../components/ui/avatar";
+import { BNavBarMember } from "../../components/ui/b-navbar-member";
+import { useApp } from "../../components/context/AppContext";
 import { Calendar, Users, Award, Bell } from "lucide-react";
-import { ImageWithFallback } from "../figma/ImageWithFallback";
+import { ImageWithFallback } from "../../components/figma/ImageWithFallback";
 import { useNavigate } from "react-router";
 
 export function MemberDashboard() {

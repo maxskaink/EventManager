@@ -1,32 +1,32 @@
 import React, { useState, useEffect } from "react";
-import { Button } from "../ui/button";
-import { Input } from "../ui/input";
-import { Label } from "../ui/label";
+import { Button } from "../../components/ui/button";
+import { Input } from "../../components/ui/input";
+import { Label } from "../../components/ui/label";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "../ui/card";
-import { Badge } from "../ui/badge";
+} from "../../components/ui/card";
+import { Badge } from "../../components/ui/badge";
 import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from "../ui/avatar";
+} from "../../components/ui/avatar";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../ui/select";
+} from "../../components/ui/select";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "../ui/tabs";
+} from "../../components/ui/tabs";
 import {
   Table,
   TableBody,
@@ -34,8 +34,8 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "../ui/table";
-import { BNavBarMentor } from "../ui/b-navbar-mentor";
+} from "../../components/ui/table";
+import { BNavBarMentor } from "../../components/ui/b-navbar-mentor";
 import {
   Dialog,
   DialogContent,
@@ -43,7 +43,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "../ui/dialog";
+} from "../../components/ui/dialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -54,9 +54,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "../ui/alert-dialog";
+} from "../../components/ui/alert-dialog";
 import brainImage from "../../assets/brain.png";
-import { useApp } from "../context/AppContext";
+import { useApp } from "../../components/context/AppContext";
 import { UserAPI } from "../../services/api";
 import { toast } from "sonner";
 import {
