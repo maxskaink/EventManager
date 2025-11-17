@@ -3,7 +3,7 @@
  * @file entities.d.ts
  */
 namespace API {
-  type UserRole = "interesado" | "miembro" | "coordinador" | "mentor" | "seed";
+  type UserRole = "interested" | "active-member" | "coordinator" | "mentor" | "seed";
   type EventModality = 'presencial' | 'virtual' | 'mixta';
    type Role = UserRole;
    type PublicationType = "scientific article" | "event" | "news" | "other";

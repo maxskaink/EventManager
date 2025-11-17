@@ -1,3 +1,5 @@
+export const USER_ROLES: API.UserRole[] = ["interested", "active-member", "coordinator", "mentor", "seed"];
+
 export type Submission = {
   id: string;
   type: string;

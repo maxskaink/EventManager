@@ -30,6 +30,8 @@ import {
 } from "../../../ui/dialog";
 import { Settings, Search, UserPlus } from "lucide-react";
 import { toast } from "sonner";
+import { USER_ROLES } from "./types";
+import { translateUserRole } from "../../../../features/users/users.helpers";
 
 interface UserManagementTabProps {
   users: API.User[];
@@ -51,6 +53,7 @@ export const UserManagementTab: React.FC<UserManagementTabProps> = ({
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedRole, setSelectedRole] = useState<string>("all");
   const [newRole, setNewRole] = useState<string>("");
+  console.log(users)
 
   // Estado para modales internos
   const [isAddUserOpen, setIsAddUserOpen] = useState(false);
@@ -74,7 +77,7 @@ export const UserManagementTab: React.FC<UserManagementTabProps> = ({
     );
     if (success) {
       setIsAddUserOpen(false);
-      setNewUserData({ name: "", email: "", role: "interesado" });
+      setNewUserData({ name: "", email: "", role: "interested" });
     }
   };
 
@@ -117,10 +120,11 @@ export const UserManagementTab: React.FC<UserManagementTabProps> = ({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todos los roles</SelectItem>
-                <SelectItem value="interested">Interesado</SelectItem>
-                <SelectItem value="member">Integrante</SelectItem>
-                <SelectItem value="coordinator">Coordinador</SelectItem>
-                <SelectItem value="mentor">Mentor</SelectItem>
+                {USER_ROLES.map((type) => (
+                  <SelectItem key={type} value={type}>
+                    {translateUserRole(type)}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
             <Dialog open={isAddUserOpen} onOpenChange={setIsAddUserOpen}>
@@ -177,10 +181,11 @@ export const UserManagementTab: React.FC<UserManagementTabProps> = ({
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="interested">Interesado</SelectItem>
-                        <SelectItem value="member">Integrante</SelectItem>
-                        <SelectItem value="coordinator">Coordinador</SelectItem>
-                        <SelectItem value="mentor">Mentor</SelectItem>
+                        {USER_ROLES.map((type) => (
+                          <SelectItem key={type} value={type}>
+                            {translateUserRole(type)}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
@@ -239,7 +244,7 @@ export const UserManagementTab: React.FC<UserManagementTabProps> = ({
                   </TableCell>
                   <TableCell>
                     <Badge variant={user.role === "mentor" ? "default" : "outline"}>
-                      {user.role}
+                      {translateUserRole(user.role)}
                     </Badge>
                   </TableCell>
                   <TableCell>
@@ -287,14 +292,11 @@ export const UserManagementTab: React.FC<UserManagementTabProps> = ({
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="interested">
-                                  Interesado
-                                </SelectItem>
-                                <SelectItem value="member">Integrante</SelectItem>
-                                <SelectItem value="coordinator">
-                                  Coordinador
-                                </SelectItem>
-                                <SelectItem value="mentor">Mentor</SelectItem>
+                                {USER_ROLES.map((type) => (
+                                  <SelectItem key={type} value={type}>
+                                    {translateUserRole(type)}
+                                  </SelectItem>
+                                ))}
                               </SelectContent>
                             </Select>
                           </div>
