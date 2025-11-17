@@ -5,6 +5,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '../../../ui/avatar';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '../../../ui/dialog';
 import { Users, FileText, Award } from 'lucide-react';
 import { toast } from 'sonner';
+import { translateUserRole } from '../../../../features/users/users.helpers';
+import { USER_ROLES } from '../../../../features/users/user.contants';
 
 type Submission = { id: string; status: string; }; // Tipo simplificado
 
@@ -33,10 +35,8 @@ export const GeneralReportModal: React.FC<GeneralReportModalProps> = ({
           {/* Resumen Ejecutivo */}
           <div className="p-6 rounded-lg border">
             <h3 className="text-lg font-semibold mb-4">📈 Resumen Ejecutivo</h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-2 gap-4">
               <div className="text-center"><div className="text-3xl font-bold">{users.length}</div><p>Total Usuarios</p></div>
-              <div className="text-center"><div className="text-3xl font-bold">{getStat("member")}</div><p>Integrantes</p></div>
-              <div className="text-center"><div className="text-3xl font-bold">{getStat("coordinator")}</div><p>Coordinadores</p></div>
               <div className="text-center"><div className="text-3xl font-bold">{pendingSubmissions.length}</div><p>Pendientes</p></div>
             </div>
           </div>
@@ -45,6 +45,14 @@ export const GeneralReportModal: React.FC<GeneralReportModalProps> = ({
           <div className="border-b pb-4">
             <h4 className="font-semibold mb-3 flex items-center gap-2"><Users /> Distribución de Roles</h4>
             {/* ... (Lógica de barras de progreso de roles) ... */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              
+            </div>
+            <div className="grid grid-cols-3">
+              {USER_ROLES.map(role => {
+                  return <div className="text-center p-4 bg-yellow-50 rounded-lg"><p >{getStat(role)}</p><p>{translateUserRole(role)}</p></div>
+              })}
+            </div>
           </div>
 
           {/* Estado de Submissions */}

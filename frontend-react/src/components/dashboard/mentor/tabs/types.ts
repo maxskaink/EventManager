@@ -1,4 +1,6 @@
-export const USER_ROLES: API.UserRole[] = ["interested", "active-member", "coordinator", "mentor", "seed"];
+import { USER_ROLES as USER_ROLES_CONSTANTS } from "../../../../features/users/user.contants";
+
+export const USER_ROLES: API.UserRole[] = USER_ROLES_CONSTANTS
 
 export type Submission = {
   id: string;
