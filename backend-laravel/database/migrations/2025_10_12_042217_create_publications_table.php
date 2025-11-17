@@ -13,7 +13,6 @@ return new class extends Migration
             $table->string('title');
             $table->text('content');
             $table->enum('type', ['articulo', 'aviso', 'comunicado', 'material', 'evento'])->default('aviso');
-            $table->date('published_at');
             $table->enum('status', ['activo', 'inactivo', 'borrador', 'pendiente'])->default('activo');
             $table->timestamp('last_modified')->useCurrent()->useCurrentOnUpdate();
             $table->string('image_url')->nullable();

@@ -54,8 +54,6 @@ class PublicationService implements PublicationServiceInterface
                 $filename = Str::uuid() . '.' . $image->getClientOriginalExtension();
             }
 
-            $data['published_at'] = Carbon::parse($data['published_at'])->toDateString();
-
             if ($this->publicationRepo->findByTitle($data['title'])) {
                 throw new DuplicatedResourceException("A publication with the title '{$data['title']}' already exists.");
             }
@@ -146,10 +144,6 @@ class PublicationService implements PublicationServiceInterface
                 }
             }
 
-            if (isset($data['published_at'])) {
-                $data['published_at'] = Carbon::parse($data['published_at'])->toDateString();
-                Log::info('Parsed published_at', ['published_at' => $data['published_at']]);
-            }
 
             if (isset($data['image']) && $data['image'] instanceof UploadedFile) {
                 Log::info('Image detected', ['image' => $data['image']->getClientOriginalName()]);

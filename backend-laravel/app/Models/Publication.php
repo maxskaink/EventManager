@@ -36,7 +36,6 @@ class Publication extends Model
         'title',
         'content',
         'type',
-        'published_at',
         'status',
         'last_modified',
         'image_url',
@@ -53,7 +52,6 @@ class Publication extends Model
     {
         return [
             'author_id' => 'integer',
-            'published_at' => 'date',
             'last_modified' => 'datetime',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
@@ -71,11 +69,10 @@ class Publication extends Model
     public function __toString(): string
     {
         return sprintf(
-            "Publication #%d: %s by %s (%s)",
+            "Publication #%d: %s by %s ",
             $this->id ?? $this->getKey(),
             $this->title ?? 'Untitled',
-            $this->author?->name ?? 'Unknown author',
-            $this->published_at?->format('Y-m-d') ?? 'No date'
+            $this->author?->name ?? 'Unknown author'
         );
     }
 }

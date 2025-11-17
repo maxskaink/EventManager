@@ -44,7 +44,7 @@ return Application::configure(basePath: dirname(__DIR__))
             return response()->json([
                 'error' => class_basename($e),
                 'message' => $e->getMessage(),
-            ], 400);
+            ], 409);
         });
 
 

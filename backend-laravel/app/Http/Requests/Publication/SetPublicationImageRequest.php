@@ -25,8 +25,8 @@ class SetPublicationImageRequest extends FormRequest
     {
         return [
             'image.required' => 'An image is required.',
-            'image.file' => 'The uploaded file must be a valid file.',
-            'image.mimes' => 'Only JPEG, PNG, or WEBP images are allowed.',
+            'image.image' => 'The uploaded file must be an image.',
+            'image.mimes' => 'The image must be a file of type: jpeg, png, or webp.',
             'image.max' => 'The image size must not exceed 2MB.',
         ];
     }

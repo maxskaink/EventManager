@@ -25,9 +25,20 @@ class PublicationAccessRepository implements PublicationAccessRepositoryInterfac
 
     public function deleteForUsers(int $pubId, array $userIds): array
     {
-        return PublicationAccess::query()
+        $deletedIds = PublicationAccess::query()
             ->where('publication_id', $pubId)
             ->whereIn('profile_id', $userIds)
-            ->delete();
+            ->pluck('access_id')
+            ->toArray();
+
+        if (!empty($deletedIds)) {
+            PublicationAccess::query()
+                ->whereIn('access_id', $deletedIds)
+                ->delete();
+        }
+
+        return $deletedIds;
     }
+
+
 }
