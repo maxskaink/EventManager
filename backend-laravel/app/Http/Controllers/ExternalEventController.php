@@ -33,7 +33,8 @@ class ExternalEventController extends Controller
         $newEvent = $this->externalEventService->addExternalEvent($data);
 
         return response()->json([
-            'message' => "External event created successfully: {$newEvent}"
+            'message' => 'External event created successfully.',
+            'external_event' => $newEvent,
         ],201);
     }
 

@@ -42,7 +42,7 @@ class PublicationRepository implements PublicationRepositoryInterface
     public function listPublished(): Collection
     {
         return Publication::query()
-            ->where('status', 'published')
+            ->where('status', 'activo')
             ->orderByDesc('created_at')
             ->get();
     }
@@ -50,7 +50,7 @@ class PublicationRepository implements PublicationRepositoryInterface
     public function listDrafts(): Collection
     {
         return Publication::query()
-            ->where('status', 'draft')
+            ->where('status', 'borrador')
             ->orderByDesc('created_at')
             ->get();
     }
