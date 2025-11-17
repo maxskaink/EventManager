@@ -17,6 +17,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -124,26 +125,55 @@ class PublicationService implements PublicationServiceInterface
         return $this->publicationRepo->listDrafts();
     }
 
+
     public function updatePublication(int $id, array $data): Publication
     {
-        $publication = $this->publicationRepo->findById($id);
-        if (!$publication) {
-            throw new ResourceNotFoundException("Publication with ID $id not found.");
-        }
+        return DB::transaction(function () use ($id, $data) {
+            Log::info('UpdatePublication called', ['id' => $id, 'data' => $data]);
 
-        if (isset($data['title'])) {
-            $existing = $this->publicationRepo->findByTitle($data['title']);
-            if ($existing && $existing->id !== $id) {
-                throw new DuplicatedResourceException("A publication with the title '{$data['title']}' already exists.");
+            $publication = $this->publicationRepo->findById($id);
+            if (!$publication) {
+                Log::warning("Publication not found", ['id' => $id]);
+                throw new ResourceNotFoundException("Publication with ID $id not found.");
             }
-        }
 
-        if (isset($data['published_at'])) {
-            $data['published_at'] = Carbon::parse($data['published_at'])->toDateString();
-        }
+            if (isset($data['title'])) {
+                Log::info('Title to update', ['title' => $data['title']]);
+                $existing = $this->publicationRepo->findByTitle($data['title']);
+                if ($existing && $existing->id !== $id) {
+                    Log::error('Duplicated title detected', ['existingId' => $existing->id]);
+                    throw new DuplicatedResourceException("A publication with the title '{$data['title']}' already exists.");
+                }
+            }
 
-        return $this->publicationRepo->update($id, $data);
+            if (isset($data['published_at'])) {
+                $data['published_at'] = Carbon::parse($data['published_at'])->toDateString();
+                Log::info('Parsed published_at', ['published_at' => $data['published_at']]);
+            }
+
+            if (isset($data['image']) && $data['image'] instanceof UploadedFile) {
+                Log::info('Image detected', ['image' => $data['image']->getClientOriginalName()]);
+                $image = $data['image'];
+                $filename = Str::uuid() . '.' . $image->getClientOriginalExtension();
+                $path = $image->storeAs('public/publications', $filename);
+                $publication->image_url = Storage::url($path);
+                $publication->save();
+            }
+
+            foreach ($data as $key => $value) {
+                if ($key !== 'image') {
+                    Log::info("Updating field $key", ['value' => $value]);
+                    $publication->{$key} = $value;
+                }
+            }
+            $publication->save();
+
+            Log::info('Publication updated successfully', ['publication_id' => $publication->id]);
+
+            return $publication;
+        });
     }
+
 
     public function addPublicationInterests(int $publicationId, array $interestIds): array
     {
@@ -246,4 +276,41 @@ class PublicationService implements PublicationServiceInterface
 
         return $publication;
     }
+    public function setPublicationImage(int $publicationId, UploadedFile $image): Publication
+    {
+        return DB::transaction(function () use ($publicationId, $image) {
+
+            $publication = $this->publicationRepo->findById($publicationId);
+            if (!$publication) {
+                throw new ResourceNotFoundException("Publication with ID $publicationId not found.");
+            }
+
+            if ($image->getSize() > 2 * 1024 * 1024) {
+                throw new \Exception("The image size must not exceed 2MB.");
+            }
+
+            $allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp'];
+            if (!in_array($image->getMimeType(), $allowedMimeTypes)) {
+                throw new \Exception("Invalid image type. Only JPEG, PNG, or WEBP are allowed.");
+            }
+
+            $filename = Str::uuid() . '.' . $image->getClientOriginalExtension();
+            $path = $image->storeAs('public/publications', $filename);
+            $imageUrl = Storage::url($path);
+
+
+            if ($publication->image_url) {
+                $oldPath = str_replace('/storage/', 'public/', $publication->image_url);
+                if (Storage::exists($oldPath)) {
+                    Storage::delete($oldPath);
+                }
+            }
+
+            $publication->image_url = $imageUrl;
+            $publication->save();
+
+            return $publication;
+        });
+    }
+
 }

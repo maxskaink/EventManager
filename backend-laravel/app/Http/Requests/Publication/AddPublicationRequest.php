@@ -30,7 +30,6 @@ class AddPublicationRequest extends FormRequest
             'title' => ['required', 'string', 'max:255', 'unique:publications,title'],
             'content' => ['required', 'string'],
             'type' => ['required', 'string', 'in:articulo,aviso,comunicado,material,evento'],
-            'published_at' => ['required', 'date'],
             'status' => ['required', 'string', 'in:activo,inactivo,borrador,pendiente'],
             'summary' => ['nullable', 'string', 'max:1000'],
             'visibility' => ['required', 'string', 'in:public,private'],

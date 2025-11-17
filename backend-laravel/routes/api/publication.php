@@ -11,6 +11,7 @@ Route::middleware('auth:sanctum')->prefix('publication')->group(function () {
     Route::get('/draft', [PublicationController::class, 'listDraftPublications']);
     Route::patch('{publicationId}', [PublicationController::class, 'updatePublication']);
     Route::post('{publicationId}/interests', [PublicationController::class, 'addPublicationInterests']);
+    Route::post('{publicationId}/image', [PublicationController::class, 'setPublicationImage']);
     Route::get('/{publicationId}', [PublicationController::class, 'getPublicationById']);
 
     // Access routes

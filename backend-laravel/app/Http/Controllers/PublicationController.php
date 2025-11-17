@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\Publication\AddPublicationInterestRequest;
 use App\Http\Requests\Publication\AddPublicationRequest;
 use App\Http\Requests\Publication\PublicationAccessRequest;
+use App\Http\Requests\Publication\SetPublicationImageRequest;
 use App\Http\Requests\Publication\UpdatePublicationRequest;
 use App\Models\Publication;
 use App\Models\User;
@@ -57,7 +58,7 @@ class PublicationController extends Controller
         return response()->json([
             'message' => 'Event publication created successfully.',
             'publication' => $newPublication,
-        ]);
+        ],201);
     }
 
     /**
@@ -199,6 +200,20 @@ class PublicationController extends Controller
 
         return response()->json([
             'publication' => $publication,
+        ]);
+    }
+
+    public function setPublicationImage(SetPublicationImageRequest $request, int $id): JsonResponse
+    {
+        $publication = Publication::query()->findOrFail($id);
+        $this->authorize('update', $publication);
+
+        $image = $request->file('image');
+        $updatedPublication = $this->publicationService->setPublicationImage($id, $image);
+
+        return response()->json([
+            'message' => 'Publication image updated successfully.',
+            'publication' => $updatedPublication,
         ]);
     }
 
