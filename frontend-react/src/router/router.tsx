@@ -23,6 +23,7 @@ import DashboardRedirect from "../components/nav/DashboardRedirect";
 import EventDetailWrapper from "../components/nav/EventDetailWrapper";
 import { authMiddleware } from "./middlewares/auth.middleware";
 import { timingMiddleware } from "./middlewares/timing.middleware";
+import NotFoundPage from "../pages/not-found-page";
 
 // Create the data router and export it for main.tsx to mount
 export const router = createBrowserRouter([
@@ -69,8 +70,10 @@ export const router = createBrowserRouter([
           { path: "admin", element: <AdminPage /> },
         ],
       },
-
-
+      {
+        path: "*",
+        element: <NotFoundPage />,
+      }
     ],
   },
 ]);
