@@ -38,7 +38,7 @@ class PublicationController extends Controller
         return response()->json([
             'message' => 'Publication created successfully.',
             'publication' => $newPublication,
-        ]);
+        ],201);
     }
 
     /**

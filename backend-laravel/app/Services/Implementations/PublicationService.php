@@ -33,31 +33,49 @@ class PublicationService implements PublicationServiceInterface
 
     public function addPublication(array $data, int $userId): Publication
     {
-        // Handle image upload
-        if (isset($data['image']) && $data['image'] instanceof UploadedFile) {
-            $image = $data['image'];
-            if ($image->getSize() > 2 * 1024 * 1024) {
-                throw new \Exception("The image size must not exceed 2MB.");
+        return DB::transaction(function () use ($data, $userId) {
+
+            $image = null;
+            $filename = null;
+
+            if (isset($data['image']) && $data['image'] instanceof UploadedFile) {
+                $image = $data['image'];
+
+                if ($image->getSize() > 2 * 1024 * 1024) {
+                    throw new \Exception("The image size must not exceed 2MB.");
+                }
+
+                $allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp'];
+                if (!in_array($image->getMimeType(), $allowedMimeTypes)) {
+                    throw new \Exception("Invalid image type. Only JPEG, PNG, or WEBP are allowed.");
+                }
+
+                $filename = Str::uuid() . '.' . $image->getClientOriginalExtension();
             }
 
-            $allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp'];
-            if (!in_array($image->getMimeType(), $allowedMimeTypes)) {
-                throw new \Exception("Invalid image type. Only JPEG, PNG, or WEBP are allowed.");
+            $data['published_at'] = Carbon::parse($data['published_at'])->toDateString();
+
+            if ($this->publicationRepo->findByTitle($data['title'])) {
+                throw new DuplicatedResourceException("A publication with the title '{$data['title']}' already exists.");
             }
 
-            $filename = Str::uuid() . '.' . $image->getClientOriginalExtension();
-            $path = $image->storeAs('public/publications', $filename);
-            $data['image_url'] = Storage::url($path);
-        }
+            // Create publication without saving the image yet
+            $publication = $this->publicationRepo->create(array_merge(
+                $data,
+                ['author_id' => $userId]
+            ));
 
-        $data['published_at'] = Carbon::parse($data['published_at'])->toDateString();
+            // Save image only after publication has been successfully created
+            if ($image && $filename) {
+                $path = $image->storeAs('public/publications', $filename);
+                $publication->image_url = Storage::url($path);
+                $publication->save();
+            }
 
-        if ($this->publicationRepo->findByTitle($data['title'])) {
-            throw new DuplicatedResourceException("A publication with the title '{$data['title']}' already exists.");
-        }
-
-        return $this->publicationRepo->create(array_merge($data, ['author_id' => $userId]));
+            return $publication;
+        });
     }
+
 
     /**
      * @throws \Exception

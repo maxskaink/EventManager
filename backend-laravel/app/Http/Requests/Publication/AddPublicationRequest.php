@@ -27,18 +27,17 @@ class AddPublicationRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'title' => ['required', 'string', 'max:255'],
+            'title' => ['required', 'string', 'max:255', 'unique:publications,title'],
             'content' => ['required', 'string'],
             'type' => ['required', 'string', 'in:articulo,aviso,comunicado,material,evento'],
             'published_at' => ['required', 'date'],
             'status' => ['required', 'string', 'in:activo,inactivo,borrador,pendiente'],
             'summary' => ['nullable', 'string', 'max:1000'],
             'visibility' => ['required', 'string', 'in:public,private'],
-
-            // 👇 Updated field: now supports real file uploads
-            'image' => ['nullable', 'image', 'mimes:jpeg,png,webp', 'max:2048'], // max 2MB
+            'image' => ['nullable', 'image', 'mimes:jpeg,png,webp', 'max:2048'],
         ];
     }
+
 
     /**
      * Define custom validation messages.
@@ -51,6 +50,7 @@ class AddPublicationRequest extends FormRequest
             'image.image' => 'The uploaded file must be an image.',
             'image.mimes' => 'The image must be a file of type: jpeg, png, or webp.',
             'image.max' => 'The image size must not exceed 2MB.',
+            'title.unique' => 'The title provided already exists.',
         ];
     }
 }
