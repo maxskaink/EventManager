@@ -73,7 +73,6 @@ class PublicationFactory extends Factory
             'title' => $title,
             'content' => $content,
             'type' => $type,
-            'published_at' => $this->faker->dateTimeBetween('-6 months', 'now'),
             'status' => $this->faker->randomElement(['activo', 'inactivo']),
             'last_modified' => now(),
             'image_url' => $this->faker->optional()->imageUrl(800, 600, 'education', true),
