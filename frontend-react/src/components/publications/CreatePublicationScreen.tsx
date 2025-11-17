@@ -21,7 +21,7 @@ import { ArticleAPI } from '../../services/api';
 import { toast } from 'sonner';
 import { getDashboardRouteFromRole } from '../../services/navigation/redirects';
 
-export function CreatePublicationScreen() {
+export function CreateArticleScreen() {
   const navigate = useNavigate()
   const { user } = useApp();
   const authUser = useAuthStore(s => s.user);
@@ -55,12 +55,12 @@ export function CreatePublicationScreen() {
       return;
     }
     if (!formData.publication_date) {
-      toast.error('La fecha de publicación es obligatoria');
+      toast.error('La fecha de articulo es obligatoria');
       return;
     }
 
     if (!authUser?.id) {
-      toast.error('Debe estar autenticado para crear una publicación');
+      toast.error('Debe estar autenticado para crear un articulo');
       return;
     }
 
@@ -176,7 +176,7 @@ export function CreatePublicationScreen() {
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
-            <h1>Nuevo Artículo / Publicación</h1>
+            <h1>Nuevo Artículo</h1>
             <div className="ml-auto flex gap-2">
               <Button variant="secondary" onClick={() => setPreview(true)}>
                 <Eye className="h-4 w-4 mr-2" />
@@ -249,7 +249,7 @@ export function CreatePublicationScreen() {
             </div>
 
             <div>
-              <Label htmlFor="publication_url">URL de Publicación (opcional)</Label>
+              <Label htmlFor="publication_url">URL del Articulo (opcional)</Label>
               <Input
                 id="publication_url"
                 type="url"

@@ -1,28 +1,31 @@
 import { useState, useEffect } from "react";
-import { Button } from "../ui/button";
-import { Card, CardContent } from "../ui/card";
-import { Badge } from "../ui/badge";
-import { Input } from "../ui/input";
+import { Button } from "../../components/ui/button";
+import { Card, CardContent } from "../../components/ui/card";
+import { Badge } from "../../components/ui/badge"; 
+import { Input } from "../../components/ui/input"; 
+
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../ui/select";
+ } from "../../components/ui/select";
+ 
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "../ui/dialog";
+}from "../../components/ui/dialog";
+
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "../ui/dropdown-menu";
+} from "../../components/ui/dropdown-menu"; 
 import {
   AlertDialog,
   AlertDialogAction,
@@ -32,12 +35,9 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "../ui/alert-dialog";
-import { BNavBarMentor } from "../ui/b-navbar-mentor";
-import { BNavBarMember } from "../ui/b-navbar-member";
-import { BNavBarCoordinator } from "../ui/b-navbar-coordinator";
-import { BNavBarGuest } from "../ui/b-navbar-guest";
-import { useApp } from "../context/AppContext";
+} from "../../components/ui/alert-dialog";
+import BottomNavbarWrapper from "../../components/nav/BottomNavbarWrapper";
+import { useApp } from "../../components/context/AppContext";
 import {
   ArrowLeft,
   Plus,
@@ -385,11 +385,11 @@ export function EventBoardScreen() {
             </Button>
             <Button
               variant="secondary"
-              onClick={() => navigate("/create-publication")}
+              onClick={() => navigate("/create-article")}
               className="gap-2"
             >
               <Plus className="h-4 w-4" />
-              Nueva Publicación
+              Nuevo Articulo
             </Button>
           </div>
         </div>
@@ -845,10 +845,10 @@ export function EventBoardScreen() {
                   </Button>
                   <Button
                     variant="outline"
-                    onClick={() => navigate("/create-publication")}
+                    onClick={() => navigate("/create-article")}
                   >
                     <Plus className="h-4 w-4 mr-2" />
-                    Crear Publicación
+                    Crear Articulo
                   </Button>
                 </div>
               </CardContent>
@@ -858,12 +858,7 @@ export function EventBoardScreen() {
       </div>
 
       {/* Navigation Bar */}
-      {user && user.role === "coordinator" && (
-        <BNavBarCoordinator />
-      )}
-      {user && user.role === "guest" && <BNavBarGuest />}
-      {user && user.role === "member" && <BNavBarMember />}
-      {user && user.role === "mentor" && <BNavBarMentor />}
+      <BottomNavbarWrapper role={user?.role ?? ""} />
 
       {/* Detail Modal */}
       <Dialog open={isDetailModalOpen} onOpenChange={setIsDetailModalOpen}>
