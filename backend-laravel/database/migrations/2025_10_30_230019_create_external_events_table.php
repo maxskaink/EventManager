@@ -11,7 +11,7 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('user_id');
             $table->string('name');
-            $table->string('description');
+            $table->text('description')->nullable();
             $table->dateTime('start_date');
             $table->dateTime('end_date');
             $table->enum('modality', ['presencial', 'virtual', 'mixta'])->default('presencial');
@@ -23,6 +23,6 @@ return new class extends Migration
     }
 
     public function down(): void {
-        Schema::dropIfExists('events');
+        Schema::dropIfExists('external_events');
     }
 };

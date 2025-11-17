@@ -31,4 +31,6 @@ interface ExternalEventServiceInterface
      * @return Collection<int, ExternalEvent>
      */
     public function getExternalEventsByDateRange(string $startDate, string $endDate): Collection;
+
+    public function getAllTrustedOrganizations() : array;
 }

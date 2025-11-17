@@ -19,7 +19,7 @@ interface ArticleServiceInterface
     */
     public function getArticlesByUser(int $userId): Collection;
 
-    
+
 
     /**
      * @return Collection<int, Article>
@@ -34,4 +34,6 @@ interface ArticleServiceInterface
     public function getArticlesByDateRange(string $startDate, string $endDate): Collection;
 
     public function deleteArticle(int $articleId): void;
+
+    public function getAllTrustedOrganizations() : array;
 }

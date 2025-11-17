@@ -72,18 +72,11 @@ return new class extends Migration {
             $table->foreign('publication_id')->references('id')->on('publications')->onDelete('cascade');
         });
 
-        // Notification → Profile
-        Schema::table('notifications', function (Blueprint $table) {
-            $table->foreign('profile_id')->references('user_id')->on('profiles')->onDelete('cascade');
-        });
     }
 
     public function down(): void
     {
         // Drop foreign keys in reverse order
-        Schema::table('notifications', function (Blueprint $table) {
-            $table->dropForeign(['profile_id']);
-        });
 
         Schema::table('articles', function (Blueprint $table) {
             $table->dropForeign(['user_id']);

@@ -13,7 +13,10 @@ class AddPublicationRequest extends FormRequest
         /** @var User|null $user */
         $user = auth()->user();
 
-        return $user && ($user->getRoleAttribute() === 'mentor' || $user->getRoleAttribute() === 'coordinator');
+        return $user && (
+                $user->getRoleAttribute() === 'mentor' ||
+                $user->getRoleAttribute() === 'coordinator'
+            );
     }
 
     /**
@@ -29,9 +32,11 @@ class AddPublicationRequest extends FormRequest
             'type' => ['required', 'string', 'in:articulo,aviso,comunicado,material,evento'],
             'published_at' => ['required', 'date'],
             'status' => ['required', 'string', 'in:activo,inactivo,borrador,pendiente'],
-            'image_url' => ['nullable', 'string', 'url', 'max:255'],
             'summary' => ['nullable', 'string', 'max:1000'],
             'visibility' => ['required', 'string', 'in:public,private'],
+
+            // 👇 Updated field: now supports real file uploads
+            'image' => ['nullable', 'image', 'mimes:jpeg,png,webp', 'max:2048'], // max 2MB
         ];
     }
 
@@ -43,7 +48,9 @@ class AddPublicationRequest extends FormRequest
         return [
             'status.in' => 'The status must be one of: activo, inactivo, borrador, or pendiente.',
             'visibility.in' => 'The visibility must be either public or private.',
-            'image_url.url' => 'The image URL must be a valid URL.',
+            'image.image' => 'The uploaded file must be an image.',
+            'image.mimes' => 'The image must be a file of type: jpeg, png, or webp.',
+            'image.max' => 'The image size must not exceed 2MB.',
         ];
     }
 }

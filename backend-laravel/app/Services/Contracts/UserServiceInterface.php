@@ -34,6 +34,11 @@ interface UserServiceInterface
     /**
      * @return Collection<int, User>
      */
+    public function listActiveSeeds(): Collection;
+
+    /**
+     * @return Collection<int, User>
+     */
     public function listActiveCoordinators(): Collection;
 
     /**

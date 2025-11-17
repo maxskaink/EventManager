@@ -9,6 +9,7 @@ use App\Http\Requests\Article\UpdateArticleRequest;
 use App\Services\Contracts\ArticleServiceInterface;
 use App\Models\Article;
 use App\Models\User;
+use App\Services\Implementations\ArticleService;
 use Illuminate\Http\JsonResponse;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -23,7 +24,6 @@ class ArticleController extends Controller
 
     /**
      * Create a new article for a user.
-     * TODO: Should a article that was created and is identical into 2 users be shared? or there r 2 different articles entry's?
      */
     public function addArticle(AddArticleRequest $request): JsonResponse
     {
@@ -68,7 +68,8 @@ class ArticleController extends Controller
     public function listMyArticles(): JsonResponse
     {
         $userId = request()->user()->id;
-        $this->authorize('viewByUser', [Article::class, $userId]);
+        $user = request()->user();
+        $this->authorize('viewByUser', [Article::class, $user, $user]);
 
         $articles = $this->articleService->getArticlesByUser($userId);
 
@@ -145,6 +146,18 @@ class ArticleController extends Controller
 
         return response()->json([
             'message' => 'Article deleted successfully.',
+        ]);
+    }
+
+    /**
+     * Get all trusted organizations (public endpoint).
+     */
+    public function getAllTrustedOrganizations(): JsonResponse
+    {
+        $trustedOrganizations = $this->articleService->getAllTrustedOrganizations();
+
+        return response()->json([
+            'trusted_organizations' => $trustedOrganizations,
         ]);
     }
 

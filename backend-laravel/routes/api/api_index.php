@@ -10,3 +10,4 @@ require __DIR__.'/publication.php';
 require __DIR__.'/certificate.php';
 require __DIR__.'/interest.php';
 require __DIR__.'/external_event.php';
+require __DIR__.'/notification.php';

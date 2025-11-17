@@ -5,11 +5,12 @@ namespace App\Console\Commands;
 use App\Models\Profile;
 use App\Models\User;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
 
 class GenerateAuthToken extends Command
 {
-    // Nuevo parámetro --all para crear un usuario por cada rol
     protected $signature = 'auth:token {email?} {--role=interested} {--all}';
 
     protected $description = 'Generate Sanctum tokens for testing. Use --all to create one user per role with random emails.';
@@ -21,14 +22,15 @@ class GenerateAuthToken extends Command
             return 1;
         }
 
-        // Si se pasa --all, generamos un usuario por cada rol
+        // 🔹 Obtener roles dinámicamente desde la definición del enum
+        $roles = $this->getEnumValues('users', 'role');
+
         if ($this->option('all')) {
-            $roles = ['mentor', 'coordinator', 'member', 'interested'];
             $this->info('Generating test users for all roles...');
             $this->line('');
 
             foreach ($roles as $role) {
-                $email = strtolower($role) . '_' . Str::random(6) . '@example.com';
+                $email = strtolower(str_replace(' ', '_', $role)) . '_' . Str::random(6) . '@example.com';
 
                 $user = User::query()->create([
                     'name' => ucfirst($role) . ' User',
@@ -38,7 +40,8 @@ class GenerateAuthToken extends Command
                     'avatar' => 'https://via.placeholder.com/150',
                     'role' => $role,
                 ]);
-                // Step 3.1: Ensure the user has a profile
+
+                // Crear perfil si no existe
                 if (!$user->profile) {
                     Profile::query()->create([
                         'user_id' => $user->id,
@@ -47,6 +50,7 @@ class GenerateAuthToken extends Command
                         'phone' => null,
                     ]);
                 }
+
                 $token = $user->createToken('dev_token')->plainTextToken;
 
                 $this->info("Role: $role");
@@ -59,23 +63,26 @@ class GenerateAuthToken extends Command
             return 0;
         }
 
-        // Modo normal: crear/generar token para un solo usuario
+        // 🔹 Generar token para un solo usuario
         $email = $this->argument('email') ?? 'test@example.com';
         $role = $this->option('role');
 
-        $user = User::query()
-            ->firstOrCreate(
-                ['email' => $email],
-                [
-                    'email_verified_at' => now(),
-                    'name' => 'Test User',
-                    'google_id' => 'dev_' . uniqid(),
-                    'avatar' => 'https://via.placeholder.com/150',
-                    'role' => $role,
-                ]
-            );
+        if (!in_array($role, $roles, true)) {
+            $this->error("Invalid role: '$role'. Must be one of: " . implode(', ', $roles));
+            return 1;
+        }
 
-        // Step 3.1: Ensure the user has a profile
+        $user = User::query()->firstOrCreate(
+            ['email' => $email],
+            [
+                'email_verified_at' => now(),
+                'name' => 'Test User',
+                'google_id' => 'dev_' . uniqid(),
+                'avatar' => 'https://via.placeholder.com/150',
+                'role' => $role,
+            ]
+        );
+
         if (!$user->profile) {
             Profile::query()->create([
                 'user_id' => $user->id,
@@ -84,9 +91,8 @@ class GenerateAuthToken extends Command
                 'phone' => null,
             ]);
         }
-        // Revocar tokens anteriores
-        $user->tokens()->delete();
 
+        $user->tokens()->delete();
         $token = $user->createToken('dev_token')->plainTextToken;
 
         $this->info('Token generated successfully:');
@@ -97,5 +103,21 @@ class GenerateAuthToken extends Command
         $this->line("Authorization: Bearer $token");
 
         return 0;
+    }
+
+    /**
+     * Extrae los valores posibles de un ENUM de MySQL.
+     */
+    private function getEnumValues(string $table, string $column): array
+    {
+        $type = DB::select("SHOW COLUMNS FROM {$table} WHERE Field = '{$column}'")[0]->Type ?? null;
+
+        if (!$type || !str_starts_with($type, 'enum(')) {
+            return [];
+        }
+
+        preg_match_all("/'([^']+)'/", $type, $matches);
+
+        return $matches[1] ?? [];
     }
 }

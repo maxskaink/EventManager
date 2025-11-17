@@ -11,10 +11,10 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('publication_id')->nullable();
             $table->string('name');
-            $table->string('description');
+            $table->text('description');
             $table->dateTime('start_date');
             $table->dateTime('end_date');
-            $table->enum('event_type', ['charla', 'curso', 'convocatoria'])->default('charla');
+            $table->enum('event_type', ['charla', 'curso', 'convocatoria', 'taller', 'conferencia'])->default('charla');
             $table->enum('modality', ['presencial', 'virtual', 'mixta'])->default('presencial');
             $table->string('location')->nullable();
             $table->string('status', 50);

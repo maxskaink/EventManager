@@ -11,6 +11,7 @@ Route::middleware('auth:sanctum')->prefix('publication')->group(function () {
     Route::get('/archived', [PublicationController::class, 'listDraftPublications']);
     Route::patch('{publicationId}', [PublicationController::class, 'updatePublication']);
     Route::post('{publicationId}/interests', [PublicationController::class, 'addPublicationInterests']);
+    Route::get('/{publicationId}', [PublicationController::class, 'getPublicationById']);
 
     // Access routes
     Route::post('{publicationId}/access/grant', [PublicationController::class, 'grantPublicationAccess']);

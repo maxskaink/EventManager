@@ -144,4 +144,17 @@ class ExternalEventController extends Controller
             'external_events' => $events,
         ]);
     }
+
+
+    /**
+     * Get all trusted organizations (public endpoint).
+     */
+    public function getAllTrustedOrganizations(): JsonResponse
+    {
+        $trustedOrganizations = $this->externalEventService->getAllTrustedOrganizations();
+
+        return response()->json([
+            'trusted_organizations' => $trustedOrganizations,
+        ]);
+    }
 }

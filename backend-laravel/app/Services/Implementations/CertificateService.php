@@ -5,70 +5,72 @@ namespace App\Services\Implementations;
 use App\Exceptions\DuplicatedResourceException;
 use App\Models\Certificate;
 use App\Models\User;
+use App\Repositories\Contracts\CertificateRepositoryInterface;
 use App\Services\Contracts\CertificateServiceInterface;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Str;
 use InvalidArgumentException;
+use Throwable;
 
 class CertificateService implements CertificateServiceInterface
 {
-    /**
-     * Create and store a new certificate for a user.
-     *
-     * @param array $data
-     * @return Certificate
-     *
-     * @throws DuplicatedResourceException
-     * @throws ModelNotFoundException
-     */
-    public function addCertificate(array $data): Certificate
+    private CertificateRepositoryInterface $certificateRepository;
+
+    /** @var array<string> */
+    private array $trustedOrganizations;
+
+    public function __construct(CertificateRepositoryInterface $certificateRepository)
     {
-        // Ensure the user exists
+        $this->certificateRepository = $certificateRepository;
+        $this->trustedOrganizations = config('trusted_certificates.organizations', []);
+    }
+
+    public function addCertificate(array $data):Certificate
+    {
         $user = User::query()->find($data['user_id']);
         if (!$user) {
             throw new ModelNotFoundException('The specified user does not exist.');
         }
 
-        // Check if a certificate with the same name already exists for this user
-        $existingCertificate = Certificate::query()
-            ->where('user_id', $data['user_id'])
-            ->where('name', $data['name'])
-            ->where('deleted', false)
-            ->first();
+        $existing = $this->certificateRepository
+            ->findByUserId($data['user_id'])
+            ->firstWhere('name', $data['name']);
 
-        if ($existingCertificate) {
+        if ($existing) {
             throw new DuplicatedResourceException(
                 "A certificate named '{$data['name']}' already exists for this user."
             );
         }
 
-        $certificate = new Certificate();
-        $certificate->fill($data);
-        $certificate->save();
+        if (empty($data['issuing_organization'])) {
+            throw new InvalidArgumentException('The issuing organization field is required.');
+        }
 
-        return $certificate;
+        if (!empty($data['credential_url'])) {
+            $this->validateCertificateUrl($data['credential_url']);
+        }
+
+        if (!empty($data['expiration_date']) && !empty($data['issue_date'])) {
+            $issue = Carbon::parse($data['issue_date']);
+            $expire = Carbon::parse($data['expiration_date']);
+            if ($expire->isBefore($issue)) {
+                throw new InvalidArgumentException('The expiration date cannot be earlier than the issue date.');
+            }
+        }
+
+        return $this->certificateRepository->create($data);
     }
 
-    /**
-     * Update an existing certificate.
-     *
-     * @param int $certificateId
-     * @param array $data
-     * @return Certificate
-     *
-     * @throws ModelNotFoundException
-     * @throws DuplicatedResourceException
-     */
-    public function updateCertificate(int $certificateId, array $data): Certificate
+    public function updateCertificate(int $certificateId, array $data):Certificate
     {
-        // Find the certificate
-        $certificate = Certificate::query()->find($certificateId);
+        $certificate = $this->certificateRepository->findById($certificateId);
         if (!$certificate) {
             throw new ModelNotFoundException('The specified certificate does not exist.');
         }
 
-        // If user_id is being changed, verify existence
         if (isset($data['user_id'])) {
             $newUser = User::query()->find($data['user_id']);
             if (!$newUser) {
@@ -76,66 +78,69 @@ class CertificateService implements CertificateServiceInterface
             }
         }
 
-        // Check for duplicate name if it was modified
         if (isset($data['name'])) {
-            $duplicate = Certificate::query()
-                ->where('user_id', $data['user_id'] ?? $certificate->user_id)
-                ->where('name', $data['name'])
-                ->where('id', '!=', $certificateId)
-                ->where('deleted', false)
-                ->first();
+            $duplicate = $this->certificateRepository
+                ->findByUserId($data['user_id'] ?? $certificate->user_id)
+                ->firstWhere('name', $data['name']);
 
-            if ($duplicate) {
+            if ($duplicate && $duplicate->id !== $certificateId) {
                 throw new DuplicatedResourceException(
                     "A certificate named '{$data['name']}' already exists for this user."
                 );
             }
         }
 
-        // Update fields safely
-        $certificate->fill($data);
-        $certificate->save();
+        if (!empty($data['credential_url'])) {
+            $this->validateCertificateUrl($data['credential_url']);
+        }
 
-        return $certificate;
+        if (!empty($data['expiration_date']) && !empty($data['issue_date'] ?? $certificate->issue_date)) {
+            $issue = Carbon::parse($data['issue_date'] ?? $certificate->issue_date);
+            $expire = Carbon::parse($data['expiration_date']);
+            if ($expire->isBefore($issue)) {
+                throw new InvalidArgumentException('The expiration date cannot be earlier than the issue date.');
+            }
+        }
+
+        return $this->certificateRepository->update($certificateId, $data);
     }
 
-    /**
-     * Get all certificates of a specific user.
-     *
-     * @param int $userId
-     * @return Collection<int, Certificate>
-     */
+    private function validateCertificateUrl(string $url): void
+    {
+        $domain = parse_url($url, PHP_URL_HOST);
+        if (!$domain) {
+            throw new InvalidArgumentException('The provided credential URL is invalid.');
+        }
+
+        $isTrusted = collect($this->trustedOrganizations)
+            ->contains(fn($trusted) => Str::endsWith($domain, $trusted));
+
+        if (!$isTrusted) {
+            throw new InvalidArgumentException(
+                "The certificate domain '{$domain}' is not from a trusted organization."
+            );
+        }
+
+        try {
+            $response = Http::timeout(5)->head($url);
+            if ($response->failed()) {
+                throw new InvalidArgumentException("The credential URL '{$url}' could not be reached or returned an error.");
+            }
+        } catch (Throwable ) {
+            throw new InvalidArgumentException("The credential URL '{$url}' is not accessible.");
+        }
+    }
+
     public function getCertificatesByUser(int $userId): Collection
     {
-        return Certificate::query()
-            ->where('user_id', $userId)
-            ->where('deleted', false)
-            ->orderByDesc('issue_date')
-            ->get();
+        return $this->certificateRepository->findByUserId($userId);
     }
 
-    /**
-     * Get all certificates in the system.
-     *
-     * @return Collection<int, Certificate>
-     */
     public function getAllCertificates(): Collection
     {
-        return Certificate::query()
-            ->where('deleted', false)
-            ->orderByDesc('issue_date')
-            ->get();
+        return $this->certificateRepository->findAll();
     }
 
-    /**
-     * Get all certificates issued within a specific date range.
-     *
-     * @param string $startDate  (format: Y-m-d)
-     * @param string $endDate    (format: Y-m-d)
-     * @return Collection<int, Certificate>
-     *
-     * @throws InvalidArgumentException
-     */
     public function getCertificatesByDateRange(string $startDate, string $endDate): Collection
     {
         $start = Carbon::parse($startDate);
@@ -145,28 +150,16 @@ class CertificateService implements CertificateServiceInterface
             throw new InvalidArgumentException('The end date cannot be earlier than the start date.');
         }
 
-        return Certificate::query()
-            ->whereBetween('issue_date', [$start, $end])
-            ->where('deleted', false)
-            ->orderBy('issue_date')
-            ->get();
+        return $this->certificateRepository->findByDateRange($startDate, $endDate);
     }
 
-    /**
-     * Delete an existing certificate.
-     *
-     * @param int $certificateId
-     * @return void
-     *
-     * @throws ModelNotFoundException
-     */
     public function deleteCertificate(int $certificateId): void
     {
-        $certificate = Certificate::query()->find($certificateId);
-        if (!$certificate) {
-            throw new ModelNotFoundException('The specified certificate does not exist.');
-        }
+        $this->certificateRepository->softDelete($certificateId);
+    }
 
-        $certificate->delete();
+    public function getAllTrustedOrganizations(): array
+    {
+        return $this->trustedOrganizations;
     }
 }

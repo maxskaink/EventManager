@@ -11,4 +11,5 @@ Route::middleware('auth:sanctum')->prefix('certificate')->group(function () {
     Route::get('/user/{userId}', [CertificateController::class, 'listCertificatesByUser']);
     Route::get('/all', [CertificateController::class, 'listAllCertificates']);
     Route::get('/date-range', [CertificateController::class, 'listCertificatesByDateRange']);
+    Route::get('/organizations', [CertificateController::class, 'getAllTrustedOrganizations']);
 });
