@@ -1,5 +1,7 @@
 // En: src/features/events/event-board.helpers.ts
 
+import type { ContentItem } from "./types";
+
 export const getTypeColor = (type: string) => {
   switch (type) {
     case "charla":
@@ -69,3 +71,59 @@ export const getOccupancyLevel = (enrolled: number, capacity: number) => {
 export const isEventType = (type: string) => {
   return type === "charla" || type === "curso" || type === "convocatoria";
 };
+
+/**
+ * Helps to merge events and articles into a single array of ContentItems
+ * @param events 
+ * @param articles 
+ * @returns 
+ */
+export const mergeEventsAndArticles = (events: API.Event[], articles: API.Article[]): ContentItem[] => {
+  return [
+    ...events.map((event) => ({
+      id: event.id.toString(),
+      type: event.event_type,
+      title: event.name,
+      description: event.description,
+      date: event.start_date.split("T")[0],
+      time: event.start_date.split("T")[1]?.substring(0, 5) || undefined,
+      location: event.location || event.modality,
+      status:
+        event.status === "activo"
+          ? "upcoming"
+          : event.status === "finalizado"
+            ? "completed"
+            : event.status === "cancelado"
+              ? "cancelled"
+              : "upcoming",
+      capacity: event.capacity ?? 0,
+      enrolled: 0, // TODO
+      views: undefined,
+    })),
+    ...articles.map((item) => {
+      if (item.publication_date || item.user_id) {
+        // Es Publication
+        const pub = item;
+        return {
+          id: `article-${pub.id}`,
+          type: "article",
+          title: pub.title,
+          description: pub.description || "",
+          date: pub.created_at || pub.created_at,
+          status: "published",
+          views: 0,
+        };
+      }
+      const art = item as API.Article; // Es Article
+      return {
+        id: `article-${art.id}`,
+        type: "articulo",
+        title: art.title,
+        description: art.description || "",
+        date: art.publication_date,
+        status: "published",
+        views: 0,
+      };
+    }),
+  ];
+}

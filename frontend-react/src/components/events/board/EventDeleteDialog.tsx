@@ -9,12 +9,7 @@ import {
   AlertDialogTitle,
 } from "../../ui/alert-dialog";
 import { AlertTriangle, Trash2 } from "lucide-react";
-
-type ItemToDelete = {
-  id: string;
-  type: string;
-  title: string;
-};
+import type { ItemToDelete } from "../../../features/events";
 
 type Props = {
   isOpen: boolean;

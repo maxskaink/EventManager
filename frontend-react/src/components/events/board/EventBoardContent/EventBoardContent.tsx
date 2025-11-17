@@ -7,7 +7,7 @@ import {
 import type { NavigateFunction } from "react-router";
 import EventGridItem from "./EventGridItem";
 import EventListItem from "./EventListItem";
-import type { ContentItem, ItemToDelete } from "./event-board-content";
+import type { ContentItem, ItemToDelete } from "../../../../features/events";
 
 type Props = {
   loading: boolean;
@@ -16,6 +16,7 @@ type Props = {
   pinnedContent: string[];
   onViewDetails: (item: ContentItem) => void;
   onDeleteClick: (item: ItemToDelete) => void;
+  onPublish: (item: ContentItem) => void;
   onNavigate: NavigateFunction;
 };
 
@@ -28,6 +29,7 @@ export function EventBoardContent({
   pinnedContent,
   onViewDetails,
   onDeleteClick,
+  onPublish,
   onNavigate,
 }: Props) {
   if (loading) {
@@ -83,6 +85,7 @@ export function EventBoardContent({
               isPinned={pinnedContent.includes(item.id)}
               onViewDetails={onViewDetails}
               onDeleteClick={onDeleteClick}
+              onPublish={onPublish}
             />
           ))}
         </div>
@@ -95,6 +98,7 @@ export function EventBoardContent({
               isPinned={pinnedContent.includes(item.id)}
               onViewDetails={onViewDetails}
               onDeleteClick={onDeleteClick}
+              onPublish={onPublish}
             />
           ))}
         </div>

@@ -66,11 +66,10 @@ namespace APIPayloads {
     title: string;
     content: string;
     type: API.PublicationType;
-    published_at: string;
     status: API.PublicationStatus;
     visibility: API.PublicationVisibility;
-    image_url?: string;
-    summary?: string;
+    image: File;
+    summary: string;
   }
   
   type CreateEventPublication = CreatePublication;

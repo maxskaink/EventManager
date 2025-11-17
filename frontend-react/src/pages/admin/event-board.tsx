@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useApp } from "../../components/context/AppContext";
 import { useNavigate, useLocation } from "react-router";
-import { EventAPI, ArticleAPI, PublicationAPI } from "../../services/api";
+import { EventAPI, ArticleAPI } from "../../services/api";
 import { toast } from "sonner";
 import BottomNavbarWrapper from "../../components/nav/BottomNavbarWrapper";
 import { EventBoardHeader } from "../../components/events/board/EventBoardHeader";
@@ -10,29 +10,10 @@ import EventBoardContent from "../../components/events/board/EventBoardContent";
 import { EventBoardStats } from "../../components/events/board/EventBoardStats";
 import { EventDetailModal } from "../../components/events/board/EventDetailModal";
 import { EventDeleteDialog } from "../../components/events/board/EventDeleteDialog";
+import { getErrorMessageForToast } from "../../features/errors/error.helpers";
+import { mergeEventsAndArticles, type ContentItem, type ItemToDelete } from "../../features/events";
+import { PublishContentModal } from "../../components/events/board/PublishContentModal";
 
-
-// Tipos de datos (asumiendo que los tipos API.* existen globalmente)
-// ... (Estos tipos deberían moverse a un archivo types.d.ts)
-type ContentItem = {
-  id: string;
-  type: string;
-  title: string;
-  description: string;
-  date: string;
-  time?: string;
-  location?: string;
-  status: string;
-  capacity?: number;
-  enrolled?: number;
-  views?: number;
-};
-
-type ItemToDelete = {
-  id: string;
-  type: string;
-  title: string;
-};
 
 export function EventBoardScreen() {
   const { user } = useApp();
@@ -56,54 +37,51 @@ export function EventBoardScreen() {
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<ItemToDelete | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isPublishModalOpen, setIsPublishModalOpen] = useState(false);
 
-  // Carga de Contenido
-  useEffect(() => {
-    loadContent();
-  }, [location.pathname, user?.role]); // Recargar si cambia la ruta o el rol
-
-  const loadContent = async () => {
+  const loadContent = useCallback(async () => {
     try {
       setLoading(true);
-      
-      const eventsData = await EventAPI.listAllEvents();
+
+      // Carga de eventos en paralelo con el contenido
+      const [eventsData, contentData] = await Promise.all([
+        EventAPI.listAllEvents().catch(() => []),
+        loadRoleBasedContent(user?.role),
+      ]);
+
       setEvents(Array.isArray(eventsData) ? eventsData : []);
-      
-      let articlesData: any[] = [];
-      if (user?.role === 'coordinator') {
-        // ... (lógica de carga de publicaciones/artículos para coordinador)
-         try {
-          const publicationsData = await PublicationAPI.listAllPublications();
-          articlesData = Array.isArray(publicationsData) ? publicationsData : [];
-        } catch (pubError) {
-          articlesData = [];
-        }
-      } else if (user?.role === 'mentor') {
-        // ... (lógica para mentor)
-         try {
-          articlesData = await ArticleAPI.listAllArticles();
-          articlesData = Array.isArray(articlesData) ? articlesData : [];
-        } catch (error) {
-          articlesData = [];
-        }
-      } else {
-        // ... (lógica para otros roles)
-         try {
-          articlesData = await ArticleAPI.listMyArticles();
-          articlesData = Array.isArray(articlesData) ? articlesData : [];
-        } catch (error) {
-          articlesData = [];
-        }
-      }
-      
-      setArticles(articlesData);
+      setArticles(Array.isArray(contentData) ? contentData : []);
     } catch (error) {
-      console.error('Error loading content:', error);
-      toast.error('Error al cargar el contenido');
+      console.error("Error loading content:", error);
+      toast.error("Error al cargar el contenido");
       setEvents([]);
       setArticles([]);
     } finally {
       setLoading(false);
+    }
+  }, [user?.role]);
+
+  // Carga de Contenido
+  useEffect(() => {
+    loadContent();
+  }, [location.pathname, loadContent]); // Recargar si cambia la ruta o el rol
+
+  // Función auxiliar para cargar contenido basado en el rol
+  const loadRoleBasedContent = async (role?: string): Promise<API.Article[]> => {
+    try {
+      let data: API.Article[];
+      switch (role) {
+        case "coordinator":
+        case "mentor":
+          data = await ArticleAPI.listAllArticles();
+          break;
+        default:
+          data = await ArticleAPI.listMyArticles();
+          break;
+      }
+      return Array.isArray(data) ? data : [];
+    } catch {
+      return [];
     }
   };
 
@@ -111,57 +89,15 @@ export function EventBoardScreen() {
   const safeEvents = Array.isArray(events) ? events : [];
   const safeArticles = Array.isArray(articles) ? articles : [];
 
-  const content: ContentItem[] = [
-    ...safeEvents.map(event => ({
-      id: event.id.toString(),
-      type: event.event_type,
-      title: event.name,
-      description: event.description,
-      date: event.start_date.split('T')[0],
-      time: event.start_date.split('T')[1]?.substring(0, 5) || undefined,
-      location: event.location || event.modality,
-      status: event.status === 'activo' ? 'upcoming' : 
-              event.status === "finalizado" ? 'completed' : 
-              event.status === 'cancelado' ? 'cancelled' : 'upcoming',
-      capacity: event.capacity,
-      enrolled: 0, // TODO
-      views: undefined,
-    })),
-    ...safeArticles.map(item => {
-      if ((item).publication_date || (item).user_id) { // Es Publication
-        const pub = item
-        return {
-          id: `article-${pub.id}`,
-          type: 'article',
-          title: pub.title,
-          description: pub.description || '',
-          date: pub.created_at || pub.created_at,
-          status: 'published',
-          views: 0,
-        };
-      }
-      const art = item as API.Article; // Es Article
-      return {
-        id: `article-${art.id}`,
-        type: 'articulo',
-        title: art.title,
-        description: art.description || '',
-        date: art.publication_date,
-        status: 'published',
-        views: 0,
-      };
-    }),
-  ];
+  const content: ContentItem[] = mergeEventsAndArticles(safeEvents, safeArticles);
 
   // Filtrado y Ordenamiento
   const filteredContent = content.filter((item) => {
     const matchesSearch =
       item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory =
-      filterCategory === "all" || item.type === filterCategory;
-    const matchesStatus =
-      filterStatus === "all" || item.status === filterStatus;
+    const matchesCategory = filterCategory === "all" || item.type === filterCategory;
+    const matchesStatus = filterStatus === "all" || item.status === filterStatus;
     return matchesSearch && matchesCategory && matchesStatus;
   });
 
@@ -184,16 +120,21 @@ export function EventBoardScreen() {
     setIsDeleteDialogOpen(true);
   };
 
+  const handlePublish = (item: ContentItem) => {
+    setSelectedItem(item);
+    setIsPublishModalOpen(true);
+  };
+
   const handleConfirmDelete = async () => {
     if (!itemToDelete) return;
 
     try {
-      if (itemToDelete.type === 'articulo') {
-        const articleId = parseInt(itemToDelete.id.replace('article-', ''));
+      if (itemToDelete.type === "articulo") {
+        const articleId = parseInt(itemToDelete.id.replace("article-", ""));
         await ArticleAPI.deleteArticle(articleId);
-        toast.success('✅ Artículo eliminado exitosamente');
+        toast.success("✅ Artículo eliminado exitosamente");
       } else {
-        toast.error('La funcionalidad de eliminar eventos aún no está disponible');
+        toast.error("La funcionalidad de eliminar eventos aún no está disponible");
         setIsDeleteDialogOpen(false);
         setItemToDelete(null);
         return;
@@ -202,19 +143,15 @@ export function EventBoardScreen() {
       await loadContent();
       setIsDeleteDialogOpen(false);
       setItemToDelete(null);
-    } catch (error: any) {
-      console.error('Error deleting item:', error);
-      const message = error.response?.data?.message || 'Error al eliminar';
-      toast.error(message);
+    } catch (error) {
+      console.error("Error deleting item:", error);
+      toast.error(getErrorMessageForToast(error, "Error al eliminar"));
     }
   };
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      <EventBoardHeader
-        userRole={user?.role || ""}
-        onNavigate={navigate}
-      />
+      <EventBoardHeader userRole={user?.role || ""} onNavigate={navigate} />
 
       <div className="max-w-6xl mx-auto p-4 space-y-6">
         <EventBoardFilters
@@ -243,17 +180,14 @@ export function EventBoardScreen() {
           pinnedContent={pinnedContent}
           onViewDetails={handleViewDetails}
           onDeleteClick={handleDeleteClick}
+          onPublish={handlePublish}
           onNavigate={navigate}
         />
       </div>
 
       <BottomNavbarWrapper role={user?.role ?? ""} />
 
-      <EventDetailModal
-        isOpen={isDetailModalOpen}
-        onOpenChange={setIsDetailModalOpen}
-        item={selectedItem}
-      />
+      <EventDetailModal isOpen={isDetailModalOpen} onOpenChange={setIsDetailModalOpen} item={selectedItem} />
 
       <EventDeleteDialog
         isOpen={isDeleteDialogOpen}
@@ -261,6 +195,12 @@ export function EventBoardScreen() {
         item={itemToDelete}
         onConfirmDelete={handleConfirmDelete}
         onCancel={() => setItemToDelete(null)}
+      />
+      <PublishContentModal
+        isOpen={isPublishModalOpen}
+        onOpenChange={setIsPublishModalOpen}
+        onPublish={() => console.log("Publicado")}
+        item={selectedItem}
       />
     </div>
   );

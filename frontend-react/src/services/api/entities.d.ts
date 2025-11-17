@@ -6,8 +6,9 @@ namespace API {
   type UserRole = "interested" | "active-member" | "coordinator" | "mentor" | "seed";
   type EventModality = 'presencial' | 'virtual' | 'mixta';
    type Role = UserRole;
-   type PublicationType = "scientific article" | "event" | "news" | "other";
-   type PublicationStatus = "activo" | "archivado" | "borrador";
+   type PublicationType = "articulo" | "aviso" | "comunicado" | "material" | "evento";
+   // TODO: verificar los estados de una publicación 
+   type PublicationStatus = "activo" | "inactivo" | "borrador" | "pendiente";
    type PublicationVisibility = "public" | "private" | "role_based";
    type EventModality = "presencial" | "virtual" | "mixta";
    type EventStatus = "activo" | "cancelado" | "finalizado" | "borrador";

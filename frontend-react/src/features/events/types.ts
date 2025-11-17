@@ -1,5 +1,3 @@
-
-// Definir tipos locales
 export type ContentItem = {
   id: string;
   type: string;
