@@ -3,9 +3,15 @@
  * @file entities.d.ts
  */
 namespace API {
-  type UserRole = 'interested' | 'member' | 'coordinator' | 'mentor';
+  type UserRole = "interesado" | "miembro" | "coordinador" | "mentor" | "seed";
   type EventModality = 'presencial' | 'virtual' | 'mixta';
-  type EventStatus = 'activo' | 'inactivo' | 'pendiente' | 'cancelado';
+   type Role = UserRole;
+   type PublicationType = "scientific article" | "event" | "news" | "other";
+   type PublicationStatus = "activo" | "archivado" | "borrador";
+   type PublicationVisibility = "public" | "private" | "role_based";
+   type EventModality = "presencial" | "virtual" | "mixta";
+   type EventStatus = "activo" | "cancelado" | "finalizado" | "borrador";
+   type EventType = "charla" | "taller" | "conferencia" | "semillero";
 
   interface User {
     id: number;
@@ -27,6 +33,12 @@ namespace API {
     university: string | null;
     academic_program: string | null;
     phone: string | null;
+    created_at: string;
+    updated_at: string;
+    // Asumo que los intereses se pueden cargar aquí
+    interests?: Interest[];
+    // Asumo que el usuario se puede cargar aquí
+    user?: User;
   }
 
   interface Event {
@@ -48,11 +60,12 @@ namespace API {
     id: number;
     user_id: number;
     name: string;
-    description: string;
-    issue_date: string; // YYYY-MM-DD
-    document_url: string | null;
-    comment: string | null;
-    deleted: boolean;
+    issuing_organization: string;
+    issue_date: string;
+    expiration_date: string | null;
+    credential_id: string | null;
+    credential_url: string | null;
+    does_not_expire: boolean;
     created_at: string;
     updated_at: string;
   }
@@ -67,5 +80,55 @@ namespace API {
     publication_url: string | null;
     created_at: string;
     updated_at: string;
+  }  
+
+  interface Interest {
+    id: number;
+    keyword: string;
+  }
+
+  interface Publication {
+    id: number;
+    event_id: number | null;
+    title: string;
+    content: string;
+    type: PublicationType;
+    published_at: string;
+    status: PublicationStatus;
+    image_url: string | null;
+    summary: string | null;
+    visibility: PublicationVisibility;
+    created_at: string;
+    updated_at: string;
+  }
+  interface ExternalEvent {
+    id: number;
+    user_id: number;
+    name: string;
+    description: string;
+    start_date: string;
+    end_date: string;
+    modality: EventModality;
+    host_organization: string;
+    location: string;
+    participation_url: string;
+    created_at: string;
+    updated_at: string;
+  }
+  
+  interface Notification {
+    id: string; // Las notificaciones de Laravel suelen usar UUIDs
+    type: string;
+    notifiable_type: string;
+    notifiable_id: number;
+    data: Record<string, unknown>; // El contenido real de la notificación
+    read_at: string | null;
+    created_at: string;
+    updated_at: string;
+  }
+
+  interface TrustedOrganization {
+    name: string;
+    // ... otros campos si los hay
   }
 }

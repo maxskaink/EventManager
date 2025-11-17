@@ -3,22 +3,24 @@
  * This file is used to define all the responses from the api
  */
 
-// --- PAYLOADS ---
-namespace Payloads {
-  type UpdateProfile = Partial<Pick<API.Profile, 'university' | 'academic_program' | 'phone'>>;
-  type AddEvent = Omit<API.Event, 'id' | 'created_at' | 'updated_at'>;
-  type AddCertificate = Omit<API.Certificate, 'id' | 'deleted' | 'created_at' | 'updated_at'>;
-  type UpdateCertificate = Partial<Omit<AddCertificate, 'user_id'>>;
-  type AddArticle = Omit<API.Article, 'id' | 'created_at' | 'updated_at'>;
-  type UpdateArticle = Partial<AddArticle>;
-}
 
 
-// --- RESPONSES ---
 type MessageRes = {
   message: string;
 }
 
+interface SuccessResponse<T> {
+  data: T;
+  message?: string;
+}
+
+interface ErrorResponse {
+  message: string;
+  error?: string;
+  errors?: Record<string, string[]>; // Para errores de validación de Laravel
+}
+
+// --- RESPONSES ---
 namespace AuthAPI {
   type GoogleAuthUrlRes = {
     url: string;
@@ -44,6 +46,7 @@ namespace ProfileAPI {
         message: string;
         profile: API.Profile
     }
+    
 }
 
 namespace EventAPI {
@@ -68,4 +71,6 @@ namespace ArticleAPI {
     type ListArticlesRes = {
         articles: API.Article[];
     }
+
+
 }

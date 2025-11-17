@@ -67,7 +67,7 @@ export function CreatePublicationScreen() {
     try {
       setLoading(true);
 
-      const articleData: Payloads.AddArticle = {
+      const articleData: APIPayloads.AddArticle = {
         user_id: authUser.id,
         title: formData.title,
         description: formData.description || null,

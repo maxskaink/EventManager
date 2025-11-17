@@ -1,11 +1,11 @@
 import axiosInstance from "../axios-instance";
 
-async function addCertificate(data: Payloads.AddCertificate) {
+async function addCertificate(data: APIPayloads.AddCertificate) {
   const response = await axiosInstance.post<MessageRes>('/certificate', data);
   return response.data;
 }
 
-async function updateCertificate(certificateId: number, data: Payloads.UpdateCertificate) {
+async function updateCertificate(certificateId: number, data: APIPayloads.UpdateCertificate) {
   const response = await axiosInstance.patch<CertificateAPI.UpdateCertificateRes>(`/certificate/${certificateId}`, data);
   return response.data;
 }

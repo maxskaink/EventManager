@@ -6,7 +6,7 @@ async function getProfile() {
   return response.data.profile;
 }
 
-async function updateProfile(data: Payloads.UpdateProfile) {
+async function updateProfile(data: APIPayloads.UpdateProfile) {
   const response = await axiosInstance.patch<ProfileAPI.UpdateProfileRes>('/profile', data);
   // Devolver el perfil para que React Query pueda actualizar la caché
   return response.data.profile;

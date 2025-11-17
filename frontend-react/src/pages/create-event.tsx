@@ -88,7 +88,7 @@ export default function CreateEventPage() {
     try {
       setLoading(true);
 
-      const eventData: Payloads.AddEvent = {
+      const eventData: APIPayloads.AddEvent = {
         name: formData.name,
         description: formData.description,
         start_date: formatDateTime(formData.start_date, formData.start_time),

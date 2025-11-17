@@ -1,11 +1,11 @@
 import axiosInstance from "../axios-instance";
 
-async function addArticle(data: Payloads.AddArticle) {
+async function addArticle(data: APIPayloads.AddArticle) {
   const response = await axiosInstance.post<ArticleAPI.ArticleRes>('/article', data);
   return response.data;
 }
 
-async function updateArticle(articleId: number, data: Payloads.UpdateArticle) {
+async function updateArticle(articleId: number, data: APIPayloads.UpdateArticle) {
   const response = await axiosInstance.patch<ArticleAPI.ArticleRes>(`/article/${articleId}`, data);
   return response.data;
 }

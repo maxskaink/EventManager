@@ -1,6 +1,6 @@
 import axiosInstance from "../axios-instance";
 
-async function addEvent(data: Payloads.AddEvent) {
+async function addEvent(data: APIPayloads.AddEvent) {
   const response = await axiosInstance.post<MessageRes>('/event', data);
   return response.data;
 }
