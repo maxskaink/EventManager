@@ -1,31 +1,42 @@
-import { useState, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
-import { AxiosError } from "axios";
-import { AuthAPI, UserAPI } from "../../services/api";
-import { useAuthStore } from "../../stores/auth.store";
-import DashboardRedirect from "../../components/nav/DashboardRedirect";
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { AxiosError } from 'axios';
+import { AuthAPI } from '../../services/api';
+import { useAuthStore } from '../../stores/auth.store';
+import DashboardRedirect from '../../components/nav/DashboardRedirect';
 
+// Importar los nuevos componentes de UI
+import { GoogleCallbackLoading } from '../../components/google-callback/GoogleCallbackLoading';
+import { GoogleCallbackError } from '../../components/google-callback/GoogleCallbackError';
+import { GoogleCallbackUnexpected } from '../../components/google-callback/GoogleCallbackUnexpected';
+
+// NOTA: No se importa ningún archivo .css en este componente
+
+/**
+ * Componente de página (contenedor) que maneja la lógica
+ * del callback de autenticación de Google.
+ */
 function GoogleCallbackScreen() {
   const [params] = useSearchParams();
 
-  // Suscribirse a los cambios del store
+  // Suscripción al store de Zustand
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const user = useAuthStore((state) => state.user);
   const login = useAuthStore((state) => state.login);
 
+  // Estado local del componente
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState();
+  const [error, setError] = useState<{ message: string } | null>(null);
 
-  // On page load, we take "search" parameters
-  // and proxy them to /api/auth/callback on our Laravel API
+  // Efecto para procesar el callback
   useEffect(() => {
     let isCancelled = false;
-    
+
     async function callCallback() {
-      const code = params.get("code") ?? "";
-      
+      const code = params.get('code') ?? '';
+
       if (!code) {
-        setError({ message: "No se recibió código de autorización de Google" });
+        setError({ message: 'No se recibió código de autorización de Google' });
         setLoading(false);
         return;
       }
@@ -34,83 +45,56 @@ function GoogleCallbackScreen() {
 
       try {
         const res = await AuthAPI.googleCallback({ code });
-        
+
         if (isCancelled) return;
-        
+
         if (!res.user || !res.access_token) {
-          setError({ message: "Respuesta incompleta del servidor" });
+          setError({ message: 'Respuesta incompleta del servidor' });
           setLoading(false);
           return;
         }
-        
+
         login(res.user, res.access_token);
         setLoading(false);
       } catch (err) {
         if (isCancelled) return;
-        
-        setError(err instanceof AxiosError ? err.response?.data : err);
+
+        // Mejorar la extracción del mensaje de error
+        let errorMessage = 'Ocurrió un error desconocido';
+        if (err instanceof AxiosError && err.response?.data?.message) {
+          errorMessage = err.response.data.message;
+        } else if (err instanceof Error) {
+          errorMessage = err.message;
+        }
+
+        setError({ message: errorMessage });
         setLoading(false);
       }
     }
-    
+
     callCallback();
-    
+
     return () => {
       isCancelled = true;
     };
-  }, [params]); // Removido authStore de las dependencias
+  }, [params, login]);
 
-  // Remover este useEffect que causa conflicto
-  // El usuario ya viene del backend en el callback
-
+  // Renderizado condicional basado en el estado
+  
   if (loading) {
-    return <DisplayLoading />;
+    return <GoogleCallbackLoading />;
   }
 
   if (isAuthenticated && user) {
-    return <DashboardRedirect/>
+    return <DashboardRedirect />;
   }
 
   if (error) {
-    return (
-      <div>
-        <h1>Error en la autenticación</h1>
-        <DisplayData error={error} user={user} />
-      </div>
-    );
+    return <GoogleCallbackError error={error} />;
   }
 
-  return (
-    <div>
-      <h1>Procesando autenticación...</h1>
-      <DisplayData error={error} user={user} />
-    </div>
-  );
-}
-
-function DisplayLoading() {
-  return <div>Loading....</div>;
-}
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function DisplayData({ data, error, user }: { data?: any; error?: any; user?: any }) {
-  return (
-    <div>
-      {data && <samp>{JSON.stringify(data, null, 2)}</samp>}
-      {error && (
-        <div>
-          <h1>An error has ocurred</h1>
-          <samp>{JSON.stringify(error, null, 2)}</samp>
-        </div>
-      )}
-      {user && (
-        <div>
-          <h1>Fetched user: </h1>
-          <samp>{JSON.stringify(user, null, 2)}</samp>
-        </div>
-      )}
-    </div>
-  );
+  // Fallback (Estado inesperado)
+  return <GoogleCallbackUnexpected />;
 }
 
 export default GoogleCallbackScreen;
