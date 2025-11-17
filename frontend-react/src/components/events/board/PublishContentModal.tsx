@@ -47,7 +47,7 @@ export function PublishContentModal({ isOpen, onOpenChange, item, onPublish }: P
   useEffect(() => {
     if (item) {
       // Usar una parte de la descripción/contenido como resumen inicial
-      setSummary(item.description?.slice(0, 200) || "");
+      setSummary(item.description?.split("\n")[0].slice(0, 200) || "");
     }
   }, [item]);
 

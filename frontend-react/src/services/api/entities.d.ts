@@ -11,7 +11,7 @@ namespace API {
    type PublicationStatus = "activo" | "inactivo" | "borrador" | "pendiente";
    type PublicationVisibility = "public" | "private" | "role_based";
    type EventModality = "presencial" | "virtual" | "mixta";
-   type EventStatus = "activo" | "cancelado" | "finalizado" | "borrador";
+   type EventStatus = "activo" | "inactivo" | "pendiente" | "cancelado";
    type EventType = "charla" | "taller" | "conferencia" | "semillero";
 
   interface User {
