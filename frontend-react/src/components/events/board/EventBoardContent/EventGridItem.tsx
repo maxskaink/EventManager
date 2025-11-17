@@ -67,6 +67,7 @@ const EventGridItem = ({
           {item.description}
         </p>
         <div className="space-y-2 text-sm text-muted-foreground mb-4">
+          {occupancy?.label}
           {/* ... (Detalles: Fecha, Hora, Ubicación, Ocupación, Vistas) ... */}
         </div>
         <div className="flex gap-2">

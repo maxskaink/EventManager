@@ -5,8 +5,8 @@ import { RegisterScreen } from "../components/auth/RegisterScreen";
 import ForgotPasswordPage from "../pages/forgot-password";
 import { GuestDashboard } from "../pages/dashboard/guest-dashboard";
 import { MemberDashboard } from "../pages/dashboard/member-dashboard";
-import { CoordinatorDashboard } from "../pages/dashboard/coordinator-dashboard";
-import { MentorDashboard } from "../pages/dashboard/mentor-dashboard";
+import { CoordinatorDashboardPage } from "../pages/dashboard/coordinator-dashboard";
+import { MentorDashboardPage } from "../pages/dashboard/mentor-dashboard";
 import { EventsScreen } from "../components/events/EventsScreen";
 import { EventBoardScreen } from "../pages/admin/event-board";
 import { ReportsScreen } from "../components/reports/ReportsScreen";
@@ -55,8 +55,8 @@ export const router = createBrowserRouter([
           // Dashboards
           { path: "dashboard-interested", element: <GuestDashboard /> },
           { path: "dashboard-member", element: <MemberDashboard /> },
-          { path: "dashboard-coordinator", element: <CoordinatorDashboard /> },
-          { path: "dashboard-mentor", element: <MentorDashboard /> },
+          { path: "dashboard-coordinator", element: <CoordinatorDashboardPage /> },
+          { path: "dashboard-mentor", element: <MentorDashboardPage /> },
 
           // Others
           { path: "reports", element: <ReportsScreen /> },
@@ -71,7 +71,7 @@ export const router = createBrowserRouter([
       {
         path: "*",
         element: <NotFoundPage />,
-      }
+      },
     ],
   },
 ]);

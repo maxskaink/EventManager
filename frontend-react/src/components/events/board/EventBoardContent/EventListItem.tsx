@@ -40,7 +40,7 @@ const EventListItem = ({
       : null;
 
   return (
-    <Card className={isPinned ? "border-blue-500 border-l-4" : ""}>
+    <Card  className={isPinned ? "border-blue-500 border-l-4" : ""}>
       <CardContent className="p-4">
         <div className="flex items-center gap-4">
           <div className="flex-1">
@@ -53,6 +53,9 @@ const EventListItem = ({
               <Badge className={`text-xs ${getStatusColor(item.status)}`}>
                 {getStatusLabel(item.status)}
               </Badge>
+            </div>
+            <div>
+              {occupancy?.label}
             </div>
             {/* ... (Descripción y detalles en línea) ... */}
           </div>
