@@ -1,23 +1,7 @@
 
-type UserRole =
-  | "guest"
-  | "member"
-  | "coordinator"
-  | "mentor";
+type UserRole = API.UserRole
 
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: UserRole;
-  avatar?: string;
-  interests?: string[];
-  phone?: string;
-  address?: string;
-  city?: string;
-  university?: string;
-  program?: string;
-}
+type User = API.User
 
 // Unified Content interface (replaces Event and Publication)
 interface Content {

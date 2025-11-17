@@ -10,6 +10,11 @@ import { useAuthStore } from "../../stores/auth.store";
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
+/**
+ * This is the provider for the app context
+ * @param param0 
+ * @deprecated This is a component planned to delete use zustand stores or react-query instead
+ */
 export function AppProvider({ children }: { children: ReactNode }) {
   // Sincronizar con el auth store de Zustand
   const authUser = useAuthStore((state) => state.user);
@@ -33,21 +38,26 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const events = content.filter((c) => c.type === "charla" || c.type === "curso" || c.type === "convocatoria");
   const publications = content.filter((c) => c.type === "comunicado" || c.type === "articulo" || c.type === "anuncio");
 
-  const login = async (email: string, password: string): Promise<boolean> => {
+  const mockLogin = async (email: string, password: string): Promise<boolean> => {
     // Mock login logic
     if (email && password) {
-      let role: UserRole = "member";
-      if (email.includes("coordinator")) role = "coordinator";
+      let role: UserRole = "miembro";
+      if (email.includes("coordinator")) role = "coordinador";
       if (email.includes("mentor")) role = "mentor";
-      if (email.includes("guest")) role = "guest";
+      if (email.includes("guest")) role = "interesado";
 
       const mockUser: User = {
-        id: "1",
+        id: 1,
         name: email.split("@")[0],
         email,
         role,
         avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face",
-        interests: ["Machine Learning", "React", "Python"],
+        google_id: "123456789",
+        email_verified_at: new Date().toISOString().split("T")[0],
+        last_login_at: new Date().toISOString().split("T")[0],
+        deleted_at: null,
+        created_at: new Date().toISOString().split("T")[0],
+        updated_at: new Date().toISOString().split("T")[0],
       };
 
       setUser(mockUser);
@@ -141,7 +151,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         userEventParticipations,
         setUser,
         setNavigate,
-        login,
+        login: mockLogin,
         logout,
         registerEvent,
         addCertificate,

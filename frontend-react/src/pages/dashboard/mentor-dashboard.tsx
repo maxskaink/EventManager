@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { BNavBarMentor } from "../../components/ui/b-navbar-mentor";
-import { useApp } from "../../components/context/AppContext";
 import { UserAPI } from "../../services/api";
 import { toast } from "sonner";
 import {
@@ -13,7 +12,10 @@ import {
   ProfileModal,
   ReportModal,
   SettingsModal,
+  type Submission,
 } from "../../components/dashboard/mentor";
+import { getErrorMessageForToast } from "../../features/errors/error.helpers";
+import { useAuthStore } from "../../stores/auth.store";
 
 // Tipos para los datos de progreso (basados en el mock original)
 type MemberProgressData = API.User & {
@@ -24,7 +26,7 @@ type MemberProgressData = API.User & {
 };
 
 // Mock data (movido desde el componente original)
-const mockSubmissions = [
+const mockSubmissions: Submission[] = [
   {
     id: "1",
     type: "event",
@@ -55,7 +57,8 @@ const mockSubmissions = [
 ];
 
 export function MentorDashboardPage() {
-  const { user, logout } = useApp();
+  const user = useAuthStore(s => s.user)
+  const logout = useAuthStore(s => s.logout)
   const [users, setUsers] = useState<API.User[]>([]);
   const [loading, setLoading] = useState(true);
   
@@ -95,8 +98,8 @@ export function MentorDashboardPage() {
       toast.success("Usuario creado exitosamente");
       loadUsers(); // Recargar lista
       return true;
-    } catch (error: any) {
-      const message = error.response?.data?.message || "Error al crear usuario";
+    } catch (error) {
+      const message = getErrorMessageForToast(error, "Error al crear usuario");
       toast.error(message);
       console.error("Error creating user:", error);
       return false;
@@ -109,8 +112,8 @@ export function MentorDashboardPage() {
       toast.success("Rol cambiado exitosamente");
       loadUsers(); // Recargar lista
       return true;
-    } catch (error: any) {
-      const message = error.response?.data?.message || "Error al cambiar rol";
+    } catch (error) {
+      const message = getErrorMessageForToast(error, "Error al cambiar rol");
       toast.error(message);
       console.error("Error changing role:", error);
       return false;
