@@ -2,7 +2,6 @@
 
 namespace App\Policies;
 
-use App\Models\Profile;
 use App\Models\User;
 
 class ProfilePolicy
@@ -15,6 +14,7 @@ class ProfilePolicy
         $targetUserId = $targetUser instanceof User ? $targetUser->id : (int) $targetUser;
         return $authUser->id === $targetUserId || $authUser->role === 'mentor';
     }
+
 
     /**
      * Determine whether the user can update their profile.

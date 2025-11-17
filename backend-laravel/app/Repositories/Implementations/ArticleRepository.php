@@ -80,8 +80,8 @@ class ArticleRepository implements ArticleRepositoryInterface
     public function findByDateRange(string $startDate, string $endDate): Collection
     {
         return Article::query()
-            ->whereBetween('created_at', [$startDate, $endDate])
-            ->orderByDesc('created_at')
+            ->whereBetween('publication_date', [$startDate, $endDate])
+            ->orderByDesc('publication_date')
             ->get();
     }
 

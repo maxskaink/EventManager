@@ -135,4 +135,26 @@ class UserController extends Controller
         $this->authorize('viewAny', Auth::user());
         return response()->json($this->userService->listActiveUsers());
     }
+
+    /**
+     * Get a user by ID.
+     *
+     * @param int $userId
+     * @return JsonResponse
+     * @throws AuthorizationException
+     */
+    public function getUserById(int $userId): JsonResponse
+    {
+        $targetUser = User::query()->findOrFail($userId);
+
+        // Autoriza usando el UserPolicy
+        $this->authorize('view', $targetUser);
+
+        $user = $this->userService->getUserById($userId);
+
+        return response()->json([
+            'user' => $user,
+        ]);
+    }
+
 }

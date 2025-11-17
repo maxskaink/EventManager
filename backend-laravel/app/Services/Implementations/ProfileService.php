@@ -40,4 +40,24 @@ class ProfileService implements ProfileServiceInterface
             ->getAllProfileInterests($userId)
             ->toArray();
     }
+
+    public function getAllProfileInterests(int $userId): array
+    {
+        return $this->profileRepository
+            ->getAllProfileInterests($userId)
+            ->toArray();
+    }
+
+    public function getProfileInterestById(int $userId, int $interestId): ?array
+    {
+        $interest = $this->profileRepository->getProfileInterestById($userId, $interestId);
+
+        return $interest?->toArray();
+    }
+
+    public function removeProfileInterest(int $userId, int $interestId): bool
+    {
+        return $this->profileRepository->deleteProfileInterest($userId, $interestId);
+    }
+
 }

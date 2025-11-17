@@ -50,4 +50,6 @@ interface UserServiceInterface
      * @return Collection<int, User>
      */
     public function listInactiveUsers(): Collection;
+
+    public function getUserById(int $userId) : User;
 }

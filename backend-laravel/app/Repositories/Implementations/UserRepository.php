@@ -62,4 +62,5 @@ class UserRepository implements UserRepositoryInterface
     {
         return User::onlyTrashed()->orderBy('deleted_at', 'desc')->get();
     }
+
 }

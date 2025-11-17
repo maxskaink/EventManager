@@ -23,9 +23,9 @@ class UpdateCertificateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:255'],
-            'issuing_organization' => ['required', 'string', 'max:255'],
-            'issue_date' => ['required', 'date', 'before_or_equal:today'],
+            'name' => ['nullable', 'string', 'max:255'],
+            'issuing_organization' => ['nullable', 'string', 'max:255'],
+            'issue_date' => ['nullable', 'date', 'before_or_equal:today'],
             'expiration_date' => ['nullable', 'date', 'after_or_equal:issue_date'],
             'credential_id' => ['nullable', 'string', 'max:255'],
             'credential_url' => ['nullable', 'url', 'max:255'],

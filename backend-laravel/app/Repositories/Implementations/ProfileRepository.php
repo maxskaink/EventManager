@@ -46,4 +46,29 @@ class ProfileRepository implements ProfileRepositoryInterface
             ->with('user')
             ->get();
     }
+
+    public function getProfileInterestById(int $userId, int $interestId): ?ProfileInterest
+    {
+        return ProfileInterest::query()
+            ->where('user_id', $userId)
+            ->where('interest_id', $interestId)
+            ->with('user')
+            ->first();
+    }
+
+    public function deleteProfileInterest(int $userId, int $interestId): bool
+    {
+        $interest = ProfileInterest::query()
+            ->where('user_id', $userId)
+            ->where('interest_id', $interestId)
+            ->first();
+
+        if (!$interest) {
+            return false;
+        }
+
+        return (bool) $interest->delete();
+    }
+
+
 }

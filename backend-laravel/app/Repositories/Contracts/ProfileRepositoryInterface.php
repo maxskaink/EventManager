@@ -3,6 +3,7 @@
 namespace App\Repositories\Contracts;
 
 use App\Models\Profile;
+use App\Models\ProfileInterest;
 use Illuminate\Database\Eloquent\Collection;
 
 interface ProfileRepositoryInterface
@@ -16,4 +17,8 @@ interface ProfileRepositoryInterface
     public function createProfileInterest(int $userId, int $interestId): void;
 
     public function getAllProfileInterests(int $userId): Collection;
+
+    public function getProfileInterestById(int $userId, int $interestId): ?ProfileInterest;
+
+    public function deleteProfileInterest(int $userId, int $interestId): bool;
 }

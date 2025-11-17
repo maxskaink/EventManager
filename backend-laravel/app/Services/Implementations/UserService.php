@@ -3,6 +3,7 @@
 namespace App\Services\Implementations;
 
 use App\Exceptions\InvalidRoleException;
+use App\Models\User;
 use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Services\Contracts\UserServiceInterface;
 use Illuminate\Database\Eloquent\Collection;
@@ -50,7 +51,7 @@ class UserService implements UserServiceInterface
 
     public function listActiveSeeds(): Collection
     {
-        return $this->userRepo->listByRole('active-seeds');
+        return $this->userRepo->listByRole('seed');
     }
 
     public function listActiveCoordinators(): Collection
@@ -67,4 +68,19 @@ class UserService implements UserServiceInterface
     {
         return $this->userRepo->listInactive();
     }
+
+    /**
+     * @throws \Exception
+     */
+    public function getUserById(int $userId) : User
+    {
+        $user = $this->userRepo->findById($userId);
+
+        if (!$user) {
+            throw new \Exception("User with ID {$userId} not found.");
+        }
+
+        return $user;
+    }
+
 }

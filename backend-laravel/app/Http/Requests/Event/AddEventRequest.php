@@ -31,6 +31,7 @@ class AddEventRequest extends FormRequest
             'event_type' => ['required', 'string', 'in:charla,curso,convocatoria,taller,conferencia'],
             'modality' => ['required', 'string', 'in:presencial,virtual,mixta'],
             'location' => ['nullable', 'string', 'max:255'],
+            'virtual_url' => ['nullable', 'url'],
             'status' => ['required', 'string', 'max:50', 'in:activo,inactivo,pendiente,cancelado'],
             'capacity' => ['nullable', 'integer', 'min:1'],
         ];
@@ -46,6 +47,7 @@ class AddEventRequest extends FormRequest
             'end_date.after_or_equal' => 'The end date must be after or equal to the start date.',
             'modality.in' => 'The modality must be one of: presencial, virtual, or mixta.',
             'status.in' => 'The status must be one of: activo, inactivo, pendiente, or cancelado.',
+            'virtual_url.url' => 'The virtual URL must be a valid URL format.',
         ];
     }
 }
