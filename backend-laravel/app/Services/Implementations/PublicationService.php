@@ -66,7 +66,7 @@ class PublicationService implements PublicationServiceInterface
 
             // Save image only after publication has been successfully created
             if ($image && $filename) {
-                $path = $image->storeAs('public/publications', $filename);
+                $path = $image->storeAs('publications', $filename);
                 $publication->image_url = Storage::url($path);
                 $publication->save();
             }
@@ -149,7 +149,7 @@ class PublicationService implements PublicationServiceInterface
                 Log::info('Image detected', ['image' => $data['image']->getClientOriginalName()]);
                 $image = $data['image'];
                 $filename = Str::uuid() . '.' . $image->getClientOriginalExtension();
-                $path = $image->storeAs('public/publications', $filename);
+                $path = $image->storeAs('publications', $filename);
                 $publication->image_url = Storage::url($path);
                 $publication->save();
             }
@@ -289,12 +289,12 @@ class PublicationService implements PublicationServiceInterface
             }
 
             $filename = Str::uuid() . '.' . $image->getClientOriginalExtension();
-            $path = $image->storeAs('public/publications', $filename);
+            $path = $image->storeAs('publications', $filename);
             $imageUrl = Storage::url($path);
 
 
             if ($publication->image_url) {
-                $oldPath = str_replace('/storage/', 'public/', $publication->image_url);
+                $oldPath = str_replace('/storage/', '', $publication->image_url);
                 if (Storage::exists($oldPath)) {
                     Storage::delete($oldPath);
                 }
@@ -306,5 +306,20 @@ class PublicationService implements PublicationServiceInterface
             return $publication;
         });
     }
+
+    public function removePublicationInterests(int $publicationId, array $interestIds): array
+    {
+        $publication = $this->publicationRepo->findById($publicationId);
+        if (!$publication) {
+            throw new ResourceNotFoundException("Publication not found.");
+        }
+
+        DB::transaction(function () use ($publicationId, $interestIds) {
+            $this->interestRepo->deleteForPublication($publicationId, $interestIds);
+        });
+
+        return $this->interestRepo->getByPublication($publicationId)->toArray();
+    }
+
 
 }

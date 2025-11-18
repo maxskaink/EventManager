@@ -217,4 +217,25 @@ class PublicationController extends Controller
         ]);
     }
 
+    /**
+     * Remove interests from a publication.
+     *
+     * @throws AuthorizationException
+     */
+    public function removePublicationInterests(int $publicationId, AddPublicationInterestRequest $request): JsonResponse
+    {
+        $publication = Publication::query()->findOrFail($publicationId);
+        $this->authorize('update', $publication);
+
+        $data = $request->validated();
+        $interestIds = $data['interests'];
+
+        $remainingInterests = $this->publicationService->removePublicationInterests($publicationId, $interestIds);
+
+        return response()->json([
+            'message' => 'Interests removed successfully.',
+            'interests' => $remainingInterests,
+        ]);
+    }
+
 }
