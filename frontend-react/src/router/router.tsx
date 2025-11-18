@@ -7,7 +7,7 @@ import { GuestDashboard } from "../pages/dashboard/guest-dashboard";
 import { MemberDashboard } from "../pages/dashboard/member-dashboard";
 import { CoordinatorDashboardPage } from "../pages/dashboard/coordinator-dashboard";
 import { MentorDashboardPage } from "../pages/dashboard/mentor-dashboard";
-import { EventsScreen } from "../components/events/EventsScreen";
+import { EventsScreen } from "../pages/events";
 import { EventBoardScreen } from "../pages/admin/event-board";
 import { ReportsScreen } from "../components/reports/ReportsScreen";
 import { PublicationsScreen } from "../components/publications/PublicationsScreen";

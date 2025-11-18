@@ -39,7 +39,7 @@ export const CreateEventPreview: React.FC<Props> = ({ formData, onEdit, onSaveDr
         month: "long",
         day: "numeric",
       });
-    } catch (error) {
+    } catch {
       return "Fecha inválida";
     }
   };
