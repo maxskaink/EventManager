@@ -33,9 +33,9 @@ class EventPolicy
         return $authUser->id === $event->user_id || in_array($authUser->role, ['mentor', 'coordinator'], true);
     }
 
-    public function markAttendance(User $authUser): bool
+    public function enroll(User $authUser): bool
     {
-        return in_array($authUser->role, ['mentor', 'coordinator'], true);
+        return in_array($authUser->role, ['interested','seed','active-member','mentor', 'coordinator'], true);
     }
 
     public function viewUpcoming(User $user): bool

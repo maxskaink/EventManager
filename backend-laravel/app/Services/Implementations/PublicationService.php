@@ -269,11 +269,7 @@ class PublicationService implements PublicationServiceInterface
             throw new ResourceNotFoundException("Publication not found.");
         }
 
-        DB::transaction(function () use ($publicationId, $interestIds) {
-            $this->interestRepo->deleteForPublication($publicationId, $interestIds);
-        });
-
-        return $this->interestRepo->getByPublication($publicationId)->toArray();
+        return $this->interestRepo->deleteForPublication($publicationId, $interestIds);
     }
 
     private function processAndStoreImage(UploadedFile $image, ?string $existingUrl = null): string

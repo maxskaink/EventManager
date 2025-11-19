@@ -31,7 +31,7 @@ class EventController extends Controller
         return response()->json([
             'message' => 'Event created successfully.',
             'event' => $newEvent,
-        ]);
+        ],201);
     }
 
     /**
@@ -218,4 +218,21 @@ class EventController extends Controller
             'participations' => $participations,
         ]);
     }
+
+    /**
+     * Soft delete an event (mentor or coordinator only).
+     */
+    public function deleteEvent(int $id): JsonResponse
+    {
+        $event = $this->eventService->getEventById($id);
+        $this->authorize('delete', $event);
+
+        $deletedEvent = $this->eventService->deleteEvent($id);
+
+        return response()->json([
+            'message' => 'Event deleted successfully.',
+            'event' => $deletedEvent,
+        ]);
+    }
+
 }
