@@ -11,6 +11,7 @@ import { EventsScreen } from "../pages/events";
 import { EventBoardScreen } from "../pages/admin/event-board";
 import { ReportsScreen } from "../components/reports/ReportsScreen";
 import { PublicationsScreen } from "../components/publications/PublicationsScreen";
+import { PublicationsScreen as SeePublicationsScreen } from "../pages/publications";
 import { CreateArticleScreen } from "../components/publications/CreatePublicationScreen";
 import { ProfileScreen } from "../components/profile/ProfileScreen";
 import { CertificatesScreen } from "../components/certificates/CertificatesScreen";
@@ -61,6 +62,7 @@ export const router = createBrowserRouter([
           // Others
           { path: "reports", element: <ReportsScreen /> },
           { path: "publications", element: <PublicationsScreen /> },
+          { path: "see-publication", element: <SeePublicationsScreen /> },
           { path: "create-article", element: <CreateArticleScreen /> },
           { path: "profile", element: <ProfileScreen /> },
           { path: "certificates", element: <CertificatesScreen /> },
