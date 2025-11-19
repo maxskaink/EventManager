@@ -19,7 +19,7 @@ export const MentorHeader: React.FC<MentorHeaderProps> = ({
   pendingCount,
 }) => {
   return (
-    <header className="border-b bg-card">
+    <header className="bg-[#0a2740] text-white shadow-sm">
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -37,18 +37,9 @@ export const MentorHeader: React.FC<MentorHeaderProps> = ({
           </div>
 
           <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={onOpenNotifications}
-              className="relative"
-            >
-              <Bell className="h-5 w-5" />
-              {pendingCount > 0 && (
-                <Badge className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs bg-red-500">
-                  {pendingCount}
-                </Badge>
-              )}
+            {/* Logout a la izquierda del nombre/rol */}
+            <Button variant="ghost" size="icon" onClick={onLogout} title="Cerrar sesión" aria-label="Cerrar sesión">
+              <LogOut className="h-5 w-5" />
             </Button>
 
             <div className="flex items-center gap-2">
@@ -65,8 +56,20 @@ export const MentorHeader: React.FC<MentorHeaderProps> = ({
               <Badge variant="secondary">Mentor</Badge>
             </div>
 
-            <Button variant="ghost" size="icon" onClick={onLogout}>
-              <LogOut className="h-5 w-5" />
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onOpenNotifications}
+              className="relative"
+              title="Notificaciones"
+              aria-label="Notificaciones"
+            >
+              <Bell className="h-5 w-5" />
+              {pendingCount > 0 && (
+                <Badge className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs bg-red-500">
+                  {pendingCount}
+                </Badge>
+              )}
             </Button>
           </div>
         </div>

@@ -10,7 +10,7 @@ type Props = {
 
 export function EventBoardHeader({ userRole, onNavigate }: Props) {
   return (
-    <div className="bg-primary text-primary-foreground p-4">
+    <div className="bg-[#0a2740] p-4 shadow-sm text-white">
       <div className="max-w-6xl mx-auto flex items-center gap-4">
         <Button
           variant="ghost"

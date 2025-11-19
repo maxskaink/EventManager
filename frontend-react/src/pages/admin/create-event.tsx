@@ -122,7 +122,7 @@ export default function CreateEventPage() {
 
   // Renderizar el formulario de creación
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <div className="min-h-screen pb-20">
       <CreateEventHeader
         onBack={() => navigate(getDashboardRouteFromRole(user?.role || ""))}
         onPreview={() => setPreview(true)}

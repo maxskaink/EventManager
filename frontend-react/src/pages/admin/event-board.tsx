@@ -150,7 +150,7 @@ export function EventBoardScreen() {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <div className="min-h-screen pb-20">
       <EventBoardHeader userRole={user?.role || ""} onNavigate={navigate} />
 
       <div className="max-w-6xl mx-auto p-4 space-y-6">

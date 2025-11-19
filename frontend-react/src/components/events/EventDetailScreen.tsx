@@ -71,7 +71,7 @@ export function EventDetailScreen({
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <div className="min-h-screen flex items-center justify-center p-4">
         <Card>
           <CardContent className="p-8 text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
@@ -84,7 +84,7 @@ export function EventDetailScreen({
 
   if (error || !event) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <div className="min-h-screen flex items-center justify-center p-4">
         <Card>
           <CardContent className="p-8 text-center">
             <p className="text-muted-foreground mb-4">
@@ -133,9 +133,9 @@ export function EventDetailScreen({
   };
 
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <div className="min-h-screen pb-20">
       {/* Header */}
-      <div className="bg-primary text-primary-foreground p-4">
+      <div className="bg-[#0a2740] p-4 shadow-sm text-white">
         <div className="max-w-4xl mx-auto flex items-center gap-4">
           <Button
             variant="ghost"

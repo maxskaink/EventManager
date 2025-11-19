@@ -183,7 +183,7 @@ export function CertificatesScreen() {
     return (
       <div className="min-h-screen pb-20">
         {/* Header */}
-        <div className="bg-primary text-primary-foreground p-4">
+        <div className="bg-[#0a2740] p-4 shadow-sm text-white">
           <div className="max-w-4xl mx-auto flex items-center gap-4">
             <Button
               variant="ghost"
@@ -217,7 +217,7 @@ export function CertificatesScreen() {
   return (
     <div className="min-h-screen pb-20">
       {/* Header */}
-      <div className="bg-primary text-primary-foreground p-4">
+      <div className="bg-[#0a2740] p-4 shadow-sm text-white">
         <div className="max-w-4xl mx-auto flex items-center gap-4">
           <Button
             variant="ghost"

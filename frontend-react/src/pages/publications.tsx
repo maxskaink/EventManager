@@ -63,11 +63,11 @@ export function PublicationsScreen() {
   return (
     <div className="min-h-screen pb-20">
       {/* Reutilizamos el header de Eventos, solo cambiamos el título */}
-      <div className="bg-primary text-primary-foreground p-4">
+      <div className="bg-[#0a2740] p-4 shadow-sm text-white">
         <div className="max-w-4xl mx-auto flex items-center gap-4">
           <button
             onClick={() => navigate(dashboardRoute)}
-            className="text-primary-foreground/80 hover:text-primary-foreground"
+            className="text-white/80 hover:text-white transition-all duration-200 hover:-translate-y-1 hover:shadow-lg active:scale-95"
           >
             <svg /* Icono de ArrowLeft */ width="20" height="20" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8.84182 3.13514C9.04327 3.32401 9.05348 3.64042 8.86461 3.84188L5.43521 7.50005L8.86461 11.1582C9.05348 11.3597 9.04327 11.6761 8.84182 11.865C8.64036 12.0538 8.32394 12.0436 8.13508 11.8421L4.38508 7.84214C4.20467 7.65074 4.20467 7.34935 4.38508 7.15795L8.13508 3.15795C8.32394 2.95649 8.64036 2.94628 8.84182 3.13514Z" fill="currentColor" fillRule="evenodd" clipRule="evenodd"></path></svg>
           </button>

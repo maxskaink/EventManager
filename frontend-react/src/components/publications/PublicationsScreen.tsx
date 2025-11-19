@@ -203,7 +203,7 @@ export function PublicationsScreen() {
   return (
     <div className="min-h-screen pb-20">
       {/* Header */}
-      <div className="bg-primary text-primary-foreground p-4">
+      <div className="bg-[#0a2740] p-4 shadow-sm text-white">
         <div className="max-w-4xl mx-auto flex items-center gap-4">
           <Button
             variant="ghost"
@@ -211,12 +211,13 @@ export function PublicationsScreen() {
             onClick={() =>
               navigate("/dashboard-coordinator")
             }
+            className="text-white transition-all duration-200 hover:-translate-y-1 hover:shadow-lg active:scale-95"
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div className="flex-1">
             <h1>Mis Publicaciones</h1>
-            <p className="text-primary-foreground/80">
+            <p className="text-white/80">
               Gestiona tus comunicados y artículos
             </p>
           </div>

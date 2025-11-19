@@ -11,7 +11,7 @@ import {
 
 // Nota: Renombrado a '...Page' para claridad, o puedes llamarlo 'CoordinatorDashboard'
 export function CoordinatorDashboardPage() {
-  const { user, events } = useApp();
+  const { user, events, logout } = useApp();
 
   // Lógica y datos derivados se mantienen en el componente 'padre'
   const totalEvents = events.length;
@@ -35,7 +35,7 @@ export function CoordinatorDashboardPage() {
   return (
     <div className="min-h-screen pb-20">
       {/* 1. Cabecera */}
-      <DashboardHeader user={user} />
+      <DashboardHeader user={user} onLogout={logout} />
 
       {/* Contenedor principal del contenido */}
       <div className="max-w-4xl mx-auto p-4 space-y-6">

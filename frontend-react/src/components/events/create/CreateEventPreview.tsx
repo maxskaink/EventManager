@@ -45,9 +45,9 @@ export const CreateEventPreview: React.FC<Props> = ({ formData, onEdit, onSaveDr
   };
 
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <div className="min-h-screen pb-20">
       {/* Header */}
-      <div className="bg-primary text-primary-foreground p-4">
+      <div className="bg-[#0a2740] p-4 shadow-sm text-white">
         <div className="max-w-4xl mx-auto flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={onEdit}>
             <ArrowLeft className="h-5 w-5" />
