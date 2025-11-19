@@ -63,6 +63,8 @@ class AuthService implements AuthServiceInterface
             throw new RequestException($tokenResponse);
         }
 
+        \Log::info('Google OAuth token exchange success');
+
         $accessToken = $tokenResponse->json()['access_token'] ?? null;
         if (!$accessToken) {
             throw new AuthenticationException('Failed to obtain access token from Google');

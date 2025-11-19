@@ -1,29 +1,38 @@
-import React from "react";
+import { useEffect, useState } from "react";
 import { Button } from "../../components/ui/button";
 import { Card, CardContent, CardHeader } from "../../components/ui/card";
 import { Badge } from "../../components/ui/badge";
-import { BNavBarGuest } from "../../components/ui/b-navbar-guest";
-import { useApp } from "../../components/context/AppContext";
-import {
-  Calendar,
-  Clock,
-  Users,
-  MapPin,
-} from "lucide-react";
-import { ImageWithFallback } from "../../components/figma/ImageWithFallback";
+import { Calendar, Clock, MapPin } from "lucide-react";
 import { useNavigate } from "react-router";
 import { BNavBarInterested } from "../../components/ui/b-navbar-interested";
+import { EventAPI } from "../../services/api";
 
 export function GuestDashboard() {
-  const { user, events } = useApp();
   const navigate = useNavigate()
 
-  const upcomingEvents = events
-    .filter((event) => event.status === "upcoming")
-    .slice(0, 3);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [upcomingEvents, setUpcomingEvents] = useState<API.Event[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const events = await EventAPI.listUpcomingEvents();
+        if (cancelled) return;
+        setUpcomingEvents(events.slice(0, 3));
+      } catch {
+        if (cancelled) return;
+        setError("No fue posible cargar los eventos");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true };
+  }, []);
 
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <div className="min-h-screen pb-20">
       {/* Header */}
       <div className="bg-primary text-primary-foreground p-4">
         <div className="max-w-4xl mx-auto">
@@ -47,35 +56,38 @@ export function GuestDashboard() {
           </div>
 
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {upcomingEvents.map((event) => (
+            {error && !loading && (
+              <div className="col-span-full text-destructive">
+                {error}
+              </div>
+            )}
+            {loading && (
+              <>
+                <Card className="animate-pulse h-[360px]" />
+                <Card className="animate-pulse h-[360px]" />
+                <Card className="animate-pulse h-[360px]" />
+              </>
+            )}
+            {!loading && upcomingEvents.length === 0 && (
+              <div className="col-span-full text-muted-foreground">
+                No hay eventos activos por ahora.
+              </div>
+            )}
+            {!loading && upcomingEvents.map((event) => (
               <Card
                 key={event.id}
                 className="hover:shadow-md transition-shadow"
               >
                 <div className="aspect-video relative overflow-hidden rounded-t-lg">
-                  <ImageWithFallback
-                    src={event.image}
-                    alt={event.title}
-                    className="w-full h-full object-cover"
-                  />
-                  <Badge
-                    className="absolute top-2 right-2"
-                    variant={
-                      event.category === "curso"
-                        ? "default"
-                        : event.category === "charla"
-                          ? "secondary"
-                          : "outline"
-                    }
-                  >
-                    {event.category}
+                  {/* Placeholder en ausencia de imagen en API.Event */}
+                  <div className="w-full h-full bg-gradient-to-br from-blue-100 to-blue-200" />
+                  <Badge className="absolute top-2 right-2">
+                    {event.event_type}
                   </Badge>
                 </div>
 
                 <CardHeader className="pb-2">
-                  <h3 className="line-clamp-2">
-                    {event.title}
-                  </h3>
+                  <h3 className="line-clamp-2">{event.name}</h3>
                 </CardHeader>
 
                 <CardContent className="space-y-3">
@@ -86,30 +98,18 @@ export function GuestDashboard() {
                   <div className="space-y-2 text-sm">
                     <div className="flex items-center gap-2 text-muted-foreground">
                       <Calendar className="h-4 w-4" />
-                      <span>
-                        {new Date(
-                          event.date,
-                        ).toLocaleDateString("es-ES")}
-                      </span>
+                      <span>{new Date(event.start_date).toLocaleDateString("es-ES")}</span>
                     </div>
 
                     <div className="flex items-center gap-2 text-muted-foreground">
                       <Clock className="h-4 w-4" />
-                      <span>{event.time}</span>
+                      <span>{new Date(event.start_date).toLocaleTimeString("es-ES", { hour: '2-digit', minute: '2-digit' })}</span>
                     </div>
 
                     <div className="flex items-center gap-2 text-muted-foreground">
                       <MapPin className="h-4 w-4" />
                       <span className="capitalize">
                         {event.modality}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <Users className="h-4 w-4" />
-                      <span>
-                        {event.enrolled}/{event.capacity}{" "}
-                        inscritos
                       </span>
                     </div>
                   </div>
@@ -128,26 +128,7 @@ export function GuestDashboard() {
           </div>
         </section>
 
-        {/* Información adicional */}
-        <section>
-          <Card>
-            <CardHeader>
-              <h3>¿Quieres participar más activamente?</h3>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground mb-4">
-                Como integrante podrás acceder a certificados,
-                participar en proyectos de investigación y
-                recibir recomendaciones personalizadas.
-              </p>
-              <Button
-                onClick={() => navigate("/register")}
-              >
-                Registrarme como integrante
-              </Button>
-            </CardContent>
-          </Card>
-        </section>
+        {/* Se elimina el bloque de registro para interesados */}
       </div>
       {/* Navigation Bar */}
       <BNavBarInterested />

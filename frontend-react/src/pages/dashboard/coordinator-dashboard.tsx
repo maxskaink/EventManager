@@ -33,7 +33,7 @@ export function CoordinatorDashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <div className="min-h-screen pb-20">
       {/* 1. Cabecera */}
       <DashboardHeader user={user} />
 

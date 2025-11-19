@@ -40,6 +40,9 @@ export function ProfileScreen() {
   const [isEditContactOpen, setEditContactOpen] = useState(false);
   const [isAddArticleOpen, setAddArticleOpen] = useState(false);
   const [articleToDelete, setArticleToDelete] = useState<string | null>(null);
+  // Estado local para reflejar artículos del usuario inmediatamente
+  const baseUserArticles = articles.filter((article) => article.userId === user?.id);
+  const [myArticles, setMyArticles] = useState<typeof baseUserArticles>(baseUserArticles);
   // const [isAddEventOpen, setAddEventOpen] = useState(false);
   // const [participationToDelete, setParticipationToDelete] = useState<string | null>(null);
 
@@ -63,12 +66,24 @@ export function ProfileScreen() {
 
   const addArticleMutation = useMutation({
     mutationFn: ArticleAPI.addArticle, // Asumiendo que la función de API espera el objeto correcto
-    onSuccess: () => {
+    onSuccess: (resp: any, variables: any) => {
+      const displayArticle = {
+        id: resp?.id ?? `art-${Date.now()}`,
+        title: variables.title,
+        description: variables.description,
+        authors: variables.authors,
+        publicationDate: variables.publication_date,
+        publicationUrl: variables.publication_url,
+        userId: user?.id,
+      } as any;
+      setMyArticles((prev) => [displayArticle, ...prev]);
       toast.success("Artículo agregado exitosamente");
-      // queryClient.invalidateQueries({ queryKey: ['articles'] }); // Invalidar query de artículos
       setAddArticleOpen(false);
     },
-    onError: () => toast.error("Error al agregar el artículo"),
+    onError: (err: any) => {
+      const apiMsg = err?.response?.data?.message || err?.message || "Error al agregar el artículo";
+      toast.error(apiMsg);
+    },
   });
 
   // Lógica de logout
@@ -78,7 +93,6 @@ export function ProfileScreen() {
 
   // --- DATA DERIVATION ---
   const userCertificates = certificates.filter((cert) => cert.userId === user?.id);
-  const userArticles = articles.filter((article) => article.userId === user?.id);
   const userParticipations = userEventParticipations.filter((p) => p.userId === user?.id);
   const participatedEvents = events.filter((event) => userParticipations.some((p) => p.eventId === event.id));
 
@@ -93,7 +107,13 @@ export function ProfileScreen() {
   return (
     <ProfileTemplate
       header={<ProfileHeader backViewUrl={getDashboardRouteFromRole(role)} />}
-      personalInfo={<PersonalInfoCard user={{ ...user, interests: [] }} role={role} getRoleLabel={getRoleLabel} />}
+      personalInfo={
+        <PersonalInfoCard
+          user={{ ...(user as API.User), interests: ((user as any)?.interests ?? []) }}
+          role={role}
+          getRoleLabel={getRoleLabel}
+        />
+      }
       contactInfo={
         <ContactInfoCard
           isLoading={isLoadingProfile || updateProfileMutation.isPending}
@@ -106,7 +126,7 @@ export function ProfileScreen() {
         <ParticipationStats
           eventsCount={userParticipations.length}
           certificatesCount={userCertificates.length}
-          articlesCount={userArticles.length}
+          articlesCount={myArticles.length}
         />
       }
       myEvents={
@@ -120,7 +140,7 @@ export function ProfileScreen() {
       }
       myArticles={
         <MyArticlesSection
-          articles={userArticles}
+          articles={myArticles}
           onAddArticle={() => setAddArticleOpen(true)}
           onDeleteArticle={(id) => setArticleToDelete(id)}
           formatDate={formatDate}
@@ -144,9 +164,13 @@ export function ProfileScreen() {
             onOpenChange={setAddArticleOpen}
             onAddArticle={(data) =>
               addArticleMutation.mutate({
-                ...data,
                 user_id: user.id,
-              })
+                title: data.title,
+                description: data.description,
+                authors: data.authors,
+                publication_date: data.publicationDate,
+                publication_url: data.publicationUrl,
+              } as unknown as APIPayloads.AddArticle)
             }
           />
           <ConfirmDeleteDialog

@@ -155,7 +155,7 @@ export function MentorDashboardPage() {
   if (!user) return null; // O un spinner de carga
 
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <div className="min-h-screen pb-20">
       {/* Cabecera */}
       <MentorHeader 
         user={user} 

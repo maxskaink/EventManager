@@ -1,6 +1,6 @@
 import { Card, CardHeader, CardContent } from "../../ui/card";
 import { Button } from "../../ui/button";
-import { Edit, Mail, Phone, User } from "lucide-react";
+import { Edit, Mail, Phone, User, BookOpen } from "lucide-react";
 import { L3Loader } from "../../ui/l3-loader";
 
 type ContactInfo = API.Profile;
@@ -23,8 +23,10 @@ const InfoItem = ({
   value: string;
   subValue?: string;
 }) => (
-  <div className="flex items-center gap-3">
-    <div className="p-2 bg-primary/10 rounded-lg">{icon}</div>
+  <div className="group flex items-center gap-3">
+    <div className="rounded-lg bg-gradient-to-br from-primary/10 to-primary/5 p-2 transition-transform group-hover:scale-105">
+      {icon}
+    </div>
     <div>
       <p className="text-sm text-muted-foreground">{label}</p>
       <p>{value}</p>
@@ -34,14 +36,19 @@ const InfoItem = ({
 );
 
 export const ContactInfoCard = ({ contactInfo, email, onEdit, isLoading }: ContactInfoCardProps) => (
-  <Card>
+  <Card className="rounded-2xl shadow-[0_4px_12px_rgba(0,0,0,0.06),0_1px_3px_rgba(0,0,0,0.04)] transition-all hover:shadow-lg">
     <CardHeader>
       <div className="flex items-center justify-between">
-        <h3>Información de Perfil</h3>
+        <h3 className="tracking-tight">Información de Perfil</h3>
         {isLoading ? (
           <L3Loader size={30} />
         ) : (
-          <Button variant="outline" size="sm" onClick={onEdit}>
+          <Button
+            variant="default"
+            size="sm"
+            onClick={onEdit}
+            className="rounded-full shadow-sm hover:shadow-md transition-all duration-200 hover:-translate-y-1 active:scale-95"
+          >
             <Edit className="mr-2 h-4 w-4" />
             Editar
           </Button>
@@ -49,14 +56,17 @@ export const ContactInfoCard = ({ contactInfo, email, onEdit, isLoading }: Conta
       </div>
     </CardHeader>
     <CardContent className="grid grid-cols-1 gap-4 md:grid-cols-2">
-      <InfoItem icon={<Phone className="h-4 w-4 text-blue-600" />} label="Teléfono" value={contactInfo?.phone ?? ""} />
-      <InfoItem icon={<Mail className="h-4 w-4 text-green-600" />} label="Email" value={email} />
-      {/*<InfoItem icon={<MapPin className="h-4 w-4 text-purple-600" />} label="Dirección" value={contactInfo.address} subValue={contactInfo.city} />*/}
+      <InfoItem icon={<Phone className="w-6 h-6 text-sky-800" />} label="Teléfono" value={contactInfo?.phone ?? ""} />
+      <InfoItem icon={<Mail className="w-6 h-6 text-sky-800" />} label="Email" value={email} />
       <InfoItem
-        icon={<User className="h-4 w-4 text-orange-600" />}
+        icon={<User className="w-6 h-6 text-sky-800" />}
         label="Universidad"
-        value={contactInfo?.university ?? ""}
-        subValue={contactInfo?.academic_program ?? ""}
+        value={"Universidad del Cauca"}
+      />
+      <InfoItem
+        icon={<BookOpen className="w-6 h-6 text-sky-800" />}
+        label="Programa Académico"
+        value={contactInfo?.academic_program ?? ""}
       />
     </CardContent>
   </Card>

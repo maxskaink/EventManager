@@ -31,7 +31,28 @@ export const AddArticleDialog = ({ open, onOpenChange, onAddArticle }: AddArticl
             toast.error("Por favor completa todos los campos");
             return;
         }
-        onAddArticle(newArticle);
+        // Normalizar URL: si no incluye protocolo, anteponer https://
+        let url = newArticle.publicationUrl.trim();
+        if (!/^https?:\/\//i.test(url)) {
+            url = `https://${url}`;
+        }
+        try {
+            // Validación rápida de URL
+            // eslint-disable-next-line no-new
+            new URL(url);
+        } catch {
+            toast.error("La URL de la publicación no es válida. Ej: https://ejemplo.com/articulo");
+            return;
+        }
+
+        onAddArticle({
+            ...newArticle,
+            title: newArticle.title.trim(),
+            description: newArticle.description.trim(),
+            authors: newArticle.authors.trim(),
+            publicationDate: newArticle.publicationDate, // input type=date ya entrega YYYY-MM-DD
+            publicationUrl: url,
+        });
         setNewArticle(initialState);
         onOpenChange(false);
     }

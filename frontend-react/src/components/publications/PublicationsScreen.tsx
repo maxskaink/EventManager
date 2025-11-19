@@ -201,7 +201,7 @@ export function PublicationsScreen() {
   });
 
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <div className="min-h-screen pb-20">
       {/* Header */}
       <div className="bg-primary text-primary-foreground p-4">
         <div className="max-w-4xl mx-auto flex items-center gap-4">

@@ -83,7 +83,10 @@ axiosInstance.interceptors.response.use(
 // Initialize CSRF protection
 export const initializeCsrf = async () => {
     try {
-        await axiosInstance.get('/sanctum/csrf-cookie');
+        // Importante: este endpoint NO va bajo /api
+        await axios.get(`${import.meta.env.VITE_API_URL}/sanctum/csrf-cookie`, {
+            withCredentials: true,
+        });
     } catch (error) {
         console.error('Failed to initialize CSRF protection:', error);
     }
