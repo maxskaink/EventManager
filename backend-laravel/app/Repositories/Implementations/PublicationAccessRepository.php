@@ -4,6 +4,7 @@ namespace App\Repositories\Implementations;
 
 use App\Models\PublicationAccess;
 use App\Repositories\Contracts\PublicationAccessRepositoryInterface;
+use Illuminate\Support\Facades\Log;
 
 class PublicationAccessRepository implements PublicationAccessRepositoryInterface
 {
@@ -28,12 +29,12 @@ class PublicationAccessRepository implements PublicationAccessRepositoryInterfac
         $deletedIds = PublicationAccess::query()
             ->where('publication_id', $pubId)
             ->whereIn('profile_id', $userIds)
-            ->pluck('access_id')
+            ->pluck('profile_id')
             ->toArray();
 
         if (!empty($deletedIds)) {
             PublicationAccess::query()
-                ->whereIn('access_id', $deletedIds)
+                ->whereIn('profile_id', $deletedIds)
                 ->delete();
         }
 

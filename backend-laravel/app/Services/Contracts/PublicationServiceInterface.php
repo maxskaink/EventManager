@@ -5,6 +5,7 @@ namespace App\Services\Contracts;
 use App\Models\Publication;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Http\UploadedFile;
 
 interface PublicationServiceInterface
 {
@@ -44,5 +45,9 @@ interface PublicationServiceInterface
      * @return Publication
      */
     public function getPublicationById(int $id, User $user): Publication;
+
+    public function setPublicationImage(int $publicationId, UploadedFile $image): Publication;
+
+    public function removePublicationInterests(int $publicationId, array $interestIds): array;
 
 }

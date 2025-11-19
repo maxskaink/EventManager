@@ -15,13 +15,13 @@ use App\Repositories\Contracts\PublicationAccessRepositoryInterface;
 use App\Repositories\Contracts\UserRepositoryInterface;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Intervention\Image\ImageManager;
 use Symfony\Component\Routing\Exception\ResourceNotFoundException;
+use Intervention\Image\Drivers\Gd\Driver as GdDriver;
 
 class PublicationService implements PublicationServiceInterface
 {
@@ -36,44 +36,24 @@ class PublicationService implements PublicationServiceInterface
     {
         return DB::transaction(function () use ($data, $userId) {
 
-            $image = null;
-            $filename = null;
-
-            if (isset($data['image']) && $data['image'] instanceof UploadedFile) {
-                $image = $data['image'];
-
-                if ($image->getSize() > 2 * 1024 * 1024) {
-                    throw new \Exception("The image size must not exceed 2MB.");
-                }
-
-                $allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp'];
-                if (!in_array($image->getMimeType(), $allowedMimeTypes)) {
-                    throw new \Exception("Invalid image type. Only JPEG, PNG, or WEBP are allowed.");
-                }
-
-                $filename = Str::uuid() . '.' . $image->getClientOriginalExtension();
-            }
-
             if ($this->publicationRepo->findByTitle($data['title'])) {
                 throw new DuplicatedResourceException("A publication with the title '{$data['title']}' already exists.");
             }
 
-            // Create publication without saving the image yet
             $publication = $this->publicationRepo->create(array_merge(
                 $data,
                 ['author_id' => $userId]
             ));
 
-            // Save image only after publication has been successfully created
-            if ($image && $filename) {
-                $path = $image->storeAs('public/publications', $filename);
-                $publication->image_url = Storage::url($path);
+            if (isset($data['image']) && $data['image'] instanceof UploadedFile) {
+                $publication->image_url = $this->processAndStoreImage($data['image']);
                 $publication->save();
             }
 
             return $publication;
         });
     }
+
 
 
     /**
@@ -127,46 +107,42 @@ class PublicationService implements PublicationServiceInterface
     public function updatePublication(int $id, array $data): Publication
     {
         return DB::transaction(function () use ($id, $data) {
-            Log::info('UpdatePublication called', ['id' => $id, 'data' => $data]);
 
             $publication = $this->publicationRepo->findById($id);
             if (!$publication) {
-                Log::warning("Publication not found", ['id' => $id]);
                 throw new ResourceNotFoundException("Publication with ID $id not found.");
             }
 
             if (isset($data['title'])) {
-                Log::info('Title to update', ['title' => $data['title']]);
                 $existing = $this->publicationRepo->findByTitle($data['title']);
                 if ($existing && $existing->id !== $id) {
-                    Log::error('Duplicated title detected', ['existingId' => $existing->id]);
                     throw new DuplicatedResourceException("A publication with the title '{$data['title']}' already exists.");
                 }
             }
 
-
             if (isset($data['image']) && $data['image'] instanceof UploadedFile) {
-                Log::info('Image detected', ['image' => $data['image']->getClientOriginalName()]);
-                $image = $data['image'];
-                $filename = Str::uuid() . '.' . $image->getClientOriginalExtension();
-                $path = $image->storeAs('public/publications', $filename);
-                $publication->image_url = Storage::url($path);
-                $publication->save();
+
+                if ($publication->image_url) {
+                    $oldPath = str_replace('/storage/', '', $publication->image_url);
+                    if (Storage::disk('public')->exists($oldPath)) {
+                        Storage::disk('public')->delete($oldPath);
+                    }
+                }
+
+                $publication->image_url = $this->processAndStoreImage($data['image']);
             }
 
             foreach ($data as $key => $value) {
                 if ($key !== 'image') {
-                    Log::info("Updating field $key", ['value' => $value]);
                     $publication->{$key} = $value;
                 }
             }
+
             $publication->save();
-
-            Log::info('Publication updated successfully', ['publication_id' => $publication->id]);
-
             return $publication;
         });
     }
+
 
 
     public function addPublicationInterests(int $publicationId, array $interestIds): array
@@ -273,38 +249,71 @@ class PublicationService implements PublicationServiceInterface
     public function setPublicationImage(int $publicationId, UploadedFile $image): Publication
     {
         return DB::transaction(function () use ($publicationId, $image) {
-
             $publication = $this->publicationRepo->findById($publicationId);
-            if (!$publication) {
+            if (! $publication) {
                 throw new ResourceNotFoundException("Publication with ID $publicationId not found.");
             }
 
-            if ($image->getSize() > 2 * 1024 * 1024) {
-                throw new \Exception("The image size must not exceed 2MB.");
-            }
-
-            $allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp'];
-            if (!in_array($image->getMimeType(), $allowedMimeTypes)) {
-                throw new \Exception("Invalid image type. Only JPEG, PNG, or WEBP are allowed.");
-            }
-
-            $filename = Str::uuid() . '.' . $image->getClientOriginalExtension();
-            $path = $image->storeAs('public/publications', $filename);
-            $imageUrl = Storage::url($path);
-
-
-            if ($publication->image_url) {
-                $oldPath = str_replace('/storage/', 'public/', $publication->image_url);
-                if (Storage::exists($oldPath)) {
-                    Storage::delete($oldPath);
-                }
-            }
-
-            $publication->image_url = $imageUrl;
+            $existingUrl = $publication->image_url ?? null;
+            $publication->image_url = $this->processAndStoreImage($image, $existingUrl);
             $publication->save();
 
             return $publication;
         });
+    }
+
+    public function removePublicationInterests(int $publicationId, array $interestIds): array
+    {
+        $publication = $this->publicationRepo->findById($publicationId);
+        if (!$publication) {
+            throw new ResourceNotFoundException("Publication not found.");
+        }
+
+        DB::transaction(function () use ($publicationId, $interestIds) {
+            $this->interestRepo->deleteForPublication($publicationId, $interestIds);
+        });
+
+        return $this->interestRepo->getByPublication($publicationId)->toArray();
+    }
+
+    private function processAndStoreImage(UploadedFile $image, ?string $existingUrl = null): string
+    {
+        if ($image->getSize() > 2 * 1024 * 1024) {
+            throw new \Exception("The image size must not exceed 2MB.");
+        }
+
+        $allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp'];
+        if (! in_array($image->getMimeType(), $allowedMimeTypes, true)) {
+            throw new \Exception("Invalid image type. Only JPEG, PNG, or WEBP are allowed.");
+        }
+
+        $manager = new ImageManager(new GdDriver());
+        $img = $manager->read($image->getRealPath())
+            ->scale(width: 1600)
+            ->toWebp(quality: 80);
+
+        $disk = Storage::disk('public');
+
+        if ($existingUrl) {
+            $pathFromUrl = parse_url($existingUrl, PHP_URL_PATH) ?: $existingUrl;
+            $pathFromUrl = preg_replace('#^/storage/#', '', $pathFromUrl);
+            $pathFromUrl = ltrim($pathFromUrl, '/');
+
+            if ($pathFromUrl !== '' ) {
+                $target = $pathFromUrl;
+                if (! $disk->exists($target)) {
+                    $basename = pathinfo($target, PATHINFO_BASENAME);
+                    $target = "publications/{$basename}";
+                }
+                $disk->put($target, (string) $img);
+                return $disk->url($target);
+            }
+        }
+
+        $filename = Str::uuid() . '.webp';
+        $path = "publications/{$filename}";
+        $disk->put($path, (string) $img);
+        return $disk->url($path);
     }
 
 }
