@@ -48,10 +48,11 @@ export function LoginScreen() {
             <img
               src={logoImg}
               alt="Logo Semillero Ciencia de Datos"
-              className="w-56 max-w-full h-auto mx-auto drop-shadow-[0_6px_12px_rgba(0,0,0,0.35)] animate-logoFloat select-none"
+              className="w-full max-w-none h-auto mx-auto drop-shadow-[0_6px_14px_rgba(0,0,0,0.40)] animate-logoFloat select-none px-2"
               decoding="async"
               fetchPriority="high"
               draggable={false}
+              style={{ objectFit: 'contain', maxHeight: '110px' }}
             />
             <h1 className="text-xl font-semibold tracking-tight">Semillero Académico</h1>
             <p className="text-xs leading-relaxed opacity-90">
