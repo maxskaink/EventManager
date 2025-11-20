@@ -96,7 +96,6 @@ class EventController extends Controller
      */
     public function enrollUser(int $eventId): JsonResponse
     {
-        $this->authorize('enroll', [Event::class, $eventId]);
 
         $userId = request()->user()->id;
         $participation = $this->eventService->enrollUserInEvent($eventId, $userId);
@@ -112,7 +111,6 @@ class EventController extends Controller
      */
     public function cancelEnrollment(int $eventId): JsonResponse
     {
-        $this->authorize('cancelEnrollment', [Event::class, $eventId]);
 
         $userId = request()->user()->id;
         $participation = $this->eventService->cancelUserEnrollment($eventId, $userId);
