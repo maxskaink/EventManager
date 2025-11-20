@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useAuthStore } from "../../stores/auth.store";
 import { useApp } from "../context/AppContext";
 import useLogout from "../../hooks/useLogout";
 import useGoToDashboard from "../../hooks/useGoToDashboard";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { ProfileAPI, ArticleAPI } from "../../services/api"; // Asumiendo que exportas los servicios
+import { ProfileAPI, ArticleAPI } from "../../services/api";
+import { getDashboardRouteFromRole } from "../../services/navigation/redirects";
 import { toast } from "sonner";
 
 // Importaciones de la nueva estructura
@@ -22,11 +23,108 @@ import { AddArticleDialog } from "./dialogs/add-article-dialog";
 import { ConfirmDeleteDialog } from "./dialogs/confirm-delete-dialog";
 // import { AddEventDialog } from "./dialogs/add-event-dialog"; // Necesitarías crear este dialog
 import BottomNavbarWrapper from "../nav/BottomNavbarWrapper";
-import { getDashboardRouteFromRole } from "../../services/navigation/redirects";
 
-const formatDate = (dateString: string): string => {
-  return new Date(dateString).toLocaleDateString("es-ES", { year: "numeric", month: "long", day: "numeric" });
+const formatDate = (dateString: string): string =>
+  new Date(dateString).toLocaleDateString("es-ES", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+
+const extractErrorMessage = (error: unknown, fallback: string): string => {
+  if (typeof error === "object" && error !== null) {
+    const maybeError = error as {
+      message?: string;
+      response?: { data?: { message?: string } };
+    };
+
+    if (maybeError.response?.data?.message) {
+      return maybeError.response.data.message;
+    }
+
+    if (maybeError.message) {
+      return maybeError.message;
+    }
+  }
+
+  return fallback;
 };
+
+type ProfileArticle = {
+  id: string;
+  title: string;
+  description: string;
+  authors: string;
+  publicationDate: string;
+  publicationUrl: string;
+  userId?: string;
+};
+
+type AddArticleFormValues = {
+  title: string;
+  description: string;
+  publicationDate: string;
+  authors: string;
+  publicationUrl: string;
+};
+
+const mapContextArticleToProfile = (article: {
+  id: string;
+  title: string;
+  description: string;
+  publicationDate: string;
+  authors: string;
+  publicationUrl: string;
+  userId: string;
+}): ProfileArticle => ({
+  id: article.id,
+  title: article.title,
+  description: article.description,
+  authors: article.authors,
+  publicationDate: article.publicationDate,
+  publicationUrl: article.publicationUrl,
+  userId: article.userId,
+});
+
+const mapApiArticleToProfile = (
+  apiArticle: API.Article | null | undefined,
+  fallback: APIPayloads.AddArticle
+): ProfileArticle => ({
+  id: apiArticle ? String(apiArticle.id) : `art-${Date.now()}`,
+  title: apiArticle?.title ?? fallback.title,
+  description: apiArticle?.description ?? fallback.description ?? "",
+  authors: apiArticle?.authors ?? fallback.authors,
+  publicationDate: apiArticle?.publication_date ?? fallback.publication_date,
+  publicationUrl: apiArticle?.publication_url ?? fallback.publication_url ?? "",
+  userId: apiArticle ? String(apiArticle.user_id) : String(fallback.user_id),
+});
+
+const mapDialogArticleToPayload = (data: AddArticleFormValues, userId: number): APIPayloads.AddArticle => ({
+  user_id: userId,
+  title: data.title,
+  description: data.description,
+  authors: data.authors,
+  publication_date: data.publicationDate,
+  publication_url: data.publicationUrl,
+});
+
+type ProfileEvent = {
+  id: string;
+  title: string;
+  category: string;
+  date: string;
+  time: string;
+  modality: string;
+};
+
+const mapContentToProfileEvent = (event: Content): ProfileEvent => ({
+  id: event.id,
+  title: event.title,
+  category: event.type,
+  date: event.date,
+  time: event.time ?? "Por definir",
+  modality: event.modality ?? "por definir",
+});
 
 export function ProfileScreen() {
   const queryClient = useQueryClient();
@@ -40,9 +138,25 @@ export function ProfileScreen() {
   const [isEditContactOpen, setEditContactOpen] = useState(false);
   const [isAddArticleOpen, setAddArticleOpen] = useState(false);
   const [articleToDelete, setArticleToDelete] = useState<string | null>(null);
-  // Estado local para reflejar artículos del usuario inmediatamente
-  const baseUserArticles = articles.filter((article) => article.userId === user?.id);
-  const [myArticles, setMyArticles] = useState<typeof baseUserArticles>(baseUserArticles);
+
+  const userIdString = user ? String(user.id) : "";
+  const normalizedRole = role === "active-member" || role === "seed" ? "member" : role;
+
+  const baseUserArticles = useMemo<ProfileArticle[]>(() => {
+    if (!userIdString) {
+      return [];
+    }
+
+    return articles
+      .filter((article) => article.userId === userIdString)
+      .map(mapContextArticleToProfile);
+  }, [articles, userIdString]);
+
+  const [myArticles, setMyArticles] = useState<ProfileArticle[]>(baseUserArticles);
+
+  useEffect(() => {
+    setMyArticles(baseUserArticles);
+  }, [baseUserArticles]);
   // const [isAddEventOpen, setAddEventOpen] = useState(false);
   // const [participationToDelete, setParticipationToDelete] = useState<string | null>(null);
 
@@ -54,47 +168,63 @@ export function ProfileScreen() {
   });
 
   // --- API MUTATIONS ---
-  const updateProfileMutation = useMutation({
-    mutationFn: ProfileAPI.updateProfile,    
+  const updateProfileMutation = useMutation<API.Profile, unknown, APIPayloads.UpdateProfile>({
+    mutationFn: ProfileAPI.updateProfile,
     onSuccess: () => {
       toast.success("Perfil actualizado correctamente");
       queryClient.invalidateQueries({ queryKey: ["profile", user?.id] });
       setEditContactOpen(false);
     },
-    onError: () => toast.error("Error al actualizar el perfil"),
+    onError: (error) => toast.error(extractErrorMessage(error, "Error al actualizar el perfil")),
   });
 
-  const addArticleMutation = useMutation({
-    mutationFn: ArticleAPI.addArticle, // Asumiendo que la función de API espera el objeto correcto
-    onSuccess: (resp: any, variables: any) => {
-      const displayArticle = {
-        id: resp?.id ?? `art-${Date.now()}`,
-        title: variables.title,
-        description: variables.description,
-        authors: variables.authors,
-        publicationDate: variables.publication_date,
-        publicationUrl: variables.publication_url,
-        userId: user?.id,
-      } as any;
+  const addArticleMutation = useMutation<ArticleAPI.ArticleRes, unknown, APIPayloads.AddArticle>({
+    mutationFn: ArticleAPI.addArticle,
+    onSuccess: (resp, variables) => {
+      const displayArticle = mapApiArticleToProfile(resp?.article, variables);
       setMyArticles((prev) => [displayArticle, ...prev]);
       toast.success("Artículo agregado exitosamente");
       setAddArticleOpen(false);
     },
-    onError: (err: any) => {
-      const apiMsg = err?.response?.data?.message || err?.message || "Error al agregar el artículo";
-      toast.error(apiMsg);
-    },
+    onError: (error) => toast.error(extractErrorMessage(error, "Error al agregar el artículo")),
   });
 
   // Lógica de logout
   const handleLogout = () => logout().then((success) => success && goToDashboard());
 
+  const userInterests = useMemo(
+    () => profile?.interests?.map((interest) => interest.keyword) ?? [],
+    [profile]
+  );
+
+  const dashboardRoute = useMemo(
+    () => getDashboardRouteFromRole(normalizedRole),
+    [normalizedRole]
+  );
+
   if (!user) return null; // o un loader/redirect
 
+  const personalInfoUser: API.User & { interests: string[] } = {
+    ...user,
+    interests: userInterests,
+  };
+
   // --- DATA DERIVATION ---
-  const userCertificates = certificates.filter((cert) => cert.userId === user?.id);
-  const userParticipations = userEventParticipations.filter((p) => p.userId === user?.id);
-  const participatedEvents = events.filter((event) => userParticipations.some((p) => p.eventId === event.id));
+  const userCertificates = certificates.filter((cert) => cert.userId === userIdString);
+  const userParticipations = userEventParticipations.filter((p) => p.userId === userIdString);
+  const participatedEvents = events
+    .filter((event) => userParticipations.some((p) => p.eventId === event.id))
+    .map(mapContentToProfileEvent);
+
+  const handleConfirmDeleteArticle = () => {
+    if (!articleToDelete) {
+      return;
+    }
+
+    setMyArticles((prev) => prev.filter((article) => article.id !== articleToDelete));
+    toast.success("Artículo eliminado de la vista");
+    setArticleToDelete(null);
+  };
 
   const getRoleLabel = (role: string) =>
     ({
@@ -106,10 +236,10 @@ export function ProfileScreen() {
 
   return (
     <ProfileTemplate
-      header={<ProfileHeader backViewUrl={getDashboardRouteFromRole(role)} />}
+      header={<ProfileHeader backViewUrl={dashboardRoute} />}
       personalInfo={
         <PersonalInfoCard
-          user={{ ...(user as API.User), interests: ((user as any)?.interests ?? []) }}
+          user={personalInfoUser}
           role={role}
           getRoleLabel={getRoleLabel}
         />
@@ -154,29 +284,21 @@ export function ProfileScreen() {
             open={isEditContactOpen}
             onOpenChange={setEditContactOpen}
             initialData={profile}
-            onSave={(data) => {
-              console.log(data)
-              updateProfileMutation.mutate(data)
-            }}
+            onSave={(data) => updateProfileMutation.mutate(data)}
           />
           <AddArticleDialog
             open={isAddArticleOpen}
             onOpenChange={setAddArticleOpen}
-            onAddArticle={(data) =>
-              addArticleMutation.mutate({
-                user_id: user.id,
-                title: data.title,
-                description: data.description,
-                authors: data.authors,
-                publication_date: data.publicationDate,
-                publication_url: data.publicationUrl,
-              } as unknown as APIPayloads.AddArticle)
-            }
+            onAddArticle={(data) => addArticleMutation.mutate(mapDialogArticleToPayload(data, user.id))}
           />
           <ConfirmDeleteDialog
             open={!!articleToDelete}
-            onOpenChange={() => setArticleToDelete(null)}
-            onConfirm={() => toast.info(`Eliminar artículo ${articleToDelete}`)} // Aquí iría la mutación de borrado
+            onOpenChange={(open) => {
+              if (!open) {
+                setArticleToDelete(null);
+              }
+            }}
+            onConfirm={handleConfirmDeleteArticle}
             title="¿Eliminar artículo?"
             description="Esta acción no se puede deshacer. El artículo será eliminado permanentemente."
           />

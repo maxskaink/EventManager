@@ -115,7 +115,17 @@ export function EventsScreen() {
     });
   };
 
-  const dashboardRoute = useMemo(() => "/" + getDashboardRouteFromRole(role), [role]);
+  const normalizedRole = useMemo(() => {
+    if (role === "active-member" || role === "seed") {
+      return "member";
+    }
+    return role;
+  }, [role]);
+
+  const dashboardRoute = useMemo(
+    () => getDashboardRouteFromRole(normalizedRole),
+    [normalizedRole]
+  );
 
   return (
     <div className="min-h-screen pb-20">

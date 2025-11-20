@@ -11,7 +11,7 @@ import { EventBoardStats } from "../../components/events/board/EventBoardStats";
 import { EventDetailModal } from "../../components/events/board/EventDetailModal";
 import { EventDeleteDialog } from "../../components/events/board/EventDeleteDialog";
 import { getErrorMessageForToast } from "../../features/errors/error.helpers";
-import { mergeEventsAndArticles, type ContentItem, type ItemToDelete } from "../../features/events";
+import { mergeEventsAndArticles, type ContentItem, type ItemToDelete, isEventType } from "../../features/events";
 import { PublishContentModal } from "../../components/events/board/PublishContentModal";
 
 
@@ -129,15 +129,21 @@ export function EventBoardScreen() {
     if (!itemToDelete) return;
 
     try {
-      if (itemToDelete.type === "articulo") {
-        const articleId = parseInt(itemToDelete.id.replace("article-", ""));
-        await ArticleAPI.deleteArticle(articleId);
-        toast.success("✅ Artículo eliminado exitosamente");
+      if (isEventType(itemToDelete.type)) {
+        const eventId = Number(itemToDelete.id);
+        if (Number.isNaN(eventId)) {
+          throw new Error("ID de evento no válido");
+        }
+        await EventAPI.deleteEvent(eventId);
+        toast.success("✅ Evento eliminado exitosamente");
       } else {
-        toast.error("La funcionalidad de eliminar eventos aún no está disponible");
-        setIsDeleteDialogOpen(false);
-        setItemToDelete(null);
-        return;
+        const idMatch = itemToDelete.id.match(/(\d+)$/);
+        if (!idMatch) {
+          throw new Error("ID de publicación no válido");
+        }
+        const articleId = Number(idMatch[1]);
+        await ArticleAPI.deleteArticle(articleId);
+        toast.success("✅ Publicación eliminada exitosamente");
       }
 
       await loadContent();

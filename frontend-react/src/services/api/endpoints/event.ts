@@ -25,10 +25,16 @@ async function getEventById(eventId: number) {
   return response.data.event;
 }
 
+async function deleteEvent(eventId: number) {
+  const response = await axiosInstance.delete<MessageRes>(`/event/${eventId}`);
+  return response.data;
+}
+
 export default {
   addEvent,
   listAllEvents,
   listUpcomingEvents,
   listPastEvents,
   getEventById,
+  deleteEvent,
 };

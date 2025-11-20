@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import { ArrowLeft } from 'lucide-react';
 import { useAuthStore } from '../stores/auth.store';
 import { getDashboardRouteFromRole } from '../services/navigation/redirects';
 import { PublicationAPI } from '../services/api'; // Asumiendo que existe
@@ -35,9 +36,16 @@ export function PublicationsScreen() {
     isError 
   } = usePublications();
 
+  const normalizedRole = React.useMemo(() => {
+    if (role === 'active-member' || role === 'seed') {
+      return 'member';
+    }
+    return role;
+  }, [role]);
+
   const dashboardRoute = React.useMemo(
-    () => '/' + getDashboardRouteFromRole(role),
-    [role],
+    () => getDashboardRouteFromRole(normalizedRole),
+    [normalizedRole],
   );
 
   const renderContent = () => {
@@ -66,12 +74,15 @@ export function PublicationsScreen() {
       <div className="bg-[#0a2740] p-4 shadow-sm text-white">
         <div className="max-w-4xl mx-auto flex items-center gap-4">
           <button
+            data-slot="button"
+            type="button"
             onClick={() => navigate(dashboardRoute)}
-            className="text-white/80 hover:text-white transition-all duration-200 hover:-translate-y-1 hover:shadow-lg active:scale-95"
+            className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50 size-9 rounded-md text-white transition-all duration-200 hover:-translate-y-1 hover:shadow-lg active:scale-95"
+            aria-label="Volver"
           >
-            <svg /* Icono de ArrowLeft */ width="20" height="20" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8.84182 3.13514C9.04327 3.32401 9.05348 3.64042 8.86461 3.84188L5.43521 7.50005L8.86461 11.1582C9.05348 11.3597 9.04327 11.6761 8.84182 11.865C8.64036 12.0538 8.32394 12.0436 8.13508 11.8421L4.38508 7.84214C4.20467 7.65074 4.20467 7.34935 4.38508 7.15795L8.13508 3.15795C8.32394 2.95649 8.64036 2.94628 8.84182 3.13514Z" fill="currentColor" fillRule="evenodd" clipRule="evenodd"></path></svg>
+            <ArrowLeft className="h-5 w-5" />
           </button>
-          <h1>Publicaciones</h1>
+          <h1 className="text-[20px] leading-9 font-semibold tracking-tight">Publicaciones</h1>
         </div>
       </div>
 
