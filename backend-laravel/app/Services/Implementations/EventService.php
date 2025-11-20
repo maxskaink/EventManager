@@ -40,6 +40,18 @@ class EventService implements EventServiceInterface
         return $this->eventRepository->create($data);
     }
 
+    public function deleteEvent(int $id): Event
+    {
+        $event = $this->eventRepository->findById($id);
+        if (!$event) {
+            throw new ResourceNotFoundException("The event with ID {$id} was not found.");
+        }
+
+        $event->delete();
+        return $event;
+    }
+
+
     public function listAllEvents(): Collection
     {
         return $this->eventRepository->findAll();
@@ -203,4 +215,6 @@ class EventService implements EventServiceInterface
     {
         return $this->participationRepository->findAll($status);
     }
+
+
 }

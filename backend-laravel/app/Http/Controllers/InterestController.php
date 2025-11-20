@@ -32,7 +32,7 @@ class InterestController extends Controller
         return response()->json([
             'message' => "Interest created successfully.",
             'interest' => $newInterest,
-        ]);
+        ],201);
     }
 
     /**

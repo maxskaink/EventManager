@@ -11,5 +11,5 @@ interface PublicationInterestRepositoryInterface
     public function getByPublication(int $pubId): Collection;
     public function getInterestIds(int $pubId): array;
 
-    public function deleteForPublication(int $pubId, array $interestIds): int;
+    public function deleteForPublication(int $pubId, array $interestIds): array;
 }

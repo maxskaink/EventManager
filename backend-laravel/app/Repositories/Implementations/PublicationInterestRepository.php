@@ -39,12 +39,22 @@ class PublicationInterestRepository implements PublicationInterestRepositoryInte
             ->toArray();
     }
 
-    public function deleteForPublication(int $pubId, array $interestIds): int
+    public function deleteForPublication(int $pubId, array $interestIds): array
     {
-        return PublicationInterest::query()
+        $deletedIds =  PublicationInterest::query()
             ->where('publication_id', $pubId)
             ->whereIn('interest_id', $interestIds)
-            ->delete();
+            ->pluck('interest_id')
+            ->toArray();
+
+
+        if (!empty($deletedIds)) {
+            PublicationInterest::query()
+                ->whereIn('interest_id', $deletedIds)
+                ->delete();
+        }
+
+        return $deletedIds;
     }
 
 }
