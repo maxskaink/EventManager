@@ -24,6 +24,7 @@ import EventDetailWrapper from "../components/nav/EventDetailWrapper";
 import { authMiddleware } from "./middlewares/auth.middleware";
 import { timingMiddleware } from "./middlewares/timing.middleware";
 import NotFoundPage from "../pages/not-found-page";
+import { ErrorPage } from "../pages/error-page";
 
 // Create the data router and export it for main.tsx to mount
 export const router = createBrowserRouter([
@@ -75,5 +76,7 @@ export const router = createBrowserRouter([
         element: <NotFoundPage />,
       },
     ],
+    errorElement: <ErrorPage />
+    
   },
 ]);
