@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { BNavBarMentor } from "../../components/ui/b-navbar-mentor";
-import { UserAPI } from "../../services/api";
+import { UserAPI, EventAPI, PublicationAPI } from "../../services/api";
 import { toast } from "sonner";
 import {
   MentorHeader,
@@ -25,45 +25,16 @@ type MemberProgressData = API.User & {
   certificatesEarned: number;
 };
 
-// Mock data (movido desde el componente original)
-const mockSubmissions: Submission[] = [
-  {
-    id: "1",
-    type: "event",
-    title: "Workshop de IA Generativa",
-    submittedById: null,
-    date: "2025-09-25",
-    status: "pending",
-    description: "Taller sobre herramientas de IA generativa para estudiantes",
-  },
-  {
-    id: "2",
-    type: "certificate",
-    title: "Certificado React Avanzado",
-    submittedById: null,
-    date: "2025-09-20",
-    status: "pending",
-    description: "Certificado por completar el curso de React avanzado",
-  },
-  {
-    id: "3",
-    type: "article",
-    title: "Artículo sobre Machine Learning",
-    submittedById: null,
-    date: "2025-09-18",
-    status: "approved",
-    description: "Artículo de investigación sobre algoritmos de ML",
-  },
-];
+// Submissions se construirán dinámicamente a partir de eventos y publicaciones reales
 
 export function MentorDashboardPage() {
   const user = useAuthStore(s => s.user)
   const logout = useAuthStore(s => s.logout)
   const [users, setUsers] = useState<API.User[]>([]);
   const [loading, setLoading] = useState(true);
-  
-  // Estado de las submissions (manejado en la página)
-  const [submissions, setSubmissions] = useState(mockSubmissions);
+
+  // Estado de submissions generado dinámicamente
+  const [submissions, setSubmissions] = useState<Submission[]>([]);
 
   // Estado centralizado para todos los modales
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
@@ -73,9 +44,9 @@ export function MentorDashboardPage() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
 
-  // Cargar usuarios
   useEffect(() => {
     loadUsers();
+    loadContentForReview();
   }, []);
 
   const loadUsers = async () => {
@@ -91,21 +62,72 @@ export function MentorDashboardPage() {
     }
   };
 
-  // Handlers para lógica de negocio (API)
-  const handleCreateUser = async (name: string, email: string, role: API.UserRole) => {
+  const normalizeEventStatus = (status: string | null | undefined): Submission["status"] => {
+    const normalized = status?.toLowerCase();
+    if (!normalized) return "pending";
+    if (["rejected", "rechazado", "cancelado", "cancelled", "inactivo"].includes(normalized)) {
+      return "rejected";
+    }
+    if (["approved", "aprobado", "publicado", "finalizado", "activo"].includes(normalized)) {
+      return normalized === "activo" ? "pending" : "approved";
+    }
+    return "pending";
+  };
+
+  const normalizePublicationStatus = (status: string | null | undefined): Submission["status"] => {
+    const normalized = status?.toLowerCase();
+    if (!normalized) return "pending";
+    if (["inactivo", "rechazado", "rejected"].includes(normalized)) {
+      return "rejected";
+    }
+    if (["activo", "publicado", "approved"].includes(normalized)) {
+      return "approved";
+    }
+    return "pending";
+  };
+
+  const loadContentForReview = async () => {
     try {
-      await UserAPI.createUser(name, email, role);
-      toast.success("Usuario creado exitosamente");
-      loadUsers(); // Recargar lista
-      return true;
+      const [eventsData, publicationsData] = await Promise.all([
+        EventAPI.listAllEvents().catch((error) => {
+          console.error("Error cargando eventos:", error);
+          toast.error("No se pudieron cargar los eventos para revisión");
+          return [] as API.Event[];
+        }),
+        PublicationAPI.listAllPublications().catch((error) => {
+          console.warn("Publicaciones no disponibles:", error);
+          return [] as API.Publication[];
+        }),
+      ]);
+
+      const eventSubs: Submission[] = eventsData.map((event) => ({
+        id: String(event.id),
+        type: "event",
+        title: event.name,
+        submittedById: null,
+        date: event.start_date,
+        status: normalizeEventStatus(event.status),
+        description: event.description,
+      }));
+
+      const publicationSubs: Submission[] = publicationsData.map((publication) => ({
+        id: String(publication.id),
+        type: "publication",
+        title: publication.title,
+        submittedById: publication.author_id ? String(publication.author_id) : null,
+        date: publication.published_at,
+        status: normalizePublicationStatus(publication.status),
+        description: publication.summary ?? publication.content,
+      }));
+
+      setSubmissions([...eventSubs, ...publicationSubs]);
     } catch (error) {
-      const message = getErrorMessageForToast(error, "Error al crear usuario");
-      toast.error(message);
-      console.error("Error creating user:", error);
-      return false;
+      console.error("Error general cargando contenido:", error);
+      toast.error("Ocurrió un error al cargar el contenido para revisión");
     }
   };
 
+  // Handler para cambiar el rol de un usuario existente
   const handleRoleChange = async (userId: number, newRole: API.UserRole) => {
     try {
       await UserAPI.toggleUserRole(userId, newRole);
@@ -181,7 +203,6 @@ export function MentorDashboardPage() {
           submissions={submissions}
           onApproveSubmission={handleApproveSubmission}
           onRejectSubmission={handleRejectSubmission}
-          onCreateUser={handleCreateUser}
           onChangeRole={handleRoleChange}
           onViewProfile={handleViewProfile}
           onGenerateReport={handleGenerateReport}

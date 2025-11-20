@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "../../../ui/button";
 import { Input } from "../../../ui/input";
 import { Label } from "../../../ui/label";
@@ -23,63 +23,33 @@ import {
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "../../../ui/dialog";
-import { Settings, Search, UserPlus } from "lucide-react";
-import { toast } from "sonner";
+import { Settings, Search } from "lucide-react";
 import { USER_ROLES } from "./types";
 import { translateUserRole } from "../../../../features/users/users.helpers";
 
 interface UserManagementTabProps {
   users: API.User[];
   loadingUsers: boolean;
-  onCreateUser: (
-    name: string,
-    email: string,
-    role: API.UserRole,
-  ) => Promise<boolean>;
   onChangeRole: (userId: number, role: API.UserRole) => Promise<boolean>;
 }
 
 export const UserManagementTab: React.FC<UserManagementTabProps> = ({
   users,
   loadingUsers,
-  onCreateUser,
   onChangeRole,
 }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedRole, setSelectedRole] = useState<string>("all");
   const [newRole, setNewRole] = useState<string>("");
-  console.log(users)
 
   // Estado para modales internos
-  const [isAddUserOpen, setIsAddUserOpen] = useState(false);
   const [isRoleChangeOpen, setIsRoleChangeOpen] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
-  const [newUserData, setNewUserData] = useState({
-    name: "",
-    email: "",
-    role: "interested" as API.UserRole,
-  });
-
-  const handleCreateUserClick = async () => {
-    if (!newUserData.name || !newUserData.email || !newUserData.role) {
-      toast.error("Por favor completa todos los campos");
-      return;
-    }
-    const success = await onCreateUser(
-      newUserData.name,
-      newUserData.email,
-      newUserData.role,
-    );
-    if (success) {
-      setIsAddUserOpen(false);
-      setNewUserData({ name: "", email: "", role: "interested" });
-    }
-  };
+  const [showAll, setShowAll] = useState(false);
 
   const handleRoleChangeClick = async (userId: number, role: string) => {
     const success = await onChangeRole(userId, role as API.UserRole);
@@ -98,6 +68,12 @@ export const UserManagementTab: React.FC<UserManagementTabProps> = ({
       selectedRole === "all" || user.role === selectedRole;
     return matchesSearch && matchesRole;
   });
+
+  useEffect(() => {
+    setShowAll(false);
+  }, [searchTerm, selectedRole]);
+
+  const visibleUsers = showAll ? filteredUsers : filteredUsers.slice(0, 6);
 
   return (
     <Card>
@@ -127,80 +103,6 @@ export const UserManagementTab: React.FC<UserManagementTabProps> = ({
                 ))}
               </SelectContent>
             </Select>
-            <Dialog open={isAddUserOpen} onOpenChange={setIsAddUserOpen}>
-              <DialogTrigger asChild>
-                <Button variant="default" className="gap-2">
-                  <UserPlus className="h-4 w-4" />
-                  Agregar Usuario
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Agregar Nuevo Usuario</DialogTitle>
-                  <DialogDescription>
-                    Crea un nuevo usuario manualmente.
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="name">Nombre Completo</Label>
-                    <Input
-                      id="name"
-                      value={newUserData.name}
-                      onChange={(e) =>
-                        setNewUserData({ ...newUserData, name: e.target.value })
-                      }
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="email">Email</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={newUserData.email}
-                      onChange={(e) =>
-                        setNewUserData({
-                          ...newUserData,
-                          email: e.target.value,
-                        })
-                      }
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="role">Rol</Label>
-                    <Select
-                      value={newUserData.role}
-                      onValueChange={(value: string) =>
-                        setNewUserData({
-                          ...newUserData,
-                          role: value as API.UserRole,
-                        })
-                      }
-                    >
-                      <SelectTrigger id="role">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {USER_ROLES.map((type) => (
-                          <SelectItem key={type} value={type}>
-                            {translateUserRole(type)}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="flex gap-2 justify-end">
-                    <Button
-                      variant="outline"
-                      onClick={() => setIsAddUserOpen(false)}
-                    >
-                      Cancelar
-                    </Button>
-                    <Button onClick={handleCreateUserClick}>Crear Usuario</Button>
-                  </div>
-                </div>
-              </DialogContent>
-            </Dialog>
           </div>
         </div>
       </CardHeader>
@@ -210,20 +112,21 @@ export const UserManagementTab: React.FC<UserManagementTabProps> = ({
         ) : filteredUsers.length === 0 ? (
           <p>No se encontraron usuarios.</p>
         ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Usuario</TableHead>
-                <TableHead>Rol Actual</TableHead>
-                <TableHead>Email Verificado</TableHead>
-                <TableHead>Último Acceso</TableHead>
-                <TableHead>Acciones</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredUsers.map((user) => (
-                <TableRow key={user.id}>
-                  <TableCell>
+          <>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Usuario</TableHead>
+                  <TableHead>Rol Actual</TableHead>
+                  <TableHead>Email Verificado</TableHead>
+                  <TableHead>Último Acceso</TableHead>
+                  <TableHead>Acciones</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {visibleUsers.map((user) => (
+                  <TableRow key={user.id}>
+                    <TableCell>
                     <div className="flex items-center gap-3">
                       <Avatar className="h-8 w-8">
                         <AvatarImage src={user.avatar} />
@@ -265,8 +168,9 @@ export const UserManagementTab: React.FC<UserManagementTabProps> = ({
                     >
                       <DialogTrigger asChild>
                         <Button
-                          variant="outline"
+                          variant="default"
                           size="sm"
+                          className="bg-[#0a2740] hover:bg-[#10385c] text-white border-transparent"
                           onClick={() => {
                             setSelectedUserId(user.id);
                             setIsRoleChangeOpen(true);
@@ -321,9 +225,17 @@ export const UserManagementTab: React.FC<UserManagementTabProps> = ({
                     </Dialog>
                   </TableCell>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+                ))}
+              </TableBody>
+            </Table>
+            {filteredUsers.length > 6 && (
+              <div className="flex justify-center mt-4">
+                <Button variant="link" onClick={() => setShowAll(!showAll)}>
+                  {showAll ? "Ver menos" : "Ver más"}
+                </Button>
+              </div>
+            )}
+          </>
         )}
       </CardContent>
     </Card>

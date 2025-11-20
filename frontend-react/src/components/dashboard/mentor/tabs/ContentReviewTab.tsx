@@ -48,10 +48,10 @@ export const ContentReviewTab: React.FC<ContentReviewTabProps> = ({
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {submissions.map((submission, index) => {
-            // Asigna un usuario basado en el índice (lógica mock original)
-            const submittedByUser = users[index % users.length];
-            const submittedByName = submittedByUser?.name || "Usuario desconocido";
+          {submissions.map((submission) => {
+            const submittedByName = submission.submittedById
+              ? users.find(u => String(u.id) === submission.submittedById)?.name || "Usuario desconocido"
+              : "Sistema";
 
             return (
               <div key={submission.id} className="border rounded-lg p-4">

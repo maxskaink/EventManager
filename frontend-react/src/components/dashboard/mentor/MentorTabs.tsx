@@ -14,11 +14,6 @@ interface MentorTabsProps {
   submissions: Submission[];
   onApproveSubmission: (id: string) => void;
   onRejectSubmission: (id: string) => void;
-  onCreateUser: (
-    name: string,
-    email: string,
-    role: API.UserRole,
-  ) => Promise<boolean>;
   onChangeRole: (userId: number, role: API.UserRole) => Promise<boolean>;
   onViewProfile: (member: MemberProgressData) => void;
   onGenerateReport: (member: MemberProgressData) => void;
@@ -30,7 +25,6 @@ export const MentorTabs: React.FC<MentorTabsProps> = ({
   submissions,
   onApproveSubmission,
   onRejectSubmission,
-  onCreateUser,
   onChangeRole,
   onViewProfile,
   onGenerateReport,
@@ -48,7 +42,6 @@ export const MentorTabs: React.FC<MentorTabsProps> = ({
         <UserManagementTab
           users={users}
           loadingUsers={loadingUsers}
-          onCreateUser={onCreateUser}
           onChangeRole={onChangeRole}
         />
       </TabsContent>
