@@ -82,7 +82,7 @@ export const mergeEventsAndArticles = (events: API.Event[], articles: API.Articl
   return [
     ...events.map((event) => ({
       id: event.id.toString(),
-      type: event.event_type,
+      type: "evento",
       title: event.name,
       description: event.description,
       date: event.start_date.split("T")[0],
@@ -91,7 +91,7 @@ export const mergeEventsAndArticles = (events: API.Event[], articles: API.Articl
       status:
         event.status === "activo"
           ? "upcoming"
-          : event.status === "finalizado"
+          : event.status === "inactivo"
             ? "completed"
             : event.status === "cancelado"
               ? "cancelled"

@@ -137,7 +137,7 @@ export function PublishContentModal({ isOpen, onOpenChange, item, onPublish }: P
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[90vw] max-h-[90vh] overflow-y-scroll">
+      <DialogContent className="w-1000 max-w-[90vw] max-h-[90vh] overflow-y-scroll">
         <DialogHeader>
           <DialogTitle>Publicar Contenido</DialogTitle>
           <DialogDescription>
@@ -146,7 +146,7 @@ export function PublishContentModal({ isOpen, onOpenChange, item, onPublish }: P
         </DialogHeader>
 
         <form onSubmit={handleSubmit}>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-4">
+          <div className="grid grid-cols-1 gap-6 py-4">
             {/* Columna Izquierda - Imagen */}
             <div className="space-y-2">
               <Label htmlFor="image">Imagen de Portada</Label>
