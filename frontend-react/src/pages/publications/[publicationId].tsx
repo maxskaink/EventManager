@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { PublicationAPI, EventAPI } from '../../services/api';
 import { toast } from 'sonner';
+import PublicationDetailSkeleton from '../../components/publications/PublicationDetailSkeleton';
 
 const PublicationDetailPage = () => {
   const { publicationId } = useParams<{ publicationId: string }>();
@@ -34,7 +35,7 @@ const PublicationDetailPage = () => {
   }, [publicationId]);
 
   if (loading) {
-    return <div>Cargando...</div>;
+    return <PublicationDetailSkeleton />;
   }
 
   if (!publication) {
