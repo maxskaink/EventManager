@@ -20,7 +20,6 @@ type EventFormData = {
   modality: API.EventModality;
   location: string;
   capacity: string;
-  status: API.EventStatus;
 };
 
 export default function CreateEventPage() {
@@ -40,7 +39,6 @@ export default function CreateEventPage() {
     modality: "presencial",
     location: "",
     capacity: "",
-    status: "activo",
   });
 
   const handleInputChange = (field: keyof EventFormData, value: unknown) => {
@@ -56,7 +54,7 @@ export default function CreateEventPage() {
     return dateTime;
   };
 
-  const handleSubmit = async (isDraft: boolean = false) => {
+  const handleSubmit = async () => {
     // Validaciones
     if (!formData.name.trim()) {
       toast.error("El nombre del evento es obligatorio");
@@ -90,13 +88,13 @@ export default function CreateEventPage() {
         event_type: formData.event_type,
         modality: formData.modality,
         location: formData.location || null,
-        status: isDraft ? "pendiente" : formData.status,
+        status: "pendiente",
         capacity: formData.capacity ? parseInt(formData.capacity) : null,
       };
 
       await EventAPI.addEvent(eventData);
 
-      toast.success(isDraft ? "✅ Evento guardado como borrador" : "🎉 Evento creado exitosamente");
+      toast.success("🎉 Evento creado exitosamente");
 
       navigate("/event-board");
     } catch (error) {
@@ -113,8 +111,7 @@ export default function CreateEventPage() {
       <CreateEventPreview
         formData={formData}
         onEdit={() => setPreview(false)}
-        onSaveDraft={() => handleSubmit(true)}
-        onPublish={() => handleSubmit(false)}
+        onPublish={() => handleSubmit()}
         loading={loading}
       />
     );
@@ -126,15 +123,13 @@ export default function CreateEventPage() {
       <CreateEventHeader
         onBack={() => navigate(getDashboardRouteFromRole(user?.role || ""))}
         onPreview={() => setPreview(true)}
-        onSaveDraft={() => handleSubmit(true)}
         loading={loading}
       />
       <CreateEventForm
         formData={formData}
         onInputChange={handleInputChange}
         onCancel={() => navigate(getDashboardRouteFromRole(user?.role || ""))}
-        onSaveDraft={() => handleSubmit(true)}
-        onPublish={() => handleSubmit(false)}
+        onPublish={() => handleSubmit()}
         loading={loading}
       />
       <BottomNavbarWrapper role={user?.role ?? ""} />

@@ -5,7 +5,7 @@ import { Input } from "../../ui/input";
 import { Textarea } from "../../ui/textarea";
 import { Label } from "../../ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../ui/select";
-import { Info, Calendar, MapPin, Users, Save, Send } from "lucide-react";
+import { Info, Calendar, MapPin, Users, Send } from "lucide-react";
 import { EVENT_MODALITIES, EVENT_STATUSES } from "../../../features/events/event.constants";
 import { translateEventModality, translateEventStatus } from "../../../features/events";
 
@@ -27,7 +27,6 @@ interface Props {
   formData: FormData;
   onInputChange: (field: keyof FormData, value: unknown) => void;
   onCancel: () => void;
-  onSaveDraft: () => void;
   onPublish: () => void;
   loading: boolean;
 }
@@ -36,7 +35,6 @@ export const CreateEventForm: React.FC<Props> = ({
   formData,
   onInputChange,
   onCancel,
-  onSaveDraft,
   onPublish,
   loading,
 }) => {
@@ -244,13 +242,9 @@ export const CreateEventForm: React.FC<Props> = ({
         <Button variant="outline" onClick={onCancel}>
           Cancelar
         </Button>
-        <Button variant="outline" onClick={onSaveDraft} disabled={loading}>
-          <Save className="h-4 w-4 mr-2" />
-          Guardar como Borrador
-        </Button>
         <Button onClick={onPublish} disabled={loading}>
           <Send className="h-4 w-4 mr-2" />
-          Publicar Evento
+          Crear Evento
         </Button>
       </div>
     </div>

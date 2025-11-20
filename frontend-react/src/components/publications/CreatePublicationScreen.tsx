@@ -8,7 +8,6 @@ import { Badge } from '../ui/badge';
 import { useApp } from '../context/AppContext';
 import {
   ArrowLeft,
-  Save,
   Eye,
   Send,
   FileText,
@@ -44,7 +43,7 @@ export function CreateArticleScreen() {
     }));
   };
 
-  const handleSave = async (isDraft: boolean = false) => {
+  const handleSave = async () => {
     // Validaciones
     if (!formData.title.trim()) {
       toast.error('El título es obligatorio');
@@ -78,7 +77,7 @@ export function CreateArticleScreen() {
 
       await ArticleAPI.addArticle(articleData);
       
-      toast.success(isDraft ? '✅ Artículo guardado como borrador' : '🎉 Artículo publicado exitosamente');
+      toast.success('🎉 Artículo creado exitosamente');
       
       // Navegar de vuelta
       navigate(getDashboardRouteFromRole(authUser?.role || ''));
@@ -107,13 +106,9 @@ export function CreateArticleScreen() {
             </Button>
             <h1>Vista Previa</h1>
             <div className="ml-auto flex gap-2">
-              <Button variant="secondary" onClick={() => handleSave(true)} disabled={loading}>
-                <Save className="h-4 w-4 mr-2" />
-                Guardar Borrador
-              </Button>
-              <Button variant="secondary" onClick={() => handleSave(false)} disabled={loading}>
+              <Button variant="secondary" onClick={() => handleSave()} disabled={loading}>
                 <Send className="h-4 w-4 mr-2" />
-                Publicar
+                Crear Artículo
               </Button>
             </div>
           </div>
@@ -181,10 +176,6 @@ export function CreateArticleScreen() {
               <Button variant="secondary" onClick={() => setPreview(true)}>
                 <Eye className="h-4 w-4 mr-2" />
                 Vista Previa
-              </Button>
-              <Button variant="secondary" onClick={() => handleSave(true)} disabled={loading}>
-                <Save className="h-4 w-4 mr-2" />
-                Guardar
               </Button>
             </div>
         </div>
@@ -274,19 +265,11 @@ export function CreateArticleScreen() {
             Cancelar
           </Button>
           <Button 
-            variant="outline" 
-            onClick={() => handleSave(true)}
-            disabled={loading}
-          >
-            <Save className="h-4 w-4 mr-2" />
-            Guardar como Borrador
-          </Button>
-          <Button 
-            onClick={() => handleSave(false)}
+            onClick={() => handleSave()}
             disabled={loading}
           >
             <Send className="h-4 w-4 mr-2" />
-            Publicar Artículo
+            Crear Artículo
           </Button>
         </div>
       </div>

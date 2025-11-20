@@ -1,7 +1,7 @@
 import React from "react";
 import { Button } from "../../ui/button";
 import { Card, CardContent } from "../../ui/card";
-import { ArrowLeft, Save, Send, Calendar, MapPin, Users, Clock } from "lucide-react";
+import { ArrowLeft, Send, Calendar, MapPin, Users, Clock } from "lucide-react";
 import BottomNavbarWrapper from "../../nav/BottomNavbarWrapper";
 import { useAuthStore } from "../../../stores/auth.store";
 
@@ -22,12 +22,11 @@ type FormData = {
 interface Props {
   formData: FormData;
   onEdit: () => void;
-  onSaveDraft: () => void;
   onPublish: () => void;
   loading: boolean;
 }
 
-export const CreateEventPreview: React.FC<Props> = ({ formData, onEdit, onSaveDraft, onPublish, loading }) => {
+export const CreateEventPreview: React.FC<Props> = ({ formData, onEdit, onPublish, loading }) => {
   const user = useAuthStore((s) => s.user);
   const getLocaleDate = (date: string) => {
     try {
@@ -54,13 +53,9 @@ export const CreateEventPreview: React.FC<Props> = ({ formData, onEdit, onSaveDr
           </Button>
           <h1>Vista Previa del Evento</h1>
           <div className="ml-auto flex gap-2">
-            <Button variant="secondary" onClick={onSaveDraft} disabled={loading}>
-              <Save className="h-4 w-4 mr-2" />
-              Guardar Borrador
-            </Button>
             <Button variant="secondary" onClick={onPublish} disabled={loading}>
               <Send className="h-4 w-4 mr-2" />
-              Publicar Evento
+              Crear Evento
             </Button>
           </div>
         </div>
