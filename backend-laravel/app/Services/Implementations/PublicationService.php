@@ -269,11 +269,7 @@ class PublicationService implements PublicationServiceInterface
             throw new ResourceNotFoundException("Publication not found.");
         }
 
-        DB::transaction(function () use ($publicationId, $interestIds) {
-            $this->interestRepo->deleteForPublication($publicationId, $interestIds);
-        });
-
-        return $this->interestRepo->getByPublication($publicationId)->toArray();
+        return $this->interestRepo->deleteForPublication($publicationId, $interestIds);
     }
 
     private function processAndStoreImage(UploadedFile $image, ?string $existingUrl = null): string
@@ -288,9 +284,12 @@ class PublicationService implements PublicationServiceInterface
         }
 
         $manager = new ImageManager(new GdDriver());
-        $img = $manager->read($image->getRealPath())
-            ->scale(width: 1600)
-            ->toWebp(quality: 80);
+        $img = $manager->read($image->getRealPath())->scale(width: 1600);
+
+        $width = $img->width();
+        $height = $img->height();
+
+        $img = $img->toWebp(quality: 80);
 
         $disk = Storage::disk('public');
 
@@ -299,7 +298,7 @@ class PublicationService implements PublicationServiceInterface
             $pathFromUrl = preg_replace('#^/storage/#', '', $pathFromUrl);
             $pathFromUrl = ltrim($pathFromUrl, '/');
 
-            if ($pathFromUrl !== '' ) {
+            if ($pathFromUrl !== '') {
                 $target = $pathFromUrl;
                 if (! $disk->exists($target)) {
                     $basename = pathinfo($target, PATHINFO_BASENAME);
@@ -310,10 +309,14 @@ class PublicationService implements PublicationServiceInterface
             }
         }
 
-        $filename = Str::uuid() . '.webp';
+        $identifier = Str::uuid()->toString();
+        $filename = "{$identifier}-{$width}-{$height}.webp";
+
         $path = "publications/{$filename}";
         $disk->put($path, (string) $img);
+
         return $disk->url($path);
     }
+
 
 }

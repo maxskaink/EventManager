@@ -230,11 +230,11 @@ class PublicationController extends Controller
         $data = $request->validated();
         $interestIds = $data['interests'];
 
-        $remainingInterests = $this->publicationService->removePublicationInterests($publicationId, $interestIds);
+        $removedInterests = $this->publicationService->removePublicationInterests($publicationId, $interestIds);
 
         return response()->json([
             'message' => 'Interests removed successfully.',
-            'interests' => $remainingInterests,
+            'removed interests' => $removedInterests,
         ]);
     }
 

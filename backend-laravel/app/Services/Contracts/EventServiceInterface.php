@@ -107,4 +107,6 @@ interface EventServiceInterface
      * @return Collection<int, Participation>
      */
     public function listAllParticipations(?string $status = null): Collection;
+
+    public function deleteEvent(int $id): Event;
 }

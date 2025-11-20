@@ -36,6 +36,8 @@ Route::middleware('auth:sanctum')->prefix('event')->group(function () {
      */
     Route::patch('/{eventId}', [EventController::class, 'updateEvent']);
 
+
+
     /**
      * Enroll the authenticated user in an event (self-enrollment)
      * POST /api/event/{eventId}/participation

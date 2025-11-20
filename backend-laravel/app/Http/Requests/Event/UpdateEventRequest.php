@@ -27,7 +27,7 @@ class UpdateEventRequest extends FormRequest
             'description' => ['sometimes', 'string', 'max:1000'],
             'start_date' => ['sometimes', 'date', 'before_or_equal:end_date'],
             'end_date' => ['sometimes', 'date', 'after_or_equal:start_date'],
-            'event_type' => ['required', 'string', 'in:charla,curso,convocatoria,taller,conferencia'],
+            'event_type' => ['sometimes', 'string', 'in:charla,curso,convocatoria,taller,conferencia'],
             'modality' => ['sometimes', 'string', 'in:presencial,virtual,mixta'],
             'virtual_url' => ['nullable', 'url'],
             'location' => ['nullable', 'string', 'max:255'],

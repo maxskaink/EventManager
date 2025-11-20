@@ -1,37 +1,16 @@
 <?php
-
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 
-/**
- * @property int $id
- * @property int|null $publication_id
- * @property string $name
- * @property string $description
- * @property Carbon $start_date
- * @property Carbon $end_date
- * @property string $event_type
- * @property string $modality
- * @property string|null $location
- * @property string|null $virtual_url
- * @property string $status
- * @property int|null $capacity
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
- */
 class Event extends Model
 {
     use HasFactory;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
     protected $fillable = [
         'publication_id',
         'name',
@@ -46,11 +25,6 @@ class Event extends Model
         'capacity',
     ];
 
-    /**
-     * The attributes that should be cast to native types.
-     *
-     * @return array<string, string>
-     */
     protected function casts(): array
     {
         return [
@@ -60,7 +34,7 @@ class Event extends Model
             'publication_id' => 'integer',
             'virtual_url' => 'string',
             'created_at' => 'datetime',
-            'updated_at' => 'datetime',
+            'updated_at' => 'datetime'
         ];
     }
 
@@ -75,9 +49,6 @@ class Event extends Model
         );
     }
 
-    /**
-     * Relationship: each event belongs to a publication (optional).
-     */
     public function publication(): BelongsTo
     {
         return $this->belongsTo(Publication::class);
