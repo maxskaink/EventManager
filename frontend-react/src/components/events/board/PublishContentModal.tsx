@@ -137,7 +137,7 @@ export function PublishContentModal({ isOpen, onOpenChange, item, onPublish }: P
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl max-h-lvh overflow-y-scroll">
+      <DialogContent className="max-w-[90vw] max-h-[90vh] overflow-y-scroll">
         <DialogHeader>
           <DialogTitle>Publicar Contenido</DialogTitle>
           <DialogDescription>

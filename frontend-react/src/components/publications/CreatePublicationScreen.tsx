@@ -82,7 +82,7 @@ export function CreateArticleScreen() {
       // Navegar de vuelta
       navigate(getDashboardRouteFromRole(authUser?.role || ''));
     } catch (error: any) {
-      console.error('Error creating article:', error);
+      console.error('Error creating art0icle:', error);
       const message = error.response?.data?.message || 'Error al crear el artículo';
       toast.error(message);
     } finally {
