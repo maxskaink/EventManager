@@ -68,7 +68,7 @@ namespace APIPayloads {
     type: API.PublicationType;
     status: API.PublicationStatus;
     visibility: API.PublicationVisibility;
-    image: File;
+    image?: File;
     summary: string;
   }
   
