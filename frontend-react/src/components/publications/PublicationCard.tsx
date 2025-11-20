@@ -1,4 +1,5 @@
 import React from 'react';
+import { resolveImageUrl } from '../../features/api';
 
 interface PublicationCardProps {
   publication: API.Publication;
@@ -15,7 +16,7 @@ const chipColorMap: Record<API.PublicationType, string> = {
 
 const PublicationCard: React.FC<PublicationCardProps> = ({ publication }) => {
 
-  const getPublicationImageUrl = (imageUrl: string, width: number, height: number) => {
+/*  const getPublicationImageUrl = (imageUrl: string, width: number, height: number) => {
     if(!imageUrl) return '';
     const lastDotIndex = imageUrl.lastIndexOf('.');
     if (lastDotIndex === -1) return imageUrl;
@@ -23,7 +24,7 @@ const PublicationCard: React.FC<PublicationCardProps> = ({ publication }) => {
     const extension = imageUrl.substring(lastDotIndex);
     return `${imageName}-${width}-${height}${extension}`;
   }
-  
+  */
   const chipBgColor = chipColorMap[publication.type] || 'bg-gray-400';
 
 
@@ -32,7 +33,7 @@ const PublicationCard: React.FC<PublicationCardProps> = ({ publication }) => {
       {publication.image_url && (
         <img
           className="w-full h-auto object-cover"
-          src={getPublicationImageUrl(publication.image_url, 400, 300)}
+          src={resolveImageUrl(publication.image_url)}
           alt={publication.title}
         />
       )}

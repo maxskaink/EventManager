@@ -1,18 +1,19 @@
-import React from 'react';
-import PublicationCard from './PublicationCard';
+import React from "react";
+import PublicationCard from "./PublicationCard";
+import { MasonryBox, MasonryContainer } from "../ui/mansory-layout";
 
 interface PublicationListProps {
   publications: API.Publication[];
 }
 
-const PublicationList: React.FC<PublicationListProps> = ({ publications }) => {
+export const PublicationList: React.FC<PublicationListProps> = ({ publications }) => {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+    <MasonryContainer>
       {publications.map((publication) => (
-        <PublicationCard key={publication.id} publication={publication} />
+        <MasonryBox key={publication.id}>
+          <PublicationCard publication={publication} />
+        </MasonryBox>
       ))}
-    </div>
+    </MasonryContainer>
   );
 };
-
-export default PublicationList;
