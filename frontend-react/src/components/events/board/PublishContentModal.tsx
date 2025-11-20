@@ -48,6 +48,9 @@ export function PublishContentModal({ isOpen, onOpenChange, item, onPublish }: P
     if (item) {
       // Usar una parte de la descripción/contenido como resumen inicial
       setSummary(item.description?.split("\n")[0].slice(0, 200) || "");
+      if (item.type === 'evento') {
+        setType('evento');
+      }
     }
   }, [item]);
 
@@ -103,8 +106,14 @@ export function PublishContentModal({ isOpen, onOpenChange, item, onPublish }: P
       image: image,
       summary: summary,
     };
+    
+    const apiCall = item.type === 'evento' 
+        ? PublicationAPI.addEventPublication(Number(item.id), data)
+        : PublicationAPI.createPublication(data);
+
+
     // Usar toast.promise para la llamada a la API
-    toast.promise(PublicationAPI.createPublication(data), {
+    toast.promise(apiCall, {
       loading: "Publicando contenido...",
       success: () => {
         setIsLoading(false);
@@ -191,7 +200,7 @@ export function PublishContentModal({ isOpen, onOpenChange, item, onPublish }: P
               <div className="grid grid-cols-3 gap-3">
                 <div>
                   <Label htmlFor="type">Tipo</Label>
-                  <Select value={type} onValueChange={(v: API.PublicationType) => setType(v)}>
+                  <Select value={type} onValueChange={(v: API.PublicationType) => setType(v)} disabled={item.type === 'evento'}>
                     <SelectTrigger id="type">
                       <SelectValue placeholder="Tipo" />
                     </SelectTrigger>

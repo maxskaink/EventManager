@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import { resolveImageUrl } from "../../features/api";
 
 interface PublicationCardProps {
@@ -33,24 +34,26 @@ const PublicationCard: React.FC<PublicationCardProps> = ({ publication }) => {
   const chipBgColor = chipColorMap[publication.type] || "bg-gray-400";
 
   return (
-    <div className="bg-white rounded-xl shadow-md overflow-hidden transition-transform duration-200 ease-in-out cursor-pointer flex flex-col h-full hover:-translate-y-1">
-      {publication.image_url && (
-        <img
-          className="w-full h-auto object-cover"
-          src={resolveImageUrl(publication.image_url)}
-          alt={publication.title}
-        />
-      )}
-      <div className="p-4 flex flex-col flex-grow">
-        <div className="flex gap-2 mb-3">
-          <div className={`${chipBgColor} text-white py-1 px-2 rounded-full text-xs font-medium capitalize`}>
-            {publication.type}
-          </div>
+    <Link to={`/publications/${publication.id}`}>
+        <div className="bg-white rounded-xl shadow-md overflow-hidden transition-transform duration-200 ease-in-out cursor-pointer flex flex-col h-full hover:-translate-y-1">
+        {publication.image_url && (
+            <img
+            className="w-full h-auto object-cover"
+            src={resolveImageUrl(publication.image_url)}
+            alt={publication.title}
+            />
+        )}
+        <div className="p-4 flex flex-col flex-grow">
+            <div className="flex gap-2 mb-3">
+            <div className={`${chipBgColor} text-white py-1 px-2 rounded-full text-xs font-medium capitalize`}>
+                {publication.type}
+            </div>
+            </div>
+            <h3 className="text-lg font-semibold mb-2 text-gray-800">{publication.title}</h3>
+            {publication.summary && <p className="text-sm text-gray-600 leading-normal flex-grow">{publication.summary}</p>}
         </div>
-        <h3 className="text-lg font-semibold mb-2 text-gray-800">{publication.title}</h3>
-        {publication.summary && <p className="text-sm text-gray-600 leading-normal flex-grow">{publication.summary}</p>}
-      </div>
-    </div>
+        </div>
+    </Link>
   );
 };
 
