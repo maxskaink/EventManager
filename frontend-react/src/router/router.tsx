@@ -1,4 +1,4 @@
-import { createBrowserRouter, Navigate } from "react-router";
+import { createBrowserRouter, Navigate, Outlet } from "react-router";
 
 import { LoginScreen } from "../components/auth/LoginScreen";
 import { RegisterScreen } from "../components/auth/RegisterScreen";
@@ -26,6 +26,8 @@ import { authMiddleware } from "./middlewares/auth.middleware";
 import { timingMiddleware } from "./middlewares/timing.middleware";
 import NotFoundPage from "../pages/not-found-page";
 import { ErrorPage } from "../pages/error-page";
+import GradientWrapper from "../components/layout/GradientWrapper";
+
 
 // Create the data router and export it for main.tsx to mount
 export const router = createBrowserRouter([
@@ -54,6 +56,7 @@ export const router = createBrowserRouter([
       // Autenticated
       {
         middleware: [authMiddleware],
+        element: <GradientWrapper><Outlet /></GradientWrapper>,
         children: [
           // Dashboards
           { path: "dashboard-interested", element: <GuestDashboard /> },

@@ -32,6 +32,14 @@ const BNavBarInterested = () => {
         </Button>
         <Button
           variant="ghost"
+          onClick={() => navigate("/see-publication")}
+          className="flex h-auto flex-col items-center gap-1 py-2"
+        >
+          <CalendarDays className="h-5 w-5" />
+          <span className="text-xs">Publicaciones</span>
+        </Button>
+        <Button
+          variant="ghost"
           onClick={() => navigate(isAuthenticated ? "/profile" : "/login")}
           className="flex flex-col items-center gap-1 h-auto py-2"
         >

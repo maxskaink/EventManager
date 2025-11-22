@@ -34,6 +34,7 @@ export function EventBoardHeader({ userRole, onNavigate }: Props) {
             <Plus className="h-4 w-4" />
             Nuevo Evento
           </Button>
+          {/*
           <Button
             variant="secondary"
             onClick={() => onNavigate("/create-article")} // Asumiendo ruta
@@ -42,6 +43,7 @@ export function EventBoardHeader({ userRole, onNavigate }: Props) {
             <Plus className="h-4 w-4" />
             Nuevo Articulo
           </Button>
+          */}
         </div>
       </div>
     </div>

@@ -1,20 +1,16 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { ArrowLeft } from 'lucide-react';
-import { useAuthStore } from '../stores/auth.store';
-import { getDashboardRouteFromRole } from '../services/navigation/redirects';
-import { PublicationAPI } from '../services/api'; // Asumiendo que existe
-import BottomNavbarWrapper from '../components/nav/BottomNavbarWrapper';
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { ArrowLeft } from "lucide-react";
+import { useAuthStore } from "../stores/auth.store";
+import { getDashboardRouteFromRole } from "../services/navigation/redirects";
+import { PublicationAPI } from "../services/api"; // Asumiendo que existe
+import BottomNavbarWrapper from "../components/nav/BottomNavbarWrapper";
 
-import {
-  PublicationList,
-  PublicationLoading,
-  PublicationEmpty,
-} from '../components/publications';
+import { PublicationList, PublicationLoading, PublicationEmpty } from "../components/publications";
 
 // Clave de la query para react-query
-const PUBLICATIONS_QUERY_KEY = ['publications'];
+const PUBLICATIONS_QUERY_KEY = ["publications"];
 
 // Hook para obtener las publicaciones
 function usePublications() {
@@ -27,26 +23,19 @@ function usePublications() {
 
 export function PublicationsScreen() {
   const user = useAuthStore((s) => s.user);
-  const role = user?.role ?? '';
+  const role = user?.role ?? "";
   const navigate = useNavigate();
-  
-  const { 
-    data: publications, 
-    isLoading, 
-    isError 
-  } = usePublications();
+
+  const { data: publications, isLoading, isError } = usePublications();
 
   const normalizedRole = React.useMemo(() => {
-    if (role === 'active-member' || role === 'seed') {
-      return 'member';
+    if (role === "active-member" || role === "seed") {
+      return "member";
     }
     return role;
   }, [role]);
 
-  const dashboardRoute = React.useMemo(
-    () => getDashboardRouteFromRole(normalizedRole),
-    [normalizedRole],
-  );
+  const dashboardRoute = React.useMemo(() => getDashboardRouteFromRole(normalizedRole), [normalizedRole]);
 
   const renderContent = () => {
     if (isLoading) {
@@ -54,11 +43,7 @@ export function PublicationsScreen() {
     }
 
     if (isError) {
-      return (
-        <p className="text-center text-destructive">
-          Error al cargar las publicaciones.
-        </p>
-      );
+      return <p className="text-center text-destructive">Error al cargar las publicaciones.</p>;
     }
 
     if (!publications || publications.length === 0) {
@@ -71,6 +56,7 @@ export function PublicationsScreen() {
   return (
     <div className="min-h-screen pb-20">
       {/* Reutilizamos el header de Eventos, solo cambiamos el título */}
+
       <div className="bg-[#0a2740] p-4 shadow-sm text-white">
         <div className="max-w-4xl mx-auto flex items-center gap-4">
           <button
@@ -86,10 +72,8 @@ export function PublicationsScreen() {
         </div>
       </div>
 
-
       <div className="max-w-4xl mx-auto p-4 space-y-6">
         {/* Aquí irían filtros si los tuvieras, ej: SearchBar, Tabs */}
-        
         {renderContent()}
       </div>
 
