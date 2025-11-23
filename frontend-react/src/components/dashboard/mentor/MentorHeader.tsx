@@ -26,7 +26,7 @@ export const MentorHeader: React.FC<MentorHeaderProps> = ({
             <img
               src={brainImage}
               alt="Logo del Semillero"
-              className="h-10 w-10 object-contain"
+              className="h-10 w-10 object-contain rounded-full bg-white"
             />
             <div>
               <h1>Panel de Mentor</h1>
@@ -37,10 +37,7 @@ export const MentorHeader: React.FC<MentorHeaderProps> = ({
           </div>
 
           <div className="flex items-center gap-4">
-            {/* Logout a la izquierda del nombre/rol */}
-            <Button variant="ghost" size="icon" onClick={onLogout} title="Cerrar sesión" aria-label="Cerrar sesión">
-              <LogOut className="h-5 w-5" />
-            </Button>
+
 
             <div className="flex items-center gap-2">
               <Avatar className="h-8 w-8">
@@ -56,6 +53,7 @@ export const MentorHeader: React.FC<MentorHeaderProps> = ({
               <Badge variant="secondary">Mentor</Badge>
             </div>
 
+
             <Button
               variant="ghost"
               size="icon"
@@ -70,6 +68,9 @@ export const MentorHeader: React.FC<MentorHeaderProps> = ({
                   {pendingCount}
                 </Badge>
               )}
+            </Button>
+            <Button variant="ghost-destructive" size="icon" onClick={onLogout} title="Cerrar sesión" aria-label="Cerrar sesión">
+              <LogOut className="h-5 w-5" />
             </Button>
           </div>
         </div>

@@ -1,6 +1,6 @@
 import * as React from "react";
-import { Slot } from "@radix-ui/react-slot@1.1.2";
-import { cva, type VariantProps } from "class-variance-authority@0.7.1";
+import { Slot } from "@radix-ui/react-slot";
+import { cva, type VariantProps } from "class-variance-authority";
 
 import { cn } from "./utils";
 
@@ -18,6 +18,8 @@ const buttonVariants = cva(
           "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         ghost:
           "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
+        "ghost-destructive":
+          "hover:bg-destructive hover:text-destructive-foreground dark:hover:bg-destructive/50",
         link: "text-primary underline-offset-4 hover:underline",
       },
       size: {
@@ -37,9 +39,9 @@ const buttonVariants = cva(
 const Button = React.forwardRef<
   HTMLButtonElement,
   React.ComponentProps<"button"> &
-    VariantProps<typeof buttonVariants> & {
-      asChild?: boolean;
-    }
+  VariantProps<typeof buttonVariants> & {
+    asChild?: boolean;
+  }
 >(({ className, variant, size, asChild = false, ...props }, ref) => {
   const Comp = asChild ? Slot : "button";
 
