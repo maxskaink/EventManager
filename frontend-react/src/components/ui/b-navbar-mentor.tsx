@@ -23,6 +23,7 @@ const BNavBarMentor = () => {
         </Button>
 
         {/* Botón de Eventos */}
+        {/*
         <Button
           variant="ghost"
           onClick={() => navigate("/events")}
@@ -31,6 +32,7 @@ const BNavBarMentor = () => {
           <CalendarDays className="h-5 w-5" />
           <span className="text-xs">Eventos</span>
         </Button>
+        */}
 
         <Button
           variant="ghost"

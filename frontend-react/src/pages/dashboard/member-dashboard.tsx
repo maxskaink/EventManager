@@ -1,15 +1,14 @@
 import { Button } from "../../components/ui/button";
 import { Card, CardContent, CardHeader } from "../../components/ui/card";
 import { Badge } from "../../components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "../../components/ui/avatar";
-import { BNavBarMember } from "../../components/ui/b-navbar-member";
+import { UnifiedHeader } from "../../components/layout/UnifiedHeader";
 import { useApp } from "../../components/context/AppContext";
-import { Calendar, Users, Award, Bell, LogOut } from "lucide-react";
+import { Calendar, Users, Award, Bell } from "lucide-react";
 import { ImageWithFallback } from "../../components/figma/ImageWithFallback";
 import { useNavigate } from "react-router";
 
 export function MemberDashboard() {
-  const { user, events, certificates, notifications, logout } = useApp();
+  const { user, events, certificates, notifications } = useApp();
   const navigate = useNavigate();
 
   const recommendedEvents = events
@@ -27,37 +26,22 @@ export function MemberDashboard() {
   const unreadNotifications = notifications.filter((n) => !n.read).length;
 
   return (
-    <div className="min-h-screen pb-20">
+    <div className="space-y-6">
       {/* Header */}
-      <div className="bg-[#0a2740] p-4 shadow-sm text-white">
-        <div className="max-w-4xl mx-auto flex items-center gap-4">
-          <Avatar className="h-12 w-12">
-            <AvatarImage src={user?.avatar} />
-            <AvatarFallback>{user?.name?.charAt(0).toUpperCase()}</AvatarFallback>
-          </Avatar>
-          <button
-            data-slot="button"
-            onClick={logout}
-            className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50 size-9 rounded-md"
-            title="Cerrar sesión"
-            aria-label="Cerrar sesión"
-          >
-            <LogOut className="h-5 w-5" />
-          </button>
-          <div className="flex-1">
-            <h1>Hola, {user?.name}</h1>
-            <p className="text-white/80">Integrante del semillero</p>
-          </div>
-          <Button variant="ghost" size="icon" onClick={() => navigate("/notifications")} className="relative">
+      <UnifiedHeader
+        title={`Hola, ${user?.name}`}
+        subtitle="Integrante del semillero"
+        actions={
+          <Button variant="ghost" size="icon" onClick={() => navigate("/notifications")} className="relative text-white hover:bg-white/10">
             <Bell className="h-5 w-5" />
             {unreadNotifications > 0 && (
-              <Badge className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs">
+              <Badge className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs bg-red-500">
                 {unreadNotifications}
               </Badge>
             )}
           </Button>
-        </div>
-      </div>
+        }
+      />
 
       <div className="max-w-4xl mx-auto p-4 space-y-6">
         {/* Eventos según intereses */}
@@ -172,9 +156,6 @@ export function MemberDashboard() {
           </div>
         </section>
       </div>
-
-      {/* Navigation Bar */}
-      <BNavBarMember />
     </div>
   );
 }

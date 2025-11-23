@@ -4,9 +4,9 @@ import { toast } from "sonner";
 import { EventAPI, PublicationAPI } from "../../services/api";
 import { useAuthStore } from "../../stores/auth.store";
 import { getDashboardRouteFromRole } from "../../services/navigation/redirects";
-import BottomNavbarWrapper from "../../components/nav/BottomNavbarWrapper";
-import { CreateEventHeader, CreateEventForm, type PublicationFormData } from "../../components/events/create";
+import { CreateEventForm, type PublicationFormData } from "../../components/events/create";
 import { getErrorMessageForToast } from "../../features/errors/error.helpers";
+import { UnifiedHeader } from "../../components/layout/UnifiedHeader";
 
 // Definir el tipo para el estado del formulario
 type EventFormData = {
@@ -147,9 +147,11 @@ export default function CreateEventPage() {
 
   // Renderizar el formulario de creación
   return (
-    <div className="min-h-screen pb-20">
-      <CreateEventHeader
-        onBack={() => navigate(getDashboardRouteFromRole(user?.role || ""))}
+    <div className="space-y-6">
+      <UnifiedHeader
+        title="Crear Nuevo Evento"
+        subtitle="Completa la información para registrar un evento"
+        onGoBack={() => navigate(getDashboardRouteFromRole(user?.role || ""))}
         loading={loading}
       />
       <CreateEventForm
@@ -165,7 +167,6 @@ export default function CreateEventPage() {
         onPublish={() => handleSubmit()}
         loading={loading}
       />
-      <BottomNavbarWrapper role={user?.role ?? ""} />
     </div>
   );
 }

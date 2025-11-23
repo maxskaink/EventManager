@@ -5,12 +5,12 @@ import useLogout from "../../hooks/useLogout";
 import useGoToDashboard from "../../hooks/useGoToDashboard";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ProfileAPI, ArticleAPI } from "../../services/api";
-import { getDashboardRouteFromRole } from "../../services/navigation/redirects";
 import { toast } from "sonner";
 
 // Importaciones de la nueva estructura
+import { UnifiedHeader } from "../layout/UnifiedHeader";
 import { ProfileTemplate } from "./templates/profile-template";
-import { ProfileHeader } from "./atoms/profile-header";
+// import { ProfileHeader } from "./atoms/profile-header"; // Removed
 import { PersonalInfoCard } from "./molecules/personal-info-card";
 import { ContactInfoCard } from "./molecules/contact-info-card";
 import { ParticipationStats } from "./organisms/participation-stats";
@@ -197,10 +197,10 @@ export function ProfileScreen() {
     [profile]
   );
 
-  const dashboardRoute = useMemo(
-    () => getDashboardRouteFromRole(normalizedRole),
-    [normalizedRole]
-  );
+  // const dashboardRoute = useMemo(
+  //   () => getDashboardRouteFromRole(normalizedRole),
+  //   [normalizedRole]
+  // );
 
   if (!user) return null; // o un loader/redirect
 
@@ -236,7 +236,12 @@ export function ProfileScreen() {
 
   return (
     <ProfileTemplate
-      header={<ProfileHeader backViewUrl={dashboardRoute} />}
+      header={
+        <UnifiedHeader
+          title="Mi Perfil"
+          onGoBack={() => goToDashboard()}
+        />
+      }
       personalInfo={
         <PersonalInfoCard
           user={personalInfoUser}

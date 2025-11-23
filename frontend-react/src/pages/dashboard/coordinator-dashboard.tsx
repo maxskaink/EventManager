@@ -1,7 +1,6 @@
 import { useApp } from '../../components/context/AppContext';
-import { BNavBarCoordinator } from '../../components/ui/b-navbar-coordinator';
+import { UnifiedHeader } from '../../components/layout/UnifiedHeader';
 import {
-  DashboardHeader,
   DashboardMetrics,
   DashboardPrimaryActions,
   DashboardContentManagement,
@@ -11,16 +10,16 @@ import {
 
 // Nota: Renombrado a '...Page' para claridad, o puedes llamarlo 'CoordinatorDashboard'
 export function CoordinatorDashboardPage() {
-  const { user, events, logout } = useApp();
+  const { user, events } = useApp();
 
   // Lógica y datos derivados se mantienen en el componente 'padre'
   const totalEvents = events.length;
   const totalEnrolled = events.reduce((sum, event) => sum + (event.enrolled ?? 0), 0);
   const totalCapacity = events.reduce((sum, event) => sum + (event.capacity ?? 0), 0);
-  
+
   // Evitar división por cero
-  const averageParticipation = totalCapacity > 0 
-    ? Math.round((totalEnrolled / totalCapacity) * 100) 
+  const averageParticipation = totalCapacity > 0
+    ? Math.round((totalEnrolled / totalCapacity) * 100)
     : 0;
 
   const upcomingEvents = events.filter(
@@ -33,9 +32,12 @@ export function CoordinatorDashboardPage() {
   }
 
   return (
-    <div className="min-h-screen pb-20">
+    <div className="space-y-6">
       {/* 1. Cabecera */}
-      <DashboardHeader user={user} onLogout={logout} />
+      <UnifiedHeader
+        title="Panel de Coordinación"
+        subtitle={`Bienvenido, ${user.name}`}
+      />
 
       {/* Contenedor principal del contenido */}
       <div className="max-w-4xl mx-auto p-4 space-y-6">
@@ -58,9 +60,6 @@ export function CoordinatorDashboardPage() {
         {/* 6. Administración */}
         <DashboardAdminActions />
       </div>
-
-      {/* Barra de Navegación */}
-      <BNavBarCoordinator />
     </div>
   );
 }

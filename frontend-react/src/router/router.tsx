@@ -19,6 +19,7 @@ import { CertificatesScreen } from "../components/certificates/CertificatesScree
 import NotificationsPage from "../pages/notifications";
 import CreateEventPage from "../pages/admin/create-event";
 import { RootLayout } from "../components/nav/RootLayout";
+import { MainLayout } from "../components/layout/MainLayout";
 import GoogleCallbackScreen from "../pages/auth/google-callback";
 import DashboardRedirect from "../components/nav/DashboardRedirect";
 import EventDetailWrapper from "../components/nav/EventDetailWrapper";
@@ -58,22 +59,30 @@ export const router = createBrowserRouter([
         middleware: [authMiddleware],
         element: <GradientWrapper><Outlet /></GradientWrapper>,
         children: [
-          // Dashboards
-          { path: "dashboard-interested", element: <GuestDashboard /> },
-          { path: "dashboard-member", element: <MemberDashboard /> },
-          { path: "dashboard-coordinator", element: <CoordinatorDashboardPage /> },
-          { path: "dashboard-mentor", element: <MentorDashboardPage /> },
+          // Layout Wrapper for pages with BottomNav
+          {
+            element: <MainLayout />,
+            children: [
+              // Dashboards
+              { path: "dashboard-interested", element: <GuestDashboard /> },
+              { path: "dashboard-member", element: <MemberDashboard /> },
+              { path: "dashboard-coordinator", element: <CoordinatorDashboardPage /> },
+              { path: "dashboard-mentor", element: <MentorDashboardPage /> },
 
-          // Others
-          { path: "reports", element: <ReportsScreen /> },
-          { path: "publications", element: <PublicationsScreen /> },
-          { path: "publications/:publicationId", element: <PublicationDetailPage /> },
-          { path: "see-publication", element: <SeePublicationsScreen /> },
-          { path: "create-article", element: <CreateArticleScreen /> },
-          { path: "profile", element: <ProfileScreen /> },
-          { path: "certificates", element: <CertificatesScreen /> },
-          { path: "notifications", element: <NotificationsPage /> },
-          { path: "create-event", element: <CreateEventPage /> },
+              // Others
+              { path: "reports", element: <ReportsScreen /> },
+              { path: "publications", element: <PublicationsScreen /> },
+              { path: "publications/:publicationId", element: <PublicationDetailPage /> },
+              { path: "see-publication", element: <SeePublicationsScreen /> },
+              { path: "create-article", element: <CreateArticleScreen /> },
+              { path: "profile", element: <ProfileScreen /> },
+              { path: "certificates", element: <CertificatesScreen /> },
+              { path: "notifications", element: <NotificationsPage /> },
+              // Create Event usually has its own header but we can wrap it too if we want the bottom nav
+              // The user asked to unify headers, so let's wrap it and handle the header inside
+              { path: "create-event", element: <CreateEventPage /> },
+            ]
+          },
         ],
       },
       {

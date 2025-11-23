@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import { BNavBarMentor } from "../../components/ui/b-navbar-mentor";
 import { UserAPI, EventAPI, PublicationAPI } from "../../services/api";
 import { toast } from "sonner";
+import { BNavBarMentor } from "../../components/ui/b-navbar-mentor";
 import {
   MentorHeader,
   MentorMetrics,
@@ -144,8 +144,8 @@ export function MentorDashboardPage() {
 
   // Handlers para lógica de submissions (mock)
   const handleApproveSubmission = (submissionId: string) => {
-    setSubmissions(submissions.map(sub => 
-      sub.id === submissionId 
+    setSubmissions(submissions.map(sub =>
+      sub.id === submissionId
         ? { ...sub, status: "approved" as const }
         : sub
     ));
@@ -153,8 +153,8 @@ export function MentorDashboardPage() {
   };
 
   const handleRejectSubmission = (submissionId: string) => {
-    setSubmissions(submissions.map(sub => 
-      sub.id === submissionId 
+    setSubmissions(submissions.map(sub =>
+      sub.id === submissionId
         ? { ...sub, status: "rejected" as const }
         : sub
     ));
@@ -173,17 +173,19 @@ export function MentorDashboardPage() {
   };
 
   const pendingSubmissions = submissions.filter(s => s.status === "pending");
+  const pendingCount = 3; // Mock value
 
   if (!user) return null; // O un spinner de carga
 
   return (
-    <div className="min-h-screen pb-20">
+    <div className="space-y-6">
       {/* Cabecera */}
-      <MentorHeader 
-        user={user} 
-        onLogout={logout} 
+      {/* Cabecera */}
+      <MentorHeader
+        user={user}
+        onLogout={logout}
         onOpenNotifications={() => setIsNotificationsOpen(true)}
-        pendingCount={3} // Valor estático del mock original
+        pendingCount={pendingCount} // Valor estático del mock original
       />
 
       <div className="container mx-auto px-4 py-6 space-y-6">
@@ -207,8 +209,6 @@ export function MentorDashboardPage() {
           onViewProfile={handleViewProfile}
           onGenerateReport={handleGenerateReport}
         />
-
-        
       </div>
 
       {/* 5. Barra de Navegación */}
