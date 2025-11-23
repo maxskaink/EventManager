@@ -74,7 +74,6 @@ class PublicationFactory extends Factory
             'content' => $content,
             'type' => $type,
             'status' => $this->faker->randomElement(['activo', 'inactivo']),
-            'last_modified' => now(),
             'image_url' => $this->faker->optional()->imageUrl(800, 600, 'education', true),
             'summary' => $summary,
             'visibility' => $this->faker->randomElement($visibility),

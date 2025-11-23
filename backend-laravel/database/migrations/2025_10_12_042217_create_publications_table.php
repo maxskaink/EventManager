@@ -10,11 +10,11 @@ return new class extends Migration
         Schema::create('publications', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('author_id');
+            $table->unsignedBigInteger('event_id')->nullable();
             $table->string('title');
             $table->text('content');
             $table->enum('type', ['articulo', 'aviso', 'comunicado', 'material', 'evento'])->default('aviso');
             $table->enum('status', ['activo', 'inactivo', 'borrador', 'pendiente'])->default('activo');
-            $table->timestamp('last_modified')->useCurrent()->useCurrentOnUpdate();
             $table->string('image_url')->nullable();
             $table->text('summary')->nullable();
             $table->string('visibility', 20)->default('public');

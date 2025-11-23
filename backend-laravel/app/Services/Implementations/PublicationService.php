@@ -72,36 +72,69 @@ class PublicationService implements PublicationServiceInterface
 
         $publication = $this->addPublication($data, $userId);
         $event->publication()->associate($publication);
+        $publication->event()->associate($event);
         $event->save();
+        $publication->save();
 
         return $publication;
     }
 
     public function listAllPublications(): Collection
     {
-        return $this->publicationRepo->listAll();
+        return $this->publicationRepo
+            ->listAll()
+            ->load(['event']); // only load event
     }
 
     public function listPublishedPublications(User $user): Collection
     {
         if (in_array($user->role, ['mentor', 'coordinator'], true)) {
-            return $this->publicationRepo->listPublished();
+            return $this->publicationRepo
+                ->listPublished()
+                ->load(['event']); // only load event
         }
 
         $allPublished = $this->publicationRepo->listPublished();
-        return $allPublished->filter(function (Publication $pub) use ($user) {
+
+        $filtered = $allPublished->filter(function (Publication $pub) use ($user) {
             if ($pub->visibility === 'public') {
                 return true;
             }
-
             return $this->accessRepo->exists($pub->id, $user->id);
         });
+
+        return $filtered->load(['event']); // only load event
     }
 
     public function listDraftPublications(): Collection
     {
-        return $this->publicationRepo->listDrafts();
+        return $this->publicationRepo
+            ->listDrafts()
+            ->load(['event']); // only load event
     }
+
+    public function getPublicationById(int $id, User $user): Publication
+    {
+        $publication = $this->publicationRepo->findById($id);
+
+        if (!$publication) {
+            throw new ResourceNotFoundException("Publication not found.");
+        }
+
+        // Access control
+        if (
+            $publication->visibility !== 'public' &&
+            $user->role !== 'mentor' &&
+            $user->role !== 'coordinator' &&
+            !$this->accessRepo->exists($publication->id, $user->id)
+        ) {
+            throw new InvalidActionException("You do not have access to this publication.");
+        }
+
+        return $publication->load(['event']); // only load event
+    }
+
+
 
 
     public function updatePublication(int $id, array $data): Publication
@@ -228,24 +261,6 @@ class PublicationService implements PublicationServiceInterface
         return $this->accessRepo->deleteForUsers($publicationId, $allUserIds);
     }
 
-    public function getPublicationById(int $id, User $user): Publication
-    {
-        $publication = $this->publicationRepo->findById($id);
-        if (!$publication) {
-            throw new ResourceNotFoundException("Publication not found.");
-        }
-
-        if (in_array($user->role, ['mentor', 'coordinator'], true)) {
-            return $publication;
-        }
-
-        $hasAccess = $publication->visibility === 'public' || $this->accessRepo->exists($id, $user->id);
-        if (!$hasAccess) {
-            throw new ResourceNotFoundException("You don't have access to this publication.");
-        }
-
-        return $publication;
-    }
     public function setPublicationImage(int $publicationId, UploadedFile $image): Publication
     {
         return DB::transaction(function () use ($publicationId, $image) {
