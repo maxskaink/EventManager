@@ -16,17 +16,13 @@ use App\Models\{
     Event
 };
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
-use Faker\Factory as Faker;
+use Illuminate\Support\Facades\{DB, Schema};
 
 class SeedAllTables extends Command
 {
-    /**
-     * Signature with configurable options.
-     */
     protected $signature = 'db:seed-all
         {--force : Run even if not in local environment}
+        {--users=12 : Total number of users to generate}
         {--publications=10 : Number of publications to generate}
         {--articles=8 : Number of articles to generate}
         {--events=6 : Number of internal events to generate}
@@ -35,6 +31,9 @@ class SeedAllTables extends Command
 
     protected $description = 'Generate coherent seed/test data for all main tables (development only).';
 
+    private $users;
+    private $interests;
+
     public function handle(): int
     {
         if (!app()->environment('local') && !$this->option('force')) {
@@ -42,9 +41,34 @@ class SeedAllTables extends Command
             return 1;
         }
 
-        $faker = Faker::create('es_ES');
+        $this->truncateTables();
 
-        // Disable foreign keys to truncate safely
+        DB::beginTransaction();
+        try {
+            $this->createInterests();
+            $this->createUsersWithProfiles();
+            $this->createPublications();
+            $this->createArticles();
+            $this->createEvents();
+            $this->createExternalEvents();
+            $this->createCertificates();
+
+            DB::commit();
+
+            $this->displayStats();
+            $this->info('✅ Seeding finished successfully with coherent, meaningful data.');
+            return 0;
+
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            $this->error("❌ Error: " . $e->getMessage());
+            $this->error($e->getTraceAsString());
+            return 1;
+        }
+    }
+
+    private function truncateTables(): void
+    {
         Schema::disableForeignKeyConstraints();
 
         $tables = [
@@ -54,6 +78,7 @@ class SeedAllTables extends Command
             'profile_interests',
             'participations',
             'certificates',
+            'external_events',
             'events',
             'articles',
             'interests',
@@ -65,176 +90,262 @@ class SeedAllTables extends Command
             try {
                 DB::table($table)->truncate();
             } catch (\Throwable $e) {
-                // Ignore if the table doesn't exist
+                // Ignorar si la tabla no existe
             }
         }
 
         Schema::enableForeignKeyConstraints();
+    }
 
-        DB::beginTransaction();
-        try {
-            $this->info('👤 Creating users with meaningful roles...');
+    private function createInterests(): void
+    {
+        $this->info('📚 Creating thematic interests...');
+        
+        $keywords = [
+            'Inteligencia Artificial',
+            'Desarrollo Web',
+            'Ciberseguridad',
+            'Ciencia de Datos',
+            'Redes',
+            'Bases de Datos',
+            'Internet de las Cosas',
+            'Computación en la Nube',
+            'Blockchain',
+            'Desarrollo Móvil'
+        ];
 
-            // Define role distribution
-            $users = collect();
-            $roles = [
-                'interested' => 4,
-                'active-member' => 4,
-                'seed' => 2,
-                'coordinator' => 1,
-                'mentor' => 1,
-            ];
+        $this->interests = collect($keywords)->map(function ($keyword) {
+            return Interest::factory()->create(['keyword' => $keyword]);
+        });
+    }
 
-            // Create users and profiles
-            foreach ($roles as $role => $count) {
-                $created = User::factory()->count($count)->create(['role' => $role]);
-                foreach ($created as $user) {
-                    Profile::factory()->for($user)->create();
-                    $users->push($user);
-                }
+    private function createUsersWithProfiles(): void
+    {
+        $this->info('👤 Creating users with meaningful roles and profiles...');
+
+        $totalUsers = (int) $this->option('users');
+
+        // Distribución proporcional de roles
+        $roleDistribution = [
+            'interested' => 0.33,      // 33%
+            'active-member' => 0.33,   // 33%
+            'seed' => 0.17,            // 17%
+            'coordinator' => 0.08,     // 8%
+            'mentor' => 0.09,          // 9%
+        ];
+
+        $this->users = collect();
+        $usersCreated = 0;
+
+        foreach ($roleDistribution as $role => $percentage) {
+            $count = (int) round($totalUsers * $percentage);
+            
+            // Asegurar que al menos haya 1 de cada rol si hay suficientes usuarios
+            if ($count === 0 && $totalUsers >= 5) {
+                $count = 1;
             }
 
-            $this->info('📚 Creating thematic interests...');
-            $keywords = [
-                'Inteligencia Artificial',
-                'Desarrollo Web',
-                'Ciberseguridad',
-                'Ciencia de Datos',
-                'Redes',
-                'Bases de Datos',
-                'Internet de las Cosas'
-            ];
+            for ($i = 0; $i < $count && $usersCreated < $totalUsers; $i++) {
+                // Crear usuario
+                $user = User::factory()->create(['role' => $role]);
 
-            $interestIds = [];
-            foreach ($keywords as $kw) {
-                $interest = Interest::factory()->create(['keyword' => $kw]);
-                $interestIds[] = $interest->id;
+                // SIEMPRE crear perfil asociado
+                Profile::factory()->create(['user_id' => $user->id]);
+
+                // Recargar la relación para asegurar que está disponible
+                $user->load('profile');
+
+                // Asignar intereses realistas según el rol
+                $interestCount = match($role) {
+                    'mentor', 'coordinator' => rand(4, 6),
+                    'seed', 'active-member' => rand(2, 4),
+                    'interested' => rand(1, 3),
+                    default => 2
+                };
+
+                $selectedInterests = $this->interests
+                    ->random(min($interestCount, $this->interests->count()));
+
+                $user->profile->interests()->attach($selectedInterests->pluck('id'));
+
+                $this->users->push($user);
+                $usersCreated++;
             }
-
-            $this->info('🔗 Linking profiles with random interests...');
-            foreach (Profile::all() as $profile) {
-                $sample = (array) array_rand(array_flip($interestIds), rand(1, 3));
-                foreach ($sample as $intId) {
-                    DB::table('profile_interests')->insert([
-                        'user_id' => $profile->user_id,
-                        'interest_id' => $intId,
-                        'created_at' => now(),
-                        'updated_at' => now(),
-                    ]);
-                }
-            }
-
-
-            // Read counts from options
-            $pubCount = (int) $this->option('publications');
-            $artCount = (int) $this->option('articles');
-            $eventCount = (int) $this->option('events');
-            $extCount = (int) $this->option('external');
-            $certCount = (int) $this->option('certificates');
-
-            $this->info("📰 Creating {$pubCount} publications...");
-            $publicationIds = [];
-            for ($i = 0; $i < $pubCount; $i++) {
-                $author = $users->whereIn('role', ['active-member', 'seed', 'mentor'])->random();
-                $pub = Publication::factory()->create(['author_id' => $author->id]);
-                $publicationIds[] = $pub->id;
-            }
-
-            $this->info("📄 Creating {$artCount} research articles...");
-            for ($i = 0; $i < $artCount; $i++) {
-                $author = $users->whereIn('role', ['active-member', 'seed', 'mentor'])->random();
-                Article::factory()->create(['user_id' => $author->id]);
-            }
-
-            $this->info("🎓 Creating {$eventCount} internal university events...");
-            $eventIds = [];
-            for ($i = 0; $i < $eventCount; $i++) {
-                $event = Event::factory()->create();
-                $eventIds[] = $event->id;
-            }
-
-            $this->info('👥 Creating participation records...');
-            foreach ($eventIds as $eventId) {
-                $attendees = $users->whereIn('role', ['interested', 'active-member'])
-                    ->random(rand(2, min(6, $users->count())))
-                    ->pluck('id')
-                    ->toArray();
-
-                foreach ($attendees as $userId) {
-                    Participation::factory()->create([
-                        'event_id' => $eventId,
-                        'user_id' => $userId,
-                    ]);
-                }
-            }
-
-            $this->info("🌍 Creating {$extCount} external academic events...");
-            for ($i = 0; $i < $extCount; $i++) {
-                $organizer = $users->whereIn('role', ['mentor', 'coordinator'])->random();
-                ExternalEvent::factory()->create(['user_id' => $organizer->id]);
-            }
-
-            $this->info("🏅 Creating {$certCount} certificates...");
-            for ($i = 0; $i < $certCount; $i++) {
-                $user = $users->whereIn('role', ['active-member', 'seed', 'mentor'])->random();
-                Certificate::factory()->create(['user_id' => $user->id]);
-            }
-
-            $this->info('🧩 Linking publications with interests...');
-            foreach ($publicationIds as $pubId) {
-                $sample = (array) array_rand(array_flip($interestIds), rand(1, 3));
-                foreach ($sample as $intId) {
-                    // Avoid duplicates in unique(publication_id, interest_id)
-                    PublicationInterest::firstOrCreate([
-                        'publication_id' => $pubId,
-                        'interest_id' => $intId,
-                    ]);
-                }
-            }
-
-            $this->info('🔐 Creating publication access entries...');
-            foreach (Publication::all() as $publication) {
-                $randomProfile = Profile::inRandomOrder()->first();
-
-                // Profile uses user_id as primary key; use getKey() to obtain the correct id
-                $profileId = $randomProfile ? $randomProfile->getKey() : null;
-
-                if ($profileId) {
-                    DB::table('publication_accesses')->insert([
-                        'profile_id' => $profileId,
-                        'publication_id' => $publication->id,
-                        'created_at' => now(),
-                        'updated_at' => now(),
-                    ]);
-                } else {
-                    $this->warn("⚠️ Skipping publication {$publication->id} — no valid profile found.");
-                }
-            }
-
-
-            DB::commit();
-
-            // Quick stats
-            $this->line('');
-            $this->info('📊 Final dataset summary:');
-            $this->line(' - Users: ' . User::count());
-            $this->line(' - Profiles: ' . Profile::count());
-            $this->line(' - Publications: ' . Publication::count());
-            $this->line(' - Articles: ' . Article::count());
-            $this->line(' - Events: ' . Event::count());
-            $this->line(' - External Events: ' . ExternalEvent::count());
-            $this->line(' - Certificates: ' . Certificate::count());
-            $this->line(' - Interests: ' . Interest::count());
-            $this->line(' - PublicationAccess: ' . PublicationAccess::count());
-            $this->line('');
-
-            $this->info('✅ Seeding finished successfully with coherent, meaningful data.');
-            return 0;
-
-        } catch (\Throwable $e) {
-            DB::rollBack();
-            $this->error("❌ Error: " . $e->getMessage());
-            return 1;
         }
+
+        $this->line(" → Created {$this->users->count()} users with profiles and interests");
+    }
+
+    private function createPublications(): void
+    {
+        $count = (int) $this->option('publications');
+        $this->info("📰 Creating {$count} publications...");
+
+        $eligibleAuthors = $this->users->whereIn('role', ['active-member', 'seed', 'mentor', 'coordinator']);
+
+        for ($i = 0; $i < $count; $i++) {
+            $author = $eligibleAuthors->random();
+            
+            // Crear publicación con intereses relacionados al autor
+            $publication = Publication::factory()->create([
+                'author_id' => $author->id
+            ]);
+
+            // Asignar intereses que el autor también tiene (más realista)
+            $authorInterests = $author->profile->interests->pluck('id');
+            
+            if ($authorInterests->isNotEmpty()) {
+                $pubInterests = $authorInterests->random(min(rand(1, 3), $authorInterests->count()));
+                $publication->interests()->attach($pubInterests);
+            } else {
+                // Si el autor no tiene intereses, asignar algunos aleatorios
+                $pubInterests = $this->interests->random(rand(1, 2))->pluck('id');
+                $publication->interests()->attach($pubInterests);
+            }
+
+            // Crear accesos realistas (usuarios interesados en temas relacionados)
+            $this->createPublicationAccesses($publication);
+        }
+    }
+
+    private function createPublicationAccesses(Publication $publication): void
+    {
+        // Obtener usuarios con intereses similares a la publicación
+        $pubInterestIds = $publication->interests->pluck('id');
+        
+        $interestedUsers = $this->users
+            ->filter(function ($user) use ($pubInterestIds) {
+                return $user->profile->interests->pluck('id')
+                    ->intersect($pubInterestIds)
+                    ->isNotEmpty();
+            });
+
+        // Si hay usuarios interesados, seleccionar algunos aleatoriamente
+        if ($interestedUsers->isNotEmpty()) {
+            $accessCount = min(rand(2, 5), $interestedUsers->count());
+            $selectedUsers = $interestedUsers->random($accessCount);
+
+            foreach ($selectedUsers as $user) {
+                PublicationAccess::factory()->create([
+                    'profile_id' => $user->profile->user_id,
+                    'publication_id' => $publication->id
+                ]);
+            }
+        } else {
+            // Si no hay usuarios con intereses similares, asignar accesos aleatorios
+            $accessCount = min(rand(1, 3), $this->users->count());
+            $selectedUsers = $this->users->random($accessCount);
+
+            foreach ($selectedUsers as $user) {
+                PublicationAccess::factory()->create([
+                    'profile_id' => $user->profile->user_id,
+                    'publication_id' => $publication->id
+                ]);
+            }
+        }
+    }
+
+    private function createArticles(): void
+    {
+        $count = (int) $this->option('articles');
+        $this->info("📄 Creating {$count} research articles...");
+
+        $eligibleAuthors = $this->users->whereIn('role', ['active-member', 'seed', 'mentor']);
+
+        if ($eligibleAuthors->isEmpty()) {
+            $this->warn('⚠️  No eligible authors for articles. Skipping...');
+            return;
+        }
+
+        for ($i = 0; $i < $count; $i++) {
+            Article::factory()->create([
+                'user_id' => $eligibleAuthors->random()->id
+            ]);
+        }
+    }
+
+    private function createEvents(): void
+    {
+        $count = (int) $this->option('events');
+        $this->info("🎓 Creating {$count} internal university events...");
+
+        for ($i = 0; $i < $count; $i++) {
+            $event = Event::factory()->create();
+
+            // Crear participaciones realistas
+            $attendeeCount = rand(3, min(8, $this->users->count()));
+            $attendees = $this->users
+                ->whereIn('role', ['interested', 'active-member', 'seed'])
+                ->random($attendeeCount);
+
+            foreach ($attendees as $attendee) {
+                Participation::factory()->create([
+                    'event_id' => $event->id,
+                    'user_id' => $attendee->id,
+                ]);
+            }
+        }
+    }
+
+    private function createExternalEvents(): void
+    {
+        $count = (int) $this->option('external');
+        $this->info("🌍 Creating {$count} external academic events...");
+
+        $organizers = $this->users->whereIn('role', ['mentor', 'coordinator', 'seed']);
+
+        if ($organizers->isEmpty()) {
+            $this->warn('⚠️  No eligible organizers for external events. Skipping...');
+            return;
+        }
+
+        for ($i = 0; $i < $count; $i++) {
+            ExternalEvent::factory()->create([
+                'user_id' => $organizers->random()->id
+            ]);
+        }
+    }
+
+    private function createCertificates(): void
+    {
+        $count = (int) $this->option('certificates');
+        $this->info("🏅 Creating {$count} certificates...");
+
+        $eligibleUsers = $this->users->whereIn('role', ['active-member', 'seed', 'mentor']);
+
+        if ($eligibleUsers->isEmpty()) {
+            $this->warn('⚠️  No eligible users for certificates. Skipping...');
+            return;
+        }
+
+        for ($i = 0; $i < $count; $i++) {
+            Certificate::factory()->create([
+                'user_id' => $eligibleUsers->random()->id
+            ]);
+        }
+    }
+
+    private function displayStats(): void
+    {
+        $this->line('');
+        $this->info('📊 Final dataset summary:');
+        $this->table(
+            ['Model', 'Count'],
+            [
+                ['Users', User::count()],
+                ['Profiles', Profile::count()],
+                ['Interests', Interest::count()],
+                ['Publications', Publication::count()],
+                ['Articles', Article::count()],
+                ['Events', Event::count()],
+                ['External Events', ExternalEvent::count()],
+                ['Certificates', Certificate::count()],
+                ['Participations', Participation::count()],
+                ['Publication Accesses', PublicationAccess::count()],
+                ['Profile Interests', DB::table('profile_interests')->count()],
+                ['Publication Interests', PublicationInterest::count()],
+            ]
+        );
+        $this->line('');
     }
 }
