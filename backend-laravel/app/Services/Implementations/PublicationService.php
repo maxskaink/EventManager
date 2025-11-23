@@ -86,14 +86,24 @@ class PublicationService implements PublicationServiceInterface
             ->load(['event']); // only load event
     }
 
-    public function listPublishedPublications(User $user): Collection
+    public function listPublishedPublications(?User $user): Collection
     {
+        // Usuario no autenticado → solo públicas
+        if ($user === null) {
+            return $this->publicationRepo
+                ->listPublished()
+                ->where('visibility', 'public')
+                ->load(['event']);
+        }
+
+        // Roles con acceso total
         if (in_array($user->role, ['mentor', 'coordinator'], true)) {
             return $this->publicationRepo
                 ->listPublished()
-                ->load(['event']); // only load event
+                ->load(['event']);
         }
 
+        // Usuario normal: filtrar
         $allPublished = $this->publicationRepo->listPublished();
 
         $filtered = $allPublished->filter(function (Publication $pub) use ($user) {
@@ -103,8 +113,9 @@ class PublicationService implements PublicationServiceInterface
             return $this->accessRepo->exists($pub->id, $user->id);
         });
 
-        return $filtered->load(['event']); // only load event
+        return $filtered->load(['event']);
     }
+
 
     public function listDraftPublications(): Collection
     {

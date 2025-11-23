@@ -16,6 +16,7 @@ return new class extends Migration
             $table->enum('type', ['articulo', 'aviso', 'comunicado', 'material', 'evento'])->default('aviso');
             $table->enum('status', ['activo', 'inactivo', 'borrador', 'pendiente'])->default('activo');
             $table->string('image_url')->nullable();
+            $table->string('document_url')->nullable();
             $table->text('summary')->nullable();
             $table->string('visibility', 20)->default('public');
             $table->timestamps();

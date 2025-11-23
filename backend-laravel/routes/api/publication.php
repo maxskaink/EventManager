@@ -3,11 +3,14 @@
 use App\Http\Controllers\PublicationController;
 use Illuminate\Support\Facades\Route;
 
+// Ruta pública, sin autenticación
+Route::get('publication/active', [PublicationController::class, 'listPublishedPublications']);
+
+// Rutas protegidas
 Route::middleware('auth:sanctum')->prefix('publication')->group(function () {
     Route::post('/', [PublicationController::class, 'addPublication']);
     Route::post('/event/{eventId}', [PublicationController::class, 'addEventPublication']);
     Route::get('/all', [PublicationController::class, 'listAllPublications']);
-    Route::get('/active', [PublicationController::class, 'listPublishedPublications']);
     Route::get('/draft', [PublicationController::class, 'listDraftPublications']);
     Route::patch('{publicationId}', [PublicationController::class, 'updatePublication']);
     Route::post('{publicationId}/interests', [PublicationController::class, 'addPublicationInterests']);
