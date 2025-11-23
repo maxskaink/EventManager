@@ -1,7 +1,7 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import { useApp } from "../../components/context/AppContext";
-import { useNavigate, useLocation } from "react-router";
-import { EventAPI, ArticleAPI, PublicationAPI } from "../../services/api";
+import { useNavigate } from "react-router";
+import { EventAPI, ArticleAPI } from "../../services/api";
 import { toast } from "sonner";
 import BottomNavbarWrapper from "../../components/nav/BottomNavbarWrapper";
 import { EventBoardHeader } from "../../components/events/board/EventBoardHeader";
@@ -14,11 +14,13 @@ import { getErrorMessageForToast } from "../../features/errors/error.helpers";
 import { mergeEventsAndPublications, type ContentItem, type ItemToDelete, isEventType } from "../../features/events";
 import { PublishContentModal } from "../../components/events/board/PublishContentModal";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/tabs";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { eventQueries, publicationQueries } from "../../services/react-query/queries";
 
 export function EventBoardScreen() {
   const { user } = useApp();
   const navigate = useNavigate();
-  const location = useLocation();
+  const queryClient = useQueryClient();
 
   // Estado de UI y Filtros
   const [searchQuery, setSearchQuery] = useState("");
@@ -27,68 +29,53 @@ export function EventBoardScreen() {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [activeTab, setActiveTab] = useState("events");
 
-  // Estado de Datos
-  const [loading, setLoading] = useState(true);
-  const [events, setEvents] = useState<API.Event[]>([]);
-  const [publications, setPublications] = useState<API.Publication[]>([]);
-  const [pinnedContent] = useState<string[]>([]); // Mock
-
   // Estado de Modales y Diálogos
   const [selectedItem, setSelectedItem] = useState<ContentItem | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<ItemToDelete | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isPublishModalOpen, setIsPublishModalOpen] = useState(false);
+  const [pinnedContent] = useState<string[]>([]); // Mock
 
-  const loadContent = useCallback(async () => {
-    try {
-      setLoading(true);
+  // Queries
+  const { data: events = [], isLoading: isLoadingEvents } = useQuery(eventQueries.all());
 
-      // Carga de eventos en paralelo con el contenido
-      const [eventsData, contentData] = await Promise.all([
-        EventAPI.listAllEvents().catch(() => []),
-        loadRoleBasedContent(user?.role),
-      ]);
+  const { data: publications = [], isLoading: isLoadingPublications } = useQuery(publicationQueries.all());
 
-      setEvents(Array.isArray(eventsData) ? eventsData : []);
-      setPublications(Array.isArray(contentData) ? contentData : []);
-    } catch (error) {
-      console.error("Error loading content:", error);
-      toast.error("Error al cargar el contenido");
-      setEvents([]);
-      setPublications([]);
-    } finally {
-      setLoading(false);
+  const loading = isLoadingEvents || isLoadingPublications;
+
+  // Mutations
+  const deleteEventMutation = useMutation({
+    mutationFn: async (eventId: number) => {
+      await EventAPI.deleteEvent(eventId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['events'] });
+      toast.success("✅ Evento eliminado exitosamente");
+      setIsDeleteDialogOpen(false);
+      setItemToDelete(null);
+    },
+    onError: (error) => {
+      console.error("Error deleting event:", error);
+      toast.error(getErrorMessageForToast(error, "Error al eliminar evento"));
     }
-  }, [user?.role]);
+  });
 
-  // Carga de Contenido
-  useEffect(() => {
-    loadContent();
-  }, [location.pathname, loadContent]); // Recargar si cambia la ruta o el rol
-
-  // Función auxiliar para cargar contenido basado en el rol
-  const loadRoleBasedContent = async (role?: string): Promise<API.Publication[]> => {
-    try {
-      // TODO: Implement role based fetching if needed, for now list all or specific logic
-      // For now we list all publications for coordinators/mentors
-      let data: API.Publication[];
-      switch (role) {
-        case "coordinator":
-        case "mentor":
-          data = await PublicationAPI.listAllPublications();
-          break;
-        default:
-          // If there is a "listMyPublications" use it, otherwise listAll or empty
-          // Assuming listAllPublications for now as per previous logic but adapted
-          data = await PublicationAPI.listAllPublications();
-          break;
-      }
-      return Array.isArray(data) ? data : [];
-    } catch {
-      return [];
+  const deleteArticleMutation = useMutation({
+    mutationFn: async (articleId: number) => {
+      await ArticleAPI.deleteArticle(articleId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['publications'] });
+      toast.success("✅ Publicación eliminada exitosamente");
+      setIsDeleteDialogOpen(false);
+      setItemToDelete(null);
+    },
+    onError: (error) => {
+      console.error("Error deleting publication:", error);
+      toast.error(getErrorMessageForToast(error, "Error al eliminar publicación"));
     }
-  };
+  });
 
   // Transformación de Datos
   const safeEvents = Array.isArray(events) ? events : [];
@@ -134,34 +121,25 @@ export function EventBoardScreen() {
     setIsPublishModalOpen(true);
   };
 
-  const handleConfirmDelete = async () => {
+  const handleConfirmDelete = () => {
     if (!itemToDelete) return;
 
-    try {
-      if (isEventType(itemToDelete.type)) {
-        const eventId = Number(itemToDelete.id);
-        if (Number.isNaN(eventId)) {
-          throw new Error("ID de evento no válido");
-        }
-        await EventAPI.deleteEvent(eventId);
-        toast.success("✅ Evento eliminado exitosamente");
-      } else {
-        // It's a publication
-        const idMatch = itemToDelete.id.match(/(\d+)$/);
-        if (!idMatch) {
-          throw new Error("ID de publicación no válido");
-        }
-        const articleId = Number(idMatch[1]);
-        await ArticleAPI.deleteArticle(articleId);
-        toast.success("✅ Publicación eliminada exitosamente");
+    if (isEventType(itemToDelete.type)) {
+      const eventId = Number(itemToDelete.id);
+      if (Number.isNaN(eventId)) {
+        toast.error("ID de evento no válido");
+        return;
       }
-
-      await loadContent();
-      setIsDeleteDialogOpen(false);
-      setItemToDelete(null);
-    } catch (error) {
-      console.error("Error deleting item:", error);
-      toast.error(getErrorMessageForToast(error, "Error al eliminar"));
+      deleteEventMutation.mutate(eventId);
+    } else {
+      // It's a publication
+      const idMatch = itemToDelete.id.match(/(\d+)$/);
+      if (!idMatch) {
+        toast.error("ID de publicación no válido");
+        return;
+      }
+      const articleId = Number(idMatch[1]);
+      deleteArticleMutation.mutate(articleId);
     }
   };
 
@@ -171,10 +149,13 @@ export function EventBoardScreen() {
 
       <div className="max-w-6xl mx-auto p-4 space-y-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-4">
-            <TabsTrigger value="events">Eventos</TabsTrigger>
-            <TabsTrigger value="publications">Publicaciones</TabsTrigger>
-          </TabsList>
+
+          <EventBoardStats
+            loading={loading}
+            totalContent={content.length} // Total overall
+            totalEvents={safeEvents.length}
+            totalPinned={pinnedContent.length}
+          />
 
           <EventBoardFilters
             searchQuery={searchQuery}
@@ -187,13 +168,10 @@ export function EventBoardScreen() {
             onViewModeChange={setViewMode}
           />
 
-          <EventBoardStats
-            loading={loading}
-            totalContent={content.length} // Total overall
-            totalEvents={safeEvents.length}
-            totalArticles={safePublications.length}
-            totalPinned={pinnedContent.length}
-          />
+          <TabsList className="grid w-full grid-cols-2 mb-4">
+            <TabsTrigger value="events">Eventos</TabsTrigger>
+            <TabsTrigger value="publications">Publicaciones</TabsTrigger>
+          </TabsList>
 
           <TabsContent value="events" className="mt-0">
             <EventBoardContent

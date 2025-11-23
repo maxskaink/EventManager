@@ -5,14 +5,14 @@
 namespace API {
   type UserRole = "interested" | "active-member" | "coordinator" | "mentor" | "seed";
   type EventModality = 'presencial' | 'virtual' | 'mixta';
-   type Role = UserRole;
-   type PublicationType = "articulo" | "aviso" | "comunicado" | "material" | "evento";
-   // TODO: verificar los estados de una publicación 
-   type PublicationStatus = "activo" | "inactivo" | "borrador" | "pendiente";
-   type PublicationVisibility = "public" | "private" | "role_based";
-   type EventModality = "presencial" | "virtual" | "mixta";
-   type EventStatus = "activo" | "inactivo" | "pendiente" | "cancelado";
-   type EventType = "charla" | "taller" | "conferencia" | "semillero";
+  type Role = UserRole;
+  type PublicationType = "articulo" | "aviso" | "comunicado" | "material" | "evento";
+  // TODO: verificar los estados de una publicación 
+  type PublicationStatus = "activo" | "inactivo" | "borrador" | "pendiente";
+  type PublicationVisibility = "public" | "private" | "role_based";
+  type EventModality = "presencial" | "virtual" | "mixta";
+  type EventStatus = "activo" | "inactivo" | "pendiente" | "cancelado";
+  type EventType = "charla" | "taller" | "conferencia" | "semillero";
 
   interface User {
     id: number;
@@ -44,6 +44,7 @@ namespace API {
 
   interface Event {
     id: number;
+    publication_id: number | null;
     name: string;
     description: string;
     start_date: string; // ISO 8601 format
@@ -51,11 +52,13 @@ namespace API {
     event_type: string;
     modality: EventModality;
     location: string | null;
+    virtual_url: string | null;
     status: EventStatus;
     capacity: number | null;
     created_at: string;
     updated_at: string;
   }
+
 
   interface Certificate {
     id: number;
@@ -81,7 +84,7 @@ namespace API {
     publication_url: string | null;
     created_at: string;
     updated_at: string;
-  }  
+  }
 
   interface Interest {
     id: number;
@@ -116,7 +119,7 @@ namespace API {
     created_at: string;
     updated_at: string;
   }
-  
+
   interface Notification {
     id: string; // Las notificaciones de Laravel suelen usar UUIDs
     type: string;
