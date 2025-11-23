@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
-import { EventAPI } from "../../services/api";
+import { EventAPI, PublicationAPI } from "../../services/api";
 import { useAuthStore } from "../../stores/auth.store";
 import { getDashboardRouteFromRole } from "../../services/navigation/redirects";
 import BottomNavbarWrapper from "../../components/nav/BottomNavbarWrapper";
-import { CreateEventHeader, CreateEventForm, CreateEventPreview } from "../../components/events/create";
+import { CreateEventHeader, CreateEventForm, type PublicationFormData } from "../../components/events/create";
 import { getErrorMessageForToast } from "../../features/errors/error.helpers";
 
 // Definir el tipo para el estado del formulario
@@ -20,13 +20,21 @@ type EventFormData = {
   modality: API.EventModality;
   location: string;
   capacity: string;
+  status: API.EventStatus;
 };
 
 export default function CreateEventPage() {
   const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
   const [loading, setLoading] = useState(false);
-  const [preview, setPreview] = useState(false);
+
+  const [publishImmediately, setPublishImmediately] = useState(false);
+  const [publicationData, setPublicationData] = useState<PublicationFormData>({
+    summary: "",
+    type: "evento",
+    visibility: "public",
+    image: null,
+  });
 
   const [formData, setFormData] = useState<EventFormData>({
     name: "",
@@ -39,10 +47,18 @@ export default function CreateEventPage() {
     modality: "presencial",
     location: "",
     capacity: "",
+    status: "pendiente",
   });
 
   const handleInputChange = (field: keyof EventFormData, value: unknown) => {
     setFormData((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  const handlePublicationChange = (field: keyof PublicationFormData, value: unknown) => {
+    setPublicationData((prev) => ({
       ...prev,
       [field]: value,
     }));
@@ -77,6 +93,13 @@ export default function CreateEventPage() {
       return;
     }
 
+    /* 
+    if (publishImmediately && !publicationData.image) {
+      toast.error("Para publicar inmediatamente, debes subir una imagen de portada.");
+      return;
+    } 
+    */
+
     try {
       setLoading(true);
 
@@ -88,13 +111,30 @@ export default function CreateEventPage() {
         event_type: formData.event_type,
         modality: formData.modality,
         location: formData.location || null,
-        status: "pendiente",
+        status: "pendiente", // El evento en sí puede quedar pendiente o activo, pero la publicación es lo que importa
         capacity: formData.capacity ? parseInt(formData.capacity) : null,
       };
 
-      await EventAPI.addEvent(eventData);
+      // 1. Crear Evento
+      const createdEvent = await EventAPI.addEvent(eventData);
 
-      toast.success("🎉 Evento creado exitosamente");
+      // 2. Si se seleccionó publicar, crear la publicación
+      if (publishImmediately && createdEvent.id) {
+        const pubPayload = {
+          title: formData.name,
+          content: formData.description,
+          type: publicationData.type,
+          status: "activo" as API.PublicationStatus,
+          visibility: publicationData.visibility,
+          image: publicationData.image ?? undefined,
+          summary: publicationData.summary || formData.description.slice(0, 200),
+        };
+
+        await PublicationAPI.addEventPublication(createdEvent.id, pubPayload);
+        toast.success("🎉 Evento y publicación creados exitosamente");
+      } else {
+        toast.success("🎉 Evento creado exitosamente");
+      }
 
       navigate("/event-board");
     } catch (error) {
@@ -105,29 +145,22 @@ export default function CreateEventPage() {
     }
   };
 
-  // Renderizar la vista previa
-  if (preview) {
-    return (
-      <CreateEventPreview
-        formData={formData}
-        onEdit={() => setPreview(false)}
-        onPublish={() => handleSubmit()}
-        loading={loading}
-      />
-    );
-  }
-
   // Renderizar el formulario de creación
   return (
     <div className="min-h-screen pb-20">
       <CreateEventHeader
         onBack={() => navigate(getDashboardRouteFromRole(user?.role || ""))}
-        onPreview={() => setPreview(true)}
         loading={loading}
       />
       <CreateEventForm
         formData={formData}
         onInputChange={handleInputChange}
+
+        publishImmediately={publishImmediately}
+        onPublishImmediatelyChange={setPublishImmediately}
+        publicationData={publicationData}
+        onPublicationChange={handlePublicationChange}
+
         onCancel={() => navigate(getDashboardRouteFromRole(user?.role || ""))}
         onPublish={() => handleSubmit()}
         loading={loading}

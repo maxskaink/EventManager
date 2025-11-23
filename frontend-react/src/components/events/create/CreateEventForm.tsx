@@ -5,9 +5,9 @@ import { Input } from "../../ui/input";
 import { Textarea } from "../../ui/textarea";
 import { Label } from "../../ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../ui/select";
-import { Info, Calendar, MapPin, Users, Send } from "lucide-react";
+import { Info, Calendar, MapPin, Users, Send, ImagePlus, X, FileText } from "lucide-react";
 import { EVENT_MODALITIES, EVENT_STATUSES } from "../../../features/events/event.constants";
-import { translateEventModality, translateEventStatus } from "../../../features/events";
+import { translateEventModality, translateEventStatus, PUBLICATION_VISIBILITIES, translatePublicationVisibility } from "../../../features/events";
 
 type FormData = {
   name: string;
@@ -23,9 +23,22 @@ type FormData = {
   status: API.EventStatus;
 };
 
+export type PublicationFormData = {
+  summary: string;
+  type: API.PublicationType;
+  visibility: API.PublicationVisibility;
+  image: File | null;
+};
+
 interface Props {
   formData: FormData;
   onInputChange: (field: keyof FormData, value: unknown) => void;
+
+  publishImmediately: boolean;
+  onPublishImmediatelyChange: (value: boolean) => void;
+  publicationData: PublicationFormData;
+  onPublicationChange: (field: keyof PublicationFormData, value: unknown) => void;
+
   onCancel: () => void;
   onPublish: () => void;
   loading: boolean;
@@ -34,10 +47,35 @@ interface Props {
 export const CreateEventForm: React.FC<Props> = ({
   formData,
   onInputChange,
+  publishImmediately,
+  onPublishImmediatelyChange,
+  publicationData,
+  onPublicationChange,
   onCancel,
   onPublish,
   loading,
 }) => {
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      onPublicationChange("image", file);
+    }
+  };
+
+  const removeImage = () => {
+    onPublicationChange("image", null);
+  };
+
+  const imagePreview = publicationData.image ? URL.createObjectURL(publicationData.image) : null;
+
+  // Cleanup image preview
+  React.useEffect(() => {
+    return () => {
+      if (imagePreview) URL.revokeObjectURL(imagePreview);
+    };
+  }, [publicationData.image]);
+
   return (
     <div className="max-w-4xl mx-auto p-4 space-y-6">
       {/* Información básica */}
@@ -237,6 +275,126 @@ export const CreateEventForm: React.FC<Props> = ({
         </CardContent>
       </Card>
 
+      {/* Publicación */}
+      <Card className="border-blue-200 dark:border-blue-800">
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2 text-blue-700 dark:text-blue-400">
+              <FileText className="h-5 w-5" />
+              Publicación
+            </CardTitle>
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="publishImmediately"
+                checked={publishImmediately}
+                onChange={(e) => onPublishImmediatelyChange(e.target.checked)}
+                className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              />
+              <label htmlFor="publishImmediately" className="text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer">
+                Publicar inmediatamente
+              </label>
+            </div>
+          </div>
+        </CardHeader>
+
+        {publishImmediately && (
+          <CardContent className="space-y-6 pt-0 animate-in fade-in slide-in-from-top-4 duration-300">
+            <div className="grid grid-cols-1 gap-6 py-4">
+              {/* Imagen */}
+              <div className="space-y-2">
+                <Label htmlFor="image">Imagen de Portada</Label>
+                {imagePreview ? (
+                  <div className="relative w-fit">
+                    <img src={imagePreview} alt="Vista previa" className="max-h-48 w-full object-contain rounded-md border" />
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="icon"
+                      className="absolute top-2 right-2 h-7 w-7"
+                      onClick={removeImage}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <label
+                    htmlFor="image-upload"
+                    className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-muted hover:bg-muted/80"
+                  >
+                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                      <ImagePlus className="w-8 h-8 text-muted-foreground mb-2" />
+                      <p className="text-sm text-muted-foreground">Subir imagen</p>
+                    </div>
+                    <Input
+                      id="image-upload"
+                      type="file"
+                      className="hidden"
+                      accept="image/*"
+                      onChange={handleImageChange}
+                    />
+                  </label>
+                )}
+              </div>
+
+              {/* Campos */}
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="summary">Resumen (Descripción corta)</Label>
+                  <Textarea
+                    id="summary"
+                    placeholder="Un breve resumen del contenido..."
+                    value={publicationData.summary}
+                    onChange={(e) => onPublicationChange("summary", e.target.value)}
+                    className="min-h-[80px]"
+                  />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* 
+                  <div>
+                    <Label htmlFor="pub_type">Tipo</Label>
+                    <Select
+                      value={publicationData.type}
+                      onValueChange={(v: API.PublicationType) => onPublicationChange("type", v)}
+                    >
+                      <SelectTrigger id="pub_type">
+                        <SelectValue placeholder="Tipo" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {PUBLICATION_TYPES.map((type) => (
+                          <SelectItem key={type} value={type}>
+                            {translatePublicationType(type)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div> 
+                  */}
+                  <div>
+                    <Label htmlFor="visibility">Visibilidad</Label>
+                    <Select
+                      value={publicationData.visibility}
+                      onValueChange={(v: API.PublicationVisibility) => onPublicationChange("visibility", v)}
+                    >
+                      <SelectTrigger id="visibility">
+                        <SelectValue placeholder="Visibilidad" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {PUBLICATION_VISIBILITIES.map((visibility) => (
+                          <SelectItem key={visibility} value={visibility}>
+                            {translatePublicationVisibility(visibility)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        )}
+      </Card>
+
       {/* Botones de acción */}
       <div className="flex gap-3 justify-end">
         <Button variant="outline" onClick={onCancel}>
@@ -244,7 +402,7 @@ export const CreateEventForm: React.FC<Props> = ({
         </Button>
         <Button onClick={onPublish} disabled={loading}>
           <Send className="h-4 w-4 mr-2" />
-          Crear Evento
+          {publishImmediately ? "Crear y Publicar" : "Crear Evento"}
         </Button>
       </div>
     </div>

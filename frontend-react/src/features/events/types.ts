@@ -10,6 +10,7 @@ export type ContentItem = {
   capacity?: number;
   enrolled?: number;
   views?: number;
+  kind: 'event' | 'publication';
 };
 
 export type ItemToDelete = {

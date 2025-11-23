@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useApp } from "../../components/context/AppContext";
 import { useNavigate, useLocation } from "react-router";
-import { EventAPI, ArticleAPI } from "../../services/api";
+import { EventAPI, ArticleAPI, PublicationAPI } from "../../services/api";
 import { toast } from "sonner";
 import BottomNavbarWrapper from "../../components/nav/BottomNavbarWrapper";
 import { EventBoardHeader } from "../../components/events/board/EventBoardHeader";
@@ -11,9 +11,9 @@ import { EventBoardStats } from "../../components/events/board/EventBoardStats";
 import { EventDetailModal } from "../../components/events/board/EventDetailModal";
 import { EventDeleteDialog } from "../../components/events/board/EventDeleteDialog";
 import { getErrorMessageForToast } from "../../features/errors/error.helpers";
-import { mergeEventsAndArticles, type ContentItem, type ItemToDelete, isEventType } from "../../features/events";
+import { mergeEventsAndPublications, type ContentItem, type ItemToDelete, isEventType } from "../../features/events";
 import { PublishContentModal } from "../../components/events/board/PublishContentModal";
-
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/tabs";
 
 export function EventBoardScreen() {
   const { user } = useApp();
@@ -25,11 +25,12 @@ export function EventBoardScreen() {
   const [filterCategory, setFilterCategory] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [activeTab, setActiveTab] = useState("events");
 
   // Estado de Datos
   const [loading, setLoading] = useState(true);
   const [events, setEvents] = useState<API.Event[]>([]);
-  const [articles, setArticles] = useState<API.Article[]>([]); // Puede contener Articles o Publications
+  const [publications, setPublications] = useState<API.Publication[]>([]);
   const [pinnedContent] = useState<string[]>([]); // Mock
 
   // Estado de Modales y Diálogos
@@ -50,12 +51,12 @@ export function EventBoardScreen() {
       ]);
 
       setEvents(Array.isArray(eventsData) ? eventsData : []);
-      setArticles(Array.isArray(contentData) ? contentData : []);
+      setPublications(Array.isArray(contentData) ? contentData : []);
     } catch (error) {
       console.error("Error loading content:", error);
       toast.error("Error al cargar el contenido");
       setEvents([]);
-      setArticles([]);
+      setPublications([]);
     } finally {
       setLoading(false);
     }
@@ -67,16 +68,20 @@ export function EventBoardScreen() {
   }, [location.pathname, loadContent]); // Recargar si cambia la ruta o el rol
 
   // Función auxiliar para cargar contenido basado en el rol
-  const loadRoleBasedContent = async (role?: string): Promise<API.Article[]> => {
+  const loadRoleBasedContent = async (role?: string): Promise<API.Publication[]> => {
     try {
-      let data: API.Article[];
+      // TODO: Implement role based fetching if needed, for now list all or specific logic
+      // For now we list all publications for coordinators/mentors
+      let data: API.Publication[];
       switch (role) {
         case "coordinator":
         case "mentor":
-          data = await ArticleAPI.listAllArticles();
+          data = await PublicationAPI.listAllPublications();
           break;
         default:
-          data = await ArticleAPI.listMyArticles();
+          // If there is a "listMyPublications" use it, otherwise listAll or empty
+          // Assuming listAllPublications for now as per previous logic but adapted
+          data = await PublicationAPI.listAllPublications();
           break;
       }
       return Array.isArray(data) ? data : [];
@@ -87,9 +92,9 @@ export function EventBoardScreen() {
 
   // Transformación de Datos
   const safeEvents = Array.isArray(events) ? events : [];
-  const safeArticles = Array.isArray(articles) ? articles : [];
+  const safePublications = Array.isArray(publications) ? publications : [];
 
-  const content: ContentItem[] = mergeEventsAndArticles(safeEvents, safeArticles);
+  const content: ContentItem[] = mergeEventsAndPublications(safeEvents, safePublications);
 
   // Filtrado y Ordenamiento
   const filteredContent = content.filter((item) => {
@@ -98,7 +103,11 @@ export function EventBoardScreen() {
       item.description.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = filterCategory === "all" || item.type === filterCategory;
     const matchesStatus = filterStatus === "all" || item.status === filterStatus;
-    return matchesSearch && matchesCategory && matchesStatus;
+
+    // Tab filtering
+    const matchesTab = activeTab === "events" ? item.kind === 'event' : item.kind === 'publication';
+
+    return matchesSearch && matchesCategory && matchesStatus && matchesTab;
   });
 
   const sortedContent = [...filteredContent].sort((a, b) => {
@@ -137,6 +146,7 @@ export function EventBoardScreen() {
         await EventAPI.deleteEvent(eventId);
         toast.success("✅ Evento eliminado exitosamente");
       } else {
+        // It's a publication
         const idMatch = itemToDelete.id.match(/(\d+)$/);
         if (!idMatch) {
           throw new Error("ID de publicación no válido");
@@ -160,35 +170,57 @@ export function EventBoardScreen() {
       <EventBoardHeader userRole={user?.role || ""} onNavigate={navigate} />
 
       <div className="max-w-6xl mx-auto p-4 space-y-6">
-        <EventBoardFilters
-          searchQuery={searchQuery}
-          filterCategory={filterCategory}
-          filterStatus={filterStatus}
-          viewMode={viewMode}
-          onSearchQueryChange={setSearchQuery}
-          onFilterCategoryChange={setFilterCategory}
-          onFilterStatusChange={setFilterStatus}
-          onViewModeChange={setViewMode}
-        />
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-2 mb-4">
+            <TabsTrigger value="events">Eventos</TabsTrigger>
+            <TabsTrigger value="publications">Publicaciones</TabsTrigger>
+          </TabsList>
 
-        <EventBoardStats
-          loading={loading}
-          totalContent={content.length}
-          totalEvents={safeEvents.length}
-          totalArticles={safeArticles.length}
-          totalPinned={pinnedContent.length}
-        />
+          <EventBoardFilters
+            searchQuery={searchQuery}
+            filterCategory={filterCategory}
+            filterStatus={filterStatus}
+            viewMode={viewMode}
+            onSearchQueryChange={setSearchQuery}
+            onFilterCategoryChange={setFilterCategory}
+            onFilterStatusChange={setFilterStatus}
+            onViewModeChange={setViewMode}
+          />
 
-        <EventBoardContent
-          loading={loading}
-          viewMode={viewMode}
-          content={sortedContent}
-          pinnedContent={pinnedContent}
-          onViewDetails={handleViewDetails}
-          onDeleteClick={handleDeleteClick}
-          onPublish={handlePublish}
-          onNavigate={navigate}
-        />
+          <EventBoardStats
+            loading={loading}
+            totalContent={content.length} // Total overall
+            totalEvents={safeEvents.length}
+            totalArticles={safePublications.length}
+            totalPinned={pinnedContent.length}
+          />
+
+          <TabsContent value="events" className="mt-0">
+            <EventBoardContent
+              loading={loading}
+              viewMode={viewMode}
+              content={sortedContent}
+              pinnedContent={pinnedContent}
+              onViewDetails={handleViewDetails}
+              onDeleteClick={handleDeleteClick}
+              onPublish={handlePublish}
+              onNavigate={navigate}
+            />
+          </TabsContent>
+
+          <TabsContent value="publications" className="mt-0">
+            <EventBoardContent
+              loading={loading}
+              viewMode={viewMode}
+              content={sortedContent}
+              pinnedContent={pinnedContent}
+              onViewDetails={handleViewDetails}
+              onDeleteClick={handleDeleteClick}
+              onPublish={handlePublish}
+              onNavigate={navigate}
+            />
+          </TabsContent>
+        </Tabs>
       </div>
 
       <BottomNavbarWrapper role={user?.role ?? ""} />

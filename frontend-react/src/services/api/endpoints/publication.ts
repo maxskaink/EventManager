@@ -23,7 +23,7 @@ async function listDraftPublications() {
 
 // POST
 async function createPublication(publication: APIPayloads.CreatePublication) {
-  
+
   const response = await axiosInstance.postForm<{ publication: API.Publication }>('/publication', publication);
   return response.data.publication;
 }
