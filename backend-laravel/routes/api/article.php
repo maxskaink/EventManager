@@ -8,8 +8,11 @@ Route::middleware('auth:sanctum')->prefix('article')->group(function () {
     Route::patch('{articleId}', [ArticleController::class, 'updateArticle']);
     Route::delete('{articleId}', [ArticleController::class, 'deleteArticle']);
     Route::get('/my', [ArticleController::class, 'listMyArticles']);
-    Route::get('/user/{userId}', [ArticleController::class, 'listArticlesByUser']);
     Route::get('/all', [ArticleController::class, 'listAllArticles']);
     Route::get('/date-range', [ArticleController::class, 'listArticlesByDateRange']);
     Route::get('/organizations', [ArticleController::class, 'getAllTrustedOrganizations']);
+});
+
+Route::prefix('article')->group(function () {
+    Route::get('/user/{userId}', [ArticleController::class, 'listArticlesByUser']);
 });
