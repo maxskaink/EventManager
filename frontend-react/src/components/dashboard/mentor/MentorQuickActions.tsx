@@ -1,17 +1,17 @@
 import React from 'react';
 import { Button } from '../../ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../../ui/card';
-import { Calendar, BarChart3, Settings } from 'lucide-react';
+import { Calendar, BarChart3, Tag } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 interface MentorQuickActionsProps {
   onOpenGeneralReport: () => void;
-  onOpenSettings: () => void;
+  onOpenInterests: () => void;
 }
 
 export const MentorQuickActions: React.FC<MentorQuickActionsProps> = ({
   onOpenGeneralReport,
-  onOpenSettings,
+  onOpenInterests,
 }) => {
   const navigate = useNavigate();
 
@@ -42,10 +42,10 @@ export const MentorQuickActions: React.FC<MentorQuickActionsProps> = ({
             <Button
               variant="outline"
               className="h-auto p-4 flex flex-col items-center gap-2"
-              onClick={onOpenSettings}
+              onClick={onOpenInterests}
             >
-              <Settings className="h-6 w-6" />
-              <span>Configuración del Panel</span>
+              <Tag className="h-6 w-6" />
+              <span>Gestionar Intereses</span>
             </Button>
           </div>
         </CardContent>

@@ -11,19 +11,14 @@ import {
   NotificationsModal,
   ProfileModal,
   ProfileReportModal,
-  SettingsModal,
+  InterestManagerModal,
   type Submission,
+  type MemberProgressData,
 } from "../../components/dashboard/mentor";
 import { getErrorMessageForToast } from "../../features/errors/error.helpers";
 import { useAuthStore } from "../../stores/auth.store";
 
-// Tipos para los datos de progreso (basados en el mock original)
-type MemberProgressData = API.User & {
-  joinDate: string;
-  progress: number;
-  eventsAttended: number;
-  certificatesEarned: number;
-};
+// Submissions se construirán dinámicamente a partir de eventos y publicaciones reales
 
 // Submissions se construirán dinámicamente a partir de eventos y publicaciones reales
 
@@ -41,8 +36,8 @@ export function MentorDashboardPage() {
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [selectedMember, setSelectedMember] = useState<MemberProgressData | null>(null);
   const [isGeneralReportOpen, setIsGeneralReportOpen] = useState(false);
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [isInterestModalOpen, setIsInterestModalOpen] = useState(false);
 
   useEffect(() => {
     loadUsers();
@@ -114,7 +109,7 @@ export function MentorDashboardPage() {
         id: String(publication.id),
         type: "publication",
         title: publication.title,
-        submittedById: publication.author_id ? String(publication.author_id) : null,
+        submittedById: null, // TODO: Add author_id to Publication entity
         date: publication.published_at,
         status: normalizePublicationStatus(publication.status),
         description: publication.summary ?? publication.content,
@@ -192,7 +187,7 @@ export function MentorDashboardPage() {
         {/* Acciones Rápidas */}
         <MentorQuickActions
           onOpenGeneralReport={() => setIsGeneralReportOpen(true)}
-          onOpenSettings={() => setIsSettingsOpen(true)}
+          onOpenInterests={() => setIsInterestModalOpen(true)}
         />
 
         {/* Métricas */}
@@ -235,20 +230,14 @@ export function MentorDashboardPage() {
         pendingSubmissions={pendingSubmissions}
       />
 
-      <SettingsModal
-        open={isSettingsOpen}
-        onOpenChange={setIsSettingsOpen}
-        user={user}
-        users={users}
-        submissions={submissions}
-        pendingSubmissions={pendingSubmissions}
-        onOpenNotifications={() => setIsNotificationsOpen(true)}
-        onOpenGeneralReport={() => setIsGeneralReportOpen(true)}
-      />
-
       <NotificationsModal
         open={isNotificationsOpen}
         onOpenChange={setIsNotificationsOpen}
+      />
+
+      <InterestManagerModal
+        open={isInterestModalOpen}
+        onOpenChange={setIsInterestModalOpen}
       />
     </div>
   );
