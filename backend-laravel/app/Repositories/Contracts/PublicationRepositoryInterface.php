@@ -3,6 +3,7 @@
 namespace App\Repositories\Contracts;
 
 use App\Models\Publication;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
 
 interface PublicationRepositoryInterface
@@ -15,4 +16,6 @@ interface PublicationRepositoryInterface
     public function listAll(): Collection;
     public function listPublished(): Collection;
     public function listDrafts(): Collection;
+
+    public function listPublishedForUser(?User $user): Collection;
 }
