@@ -89,6 +89,8 @@ namespace API {
   interface Interest {
     id: number;
     keyword: string;
+    created_at: string;
+    updated_at: string;
   }
 
   interface Publication {

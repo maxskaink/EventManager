@@ -5,6 +5,7 @@ import EventAPI from "./endpoints/event";
 import CertificateAPI from "./endpoints/certificate";
 import ArticleAPI from "./endpoints/article";
 import PublicationAPI from "./endpoints/publication";
+import InterestsAPI from "./endpoints/interests";
 
 export {
   AuthAPI,
@@ -14,4 +15,5 @@ export {
   CertificateAPI,
   ArticleAPI,
   PublicationAPI,
+  InterestsAPI,
 };

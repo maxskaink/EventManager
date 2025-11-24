@@ -29,7 +29,6 @@ export const getTypeColor = (type: string) => {
 export const getStatusColor = (status: string) => {
   switch (status) {
     case "upcoming":
-    case "activo":
       return "bg-blue-100 text-blue-700";
     case "ongoing":
       return "bg-green-100 text-green-700";
@@ -39,6 +38,7 @@ export const getStatusColor = (status: string) => {
     case "cancelled":
       return "bg-red-100 text-red-700";
     case "published":
+    case "activo":
       return "bg-green-100 text-green-700";
     case "draft":
     case "borrador":
@@ -88,23 +88,17 @@ export const isEventType = (type: string) => {
   return type === "charla" || type === "curso" || type === "convocatoria" || type === "semillero" || type === "taller" || type === "conferencia";
 };
 
-/**
- * Helps to merge events and publications into a single array of ContentItems
- * @param events 
- * @param publications 
- * @returns 
- */
-export const mergeEventsAndPublications = (events: API.Event[], publications: API.Publication[]): ContentItem[] => {
-  return [
-    ...events.map((event) => ({
-      id: event.id.toString(),
-      type: "evento", // Or event.event_type
-      title: event.name,
-      description: event.description,
-      date: event.start_date.split("T")[0],
-      time: event.start_date.split("T")[1]?.substring(0, 5) || undefined,
-      location: event.location || event.modality,
-      status:
+export const mapEventsToContentItems = (events: API.Event[]): ContentItem[] => {
+  return events.map((event) => ({
+    id: event.id.toString(),
+    type: event.event_type,
+    title: event.name,
+    description: event.description,
+    date: event.start_date.split("T")[0],
+    time: event.start_date.split("T")[1]?.substring(0, 5) || undefined,
+    location: event.location || event.modality,
+    status:
+      event.publication_id ? "published" :
         event.status === "activo"
           ? "upcoming"
           : event.status === "inactivo"
@@ -112,22 +106,24 @@ export const mergeEventsAndPublications = (events: API.Event[], publications: AP
             : event.status === "cancelado"
               ? "cancelled"
               : "upcoming",
-      capacity: event.capacity ?? 0,
-      enrolled: 0, // TODO
-      views: undefined,
-      original: event, // Keep original for details
-      kind: 'event' as const,
-    })),
-    ...publications.map((pub) => ({
-      id: `pub-${pub.id}`,
-      type: pub.type,
-      title: pub.title,
-      description: pub.summary || pub.content || "",
-      date: pub.published_at ? pub.published_at.split("T")[0] : pub.created_at.split("T")[0],
-      status: pub.status,
-      views: 0,
-      original: pub, // Keep original for details
-      kind: 'publication' as const,
-    })),
-  ];
-}
+    capacity: event.capacity ?? 0,
+    enrolled: 0,
+    views: undefined,
+    original: event,
+    kind: 'event' as const,
+  }));
+};
+
+export const mapPublicationsToContentItems = (publications: API.Publication[]): ContentItem[] => {
+  return publications.map((pub) => ({
+    id: `pub-${pub.id}`,
+    type: pub.type,
+    title: pub.title,
+    description: pub.summary || pub.content || "",
+    date: pub.published_at ? pub.published_at.split("T")[0] : pub.created_at.split("T")[0],
+    status: pub.status,
+    views: 0,
+    original: pub,
+    kind: 'publication' as const,
+  }));
+};

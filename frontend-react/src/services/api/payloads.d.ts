@@ -5,6 +5,7 @@ namespace APIPayloads {
   type UpdateCertificate = Partial<Omit<AddCertificate, 'user_id'>>;
   type AddArticle = Omit<API.Article, 'id' | 'created_at' | 'updated_at'>;
   type UpdateArticle = Partial<AddArticle>;
+  type AddInterest = { keyword: string };
 
   interface ProfileInterests {
     interests: number[]; // Array de IDs de interés
@@ -31,7 +32,7 @@ namespace APIPayloads {
     credential_url?: string;
     does_not_expire?: boolean;
   }
-  
+
   // --- External Event ---
   interface CreateExternalEvent {
     user_id: number;
@@ -71,7 +72,7 @@ namespace APIPayloads {
     image?: File;
     summary: string;
   }
-  
+
   type CreateEventPublication = CreatePublication;
 
   interface UpdatePublication {
@@ -89,7 +90,7 @@ namespace APIPayloads {
     user_ids?: number[];
     roles?: API.Role[];
   }
-  
+
   interface PublicationInterests {
     interests: number[]; // Array de IDs de interés
   }

@@ -11,7 +11,7 @@ import { EventBoardStats } from "../../components/events/board/EventBoardStats";
 import { EventDetailModal } from "../../components/events/board/EventDetailModal";
 import { EventDeleteDialog } from "../../components/events/board/EventDeleteDialog";
 import { getErrorMessageForToast } from "../../features/errors/error.helpers";
-import { mergeEventsAndPublications, type ContentItem, type ItemToDelete, isEventType } from "../../features/events";
+import { type ContentItem, type ItemToDelete, isEventType, mapEventsToContentItems, mapPublicationsToContentItems } from "../../features/events";
 import { PublishContentModal } from "../../components/events/board/PublishContentModal";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/tabs";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -81,29 +81,34 @@ export function EventBoardScreen() {
   const safeEvents = Array.isArray(events) ? events : [];
   const safePublications = Array.isArray(publications) ? publications : [];
 
-  const content: ContentItem[] = mergeEventsAndPublications(safeEvents, safePublications);
+  const eventItems: ContentItem[] = mapEventsToContentItems(safeEvents);
+  const publicationItems: ContentItem[] = mapPublicationsToContentItems(safePublications);
 
   // Filtrado y Ordenamiento
-  const filteredContent = content.filter((item) => {
-    const matchesSearch =
-      item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = filterCategory === "all" || item.type === filterCategory;
-    const matchesStatus = filterStatus === "all" || item.status === filterStatus;
+  const filterAndSort = (items: ContentItem[]) => {
+    const filtered = items.filter((item) => {
+      const matchesSearch =
+        item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.description.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesCategory = filterCategory === "all" || item.type === filterCategory;
+      const matchesStatus = filterStatus === "all" || item.status === filterStatus;
 
-    // Tab filtering
-    const matchesTab = activeTab === "events" ? item.kind === 'event' : item.kind === 'publication';
+      return matchesSearch && matchesCategory && matchesStatus;
+    });
 
-    return matchesSearch && matchesCategory && matchesStatus && matchesTab;
-  });
+    return filtered.sort((a, b) => {
+      const aPinned = pinnedContent.includes(a.id);
+      const bPinned = pinnedContent.includes(b.id);
+      if (aPinned && !bPinned) return -1;
+      if (!aPinned && bPinned) return 1;
+      return new Date(b.date).getTime() - new Date(a.date).getTime();
+    });
+  };
 
-  const sortedContent = [...filteredContent].sort((a, b) => {
-    const aPinned = pinnedContent.includes(a.id);
-    const bPinned = pinnedContent.includes(b.id);
-    if (aPinned && !bPinned) return -1;
-    if (!aPinned && bPinned) return 1;
-    return new Date(b.date).getTime() - new Date(a.date).getTime(); // Más recientes primero
-  });
+  const sortedEvents = filterAndSort(eventItems);
+  const sortedPublications = filterAndSort(publicationItems);
+
+  const totalContent = sortedPublications.reduce((acc, item) => acc + (item.type === "evento" ? 0 : 1), 0) + sortedEvents.length;
 
   // Handlers de Modales
   const handleViewDetails = (item: ContentItem) => {
@@ -152,7 +157,7 @@ export function EventBoardScreen() {
 
           <EventBoardStats
             loading={loading}
-            totalContent={content.length} // Total overall
+            totalContent={totalContent} // Total overall
             totalEvents={safeEvents.length}
             totalPinned={pinnedContent.length}
           />
@@ -177,7 +182,7 @@ export function EventBoardScreen() {
             <EventBoardContent
               loading={loading}
               viewMode={viewMode}
-              content={sortedContent}
+              content={sortedEvents}
               pinnedContent={pinnedContent}
               onViewDetails={handleViewDetails}
               onDeleteClick={handleDeleteClick}
@@ -190,7 +195,7 @@ export function EventBoardScreen() {
             <EventBoardContent
               loading={loading}
               viewMode={viewMode}
-              content={sortedContent}
+              content={sortedPublications}
               pinnedContent={pinnedContent}
               onViewDetails={handleViewDetails}
               onDeleteClick={handleDeleteClick}

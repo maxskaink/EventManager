@@ -12,7 +12,27 @@ async function updateProfile(data: APIPayloads.UpdateProfile) {
   return response.data.profile;
 }
 
+async function getInterests() {
+  const response = await axiosInstance.get<{ interests: API.Interest[] }>('/profile/interests');
+  return response.data.interests;
+}
+
+async function addInterest() {
+  const response = await axiosInstance.post<{
+    interest: API.Interest[]
+  }>("/profile/interests");
+  return response.data;
+}
+
+async function deleteInterest(interest_id: number) {
+  const response = await axiosInstance.delete<{ interest: API.Interest[] }>(`/profile/interests/${interest_id}`);
+  return response.data;
+}
+
 export default {
   getProfile,
   updateProfile,
+  getInterests,
+  addInterest,
+  deleteInterest,
 };
