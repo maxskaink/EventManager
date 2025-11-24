@@ -101,7 +101,6 @@ class ExternalEventController extends Controller
      */
     public function listExternalEventsByUser(int $userId): JsonResponse
     {
-        $this->authorize('viewByUser', [ExternalEvent::class, $userId]);
 
         $events = $this->externalEventService->getExternalEventsByUser($userId);
 

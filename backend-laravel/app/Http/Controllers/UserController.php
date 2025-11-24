@@ -47,7 +47,6 @@ class UserController extends Controller
      */
     public function listActiveInterested(): JsonResponse
     {
-        $this->authorize('viewAny', Auth::user());
         return response()->json($this->userService->listActiveInterested());
     }
 
@@ -58,7 +57,6 @@ class UserController extends Controller
      */
     public function listActiveSeeds(): JsonResponse
     {
-        $this->authorize('viewAny', Auth::user());
         return response()->json($this->userService->listActiveSeeds());
     }
 
@@ -69,7 +67,6 @@ class UserController extends Controller
      */
     public function listActiveMembers(): JsonResponse
     {
-        $this->authorize('viewAny', Auth::user());
         return response()->json($this->userService->listActiveMembers());
     }
 
@@ -80,7 +77,6 @@ class UserController extends Controller
      */
     public function listActiveCoordinators(): JsonResponse
     {
-        $this->authorize('viewAny', Auth::user());
         return response()->json($this->userService->listActiveCoordinators());
     }
 
@@ -91,7 +87,6 @@ class UserController extends Controller
      */
     public function listActiveMentors(): JsonResponse
     {
-        $this->authorize('viewAny', Auth::user());
         return response()->json($this->userService->listActiveMentors());
     }
 
@@ -113,7 +108,6 @@ class UserController extends Controller
      */
     public function listActiveUsers(): JsonResponse
     {
-        $this->authorize('viewAny', Auth::user());
         return response()->json($this->userService->listActiveUsers());
     }
 
@@ -126,10 +120,6 @@ class UserController extends Controller
      */
     public function getUserById(int $userId): JsonResponse
     {
-        $targetUser = User::query()->findOrFail($userId);
-
-        // Autoriza usando el UserPolicy
-        $this->authorize('view', $targetUser);
 
         $user = $this->userService->getUserById($userId);
 

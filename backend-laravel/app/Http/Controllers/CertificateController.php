@@ -97,8 +97,6 @@ class CertificateController extends Controller
             throw new NotFoundHttpException('User not found.');
         }
 
-        $this->authorize('viewByUser', [Certificate::class, $userId]);
-
         $certificates = $this->certificateService->getCertificatesByUser($userId);
 
         return response()->json([
