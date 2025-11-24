@@ -3,59 +3,90 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Input } from "../../ui/input";
 import { Label } from "../../ui/label";
 import { Textarea } from "../../ui/textarea";
-import { CheckCircle2 } from "lucide-react";
-import { useState } from "react";
-import { toast } from "sonner";
+import { CheckCircle2, Loader2 } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { useEffect } from "react";
 
-interface NewArticle {
-    title: string;
-    description: string;
-    publicationDate: string;
-    authors: string;
-    publicationUrl: string;
-}
+// Zod validation schema
+const articleSchema = z.object({
+    title: z.string()
+        .min(3, "El título debe tener al menos 3 caracteres")
+        .max(200, "El título no puede exceder 200 caracteres"),
+    description: z.string()
+        .min(10, "La descripción debe tener al menos 10 caracteres")
+        .max(1000, "La descripción no puede exceder 1000 caracteres"),
+    authors: z.string()
+        .min(3, "Los autores deben tener al menos 3 caracteres")
+        .max(200, "Los autores no pueden exceder 200 caracteres"),
+    publicationDate: z.string()
+        .refine((date) => {
+            const parsed = new Date(date);
+            return !isNaN(parsed.getTime());
+        }, "Fecha inválida")
+        .refine((date) => {
+            const parsed = new Date(date);
+            const today = new Date();
+            today.setHours(23, 59, 59, 999);
+            return parsed <= today;
+        }, "La fecha no puede ser futura"),
+    publicationUrl: z.string()
+        .min(1, "La URL es requerida")
+        .transform((url) => {
+            // Normalize URL: add https:// if no protocol
+            const trimmed = url.trim();
+            if (!/^https?:\/\//i.test(trimmed)) {
+                return `https://${trimmed}`;
+            }
+            return trimmed;
+        })
+        .refine((url) => {
+            try {
+                new URL(url);
+                return true;
+            } catch {
+                return false;
+            }
+        }, "URL inválida. Ej: https://ejemplo.com/articulo"),
+});
+
+type ArticleFormData = z.infer<typeof articleSchema>;
 
 interface AddArticleDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  onAddArticle: (article: NewArticle) => void;
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
+    onAddArticle: (article: ArticleFormData) => void;
+    isPending?: boolean;
 }
 
-const initialState: NewArticle = { title: "", description: "", publicationDate: "", authors: "", publicationUrl: "" };
+export const AddArticleDialog = ({ open, onOpenChange, onAddArticle, isPending = false }: AddArticleDialogProps) => {
+    const {
+        register,
+        handleSubmit,
+        formState: { errors },
+        reset,
+    } = useForm<ArticleFormData>({
+        resolver: zodResolver(articleSchema),
+        defaultValues: {
+            title: "",
+            description: "",
+            authors: "",
+            publicationDate: "",
+            publicationUrl: "",
+        },
+    });
 
-export const AddArticleDialog = ({ open, onOpenChange, onAddArticle }: AddArticleDialogProps) => {
-    const [newArticle, setNewArticle] = useState<NewArticle>(initialState);
+    // Reset form when dialog closes
+    useEffect(() => {
+        if (!open) {
+            reset();
+        }
+    }, [open, reset]);
 
-    const handleAdd = () => {
-        if (Object.values(newArticle).some(val => !val)) {
-            toast.error("Por favor completa todos los campos");
-            return;
-        }
-        // Normalizar URL: si no incluye protocolo, anteponer https://
-        let url = newArticle.publicationUrl.trim();
-        if (!/^https?:\/\//i.test(url)) {
-            url = `https://${url}`;
-        }
-        try {
-            // Validación rápida de URL
-            // eslint-disable-next-line no-new
-            new URL(url);
-        } catch {
-            toast.error("La URL de la publicación no es válida. Ej: https://ejemplo.com/articulo");
-            return;
-        }
-
-        onAddArticle({
-            ...newArticle,
-            title: newArticle.title.trim(),
-            description: newArticle.description.trim(),
-            authors: newArticle.authors.trim(),
-            publicationDate: newArticle.publicationDate, // input type=date ya entrega YYYY-MM-DD
-            publicationUrl: url,
-        });
-        setNewArticle(initialState);
-        onOpenChange(false);
-    }
+    const onSubmit = (data: ArticleFormData) => {
+        onAddArticle(data);
+    };
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -64,17 +95,98 @@ export const AddArticleDialog = ({ open, onOpenChange, onAddArticle }: AddArticl
                     <DialogTitle>Agregar Nuevo Artículo</DialogTitle>
                     <DialogDescription>Registra una publicación en la que hayas participado.</DialogDescription>
                 </DialogHeader>
-                <div className="space-y-4">
-                    <div><Label htmlFor="article-title">Título *</Label><Input id="article-title" value={newArticle.title} onChange={(e) => setNewArticle({ ...newArticle, title: e.target.value })}/></div>
-                    <div><Label htmlFor="article-description">Descripción *</Label><Textarea id="article-description" value={newArticle.description} onChange={(e) => setNewArticle({ ...newArticle, description: e.target.value })}/></div>
-                    <div><Label htmlFor="article-authors">Autores *</Label><Input id="article-authors" value={newArticle.authors} onChange={(e) => setNewArticle({ ...newArticle, authors: e.target.value })}/></div>
-                    <div><Label htmlFor="article-date">Fecha de publicación *</Label><Input id="article-date" type="date" value={newArticle.publicationDate} onChange={(e) => setNewArticle({ ...newArticle, publicationDate: e.target.value })}/></div>
-                    <div><Label htmlFor="article-url">URL de publicación *</Label><Input id="article-url" type="url" value={newArticle.publicationUrl} onChange={(e) => setNewArticle({ ...newArticle, publicationUrl: e.target.value })}/></div>
-                    <div className="flex gap-2 justify-end pt-4">
-                        <Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
-                        <Button onClick={handleAdd}><CheckCircle2 className="h-4 w-4 mr-2" />Agregar Artículo</Button>
+                <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                    <div>
+                        <Label htmlFor="article-title">Título *</Label>
+                        <Input
+                            id="article-title"
+                            {...register("title")}
+                            disabled={isPending}
+                            className={errors.title ? "border-destructive" : ""}
+                        />
+                        {errors.title && (
+                            <p className="text-sm text-destructive mt-1">{errors.title.message}</p>
+                        )}
                     </div>
-                </div>
+
+                    <div>
+                        <Label htmlFor="article-description">Descripción *</Label>
+                        <Textarea
+                            id="article-description"
+                            {...register("description")}
+                            disabled={isPending}
+                            className={errors.description ? "border-destructive" : ""}
+                        />
+                        {errors.description && (
+                            <p className="text-sm text-destructive mt-1">{errors.description.message}</p>
+                        )}
+                    </div>
+
+                    <div>
+                        <Label htmlFor="article-authors">Autores *</Label>
+                        <Input
+                            id="article-authors"
+                            {...register("authors")}
+                            disabled={isPending}
+                            className={errors.authors ? "border-destructive" : ""}
+                        />
+                        {errors.authors && (
+                            <p className="text-sm text-destructive mt-1">{errors.authors.message}</p>
+                        )}
+                    </div>
+
+                    <div>
+                        <Label htmlFor="article-date">Fecha de publicación *</Label>
+                        <Input
+                            id="article-date"
+                            type="date"
+                            {...register("publicationDate")}
+                            disabled={isPending}
+                            className={errors.publicationDate ? "border-destructive" : ""}
+                        />
+                        {errors.publicationDate && (
+                            <p className="text-sm text-destructive mt-1">{errors.publicationDate.message}</p>
+                        )}
+                    </div>
+
+                    <div>
+                        <Label htmlFor="article-url">URL de publicación *</Label>
+                        <Input
+                            id="article-url"
+                            type="url"
+                            {...register("publicationUrl")}
+                            disabled={isPending}
+                            className={errors.publicationUrl ? "border-destructive" : ""}
+                        />
+                        {errors.publicationUrl && (
+                            <p className="text-sm text-destructive mt-1">{errors.publicationUrl.message}</p>
+                        )}
+                    </div>
+
+                    <div className="flex gap-2 justify-end pt-4">
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => onOpenChange(false)}
+                            disabled={isPending}
+                        >
+                            Cancelar
+                        </Button>
+                        <Button type="submit" disabled={isPending}>
+                            {isPending ? (
+                                <>
+                                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                    Agregando...
+                                </>
+                            ) : (
+                                <>
+                                    <CheckCircle2 className="h-4 w-4 mr-2" />
+                                    Agregar Artículo
+                                </>
+                            )}
+                        </Button>
+                    </div>
+                </form>
             </DialogContent>
         </Dialog>
     );

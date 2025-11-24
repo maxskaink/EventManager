@@ -332,6 +332,7 @@ export function ProfileScreen() {
             open={isAddArticleOpen}
             onOpenChange={setAddArticleOpen}
             onAddArticle={(data) => addArticleMutation.mutate(mapDialogArticleToPayload(data, user.id))}
+            isPending={addArticleMutation.isPending}
           />
           <ConfirmDeleteDialog
             open={!!articleToDelete}
