@@ -1,28 +1,28 @@
 import { useEffect, useMemo, useState } from "react";
-import { useAuthStore } from "../../stores/auth.store";
-import { useApp } from "../context/AppContext";
-import useLogout from "../../hooks/useLogout";
-import useGoToDashboard from "../../hooks/useGoToDashboard";
+import { useAuthStore } from "@/stores/auth.store";
+import { useApp } from "@/components/context/AppContext";
+import useLogout from "@/hooks/useLogout";
+import useGoToDashboard from "@/hooks/useGoToDashboard";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { ProfileAPI, ArticleAPI } from "../../services/api";
+import { ProfileAPI, ArticleAPI, InterestsAPI } from "@/services/api";
 import { toast } from "sonner";
 
 // Importaciones de la nueva estructura
-import { UnifiedHeader } from "../layout/UnifiedHeader";
-import { ProfileTemplate } from "./templates/profile-template";
+import { UnifiedHeader } from "@/components/layout/UnifiedHeader";
+import { ProfileTemplate } from "@/components/profile/templates/profile-template";
 // import { ProfileHeader } from "./atoms/profile-header"; // Removed
-import { PersonalInfoCard } from "./molecules/personal-info-card";
-import { ContactInfoCard } from "./molecules/contact-info-card";
-import { ParticipationStats } from "./organisms/participation-stats";
-import { MyEventsSection } from "./organisms/my-events-section";
-import { MyArticlesSection } from "./organisms/my-articles-section";
-import { RecentCertificatesSection } from "./organisms/recent-certificates-section";
-import { SettingsSection } from "./organisms/settings-section";
-import { EditContactDialog } from "./dialogs/edit-contact-dialog";
-import { AddArticleDialog } from "./dialogs/add-article-dialog";
-import { ConfirmDeleteDialog } from "./dialogs/confirm-delete-dialog";
+import { PersonalInfoCard } from "@/components/profile/molecules/personal-info-card";
+import { ContactInfoCard } from "@/components/profile/molecules/contact-info-card";
+import { ParticipationStats } from "@/components/profile/organisms/participation-stats";
+import { MyEventsSection } from "@/components/profile/organisms/my-events-section";
+import { MyArticlesSection } from "@/components/profile/organisms/my-articles-section";
+import { RecentCertificatesSection } from "@/components/profile/organisms/recent-certificates-section";
+import { SettingsSection } from "@/components/profile/organisms/settings-section";
+import { EditContactDialog } from "@/components/profile/dialogs/edit-contact-dialog";
+import { AddArticleDialog } from "@/components/profile/dialogs/add-article-dialog";
+import { ConfirmDeleteDialog } from "@/components/profile/dialogs/confirm-delete-dialog";
 // import { AddEventDialog } from "./dialogs/add-event-dialog"; // Necesitarías crear este dialog
-import BottomNavbarWrapper from "../nav/BottomNavbarWrapper";
+import BottomNavbarWrapper from "@/components/nav/BottomNavbarWrapper";
 
 const formatDate = (dateString: string): string =>
   new Date(dateString).toLocaleDateString("es-ES", {
@@ -167,6 +167,19 @@ export function ProfileScreen() {
     enabled: !!user,
   });
 
+  const { data: interestsData } = useQuery({
+    queryKey: ["interests"],
+    queryFn: InterestsAPI.listInterests,
+  });
+
+  const allInterests = interestsData?.interests ?? [];
+
+  const { data: userProfileInterests = [] } = useQuery({
+    queryKey: ["user-interests", user?.id],
+    queryFn: ProfileAPI.getInterests,
+    enabled: !!user,
+  });
+
   // --- API MUTATIONS ---
   const updateProfileMutation = useMutation<API.Profile, unknown, APIPayloads.UpdateProfile>({
     mutationFn: ProfileAPI.updateProfile,
@@ -176,6 +189,26 @@ export function ProfileScreen() {
       setEditContactOpen(false);
     },
     onError: (error) => toast.error(extractErrorMessage(error, "Error al actualizar el perfil")),
+  });
+
+  const addInterestMutation = useMutation({
+    mutationFn: async (interestId: number) => {
+      await ProfileAPI.addInterest({ interests: [interestId] });
+    },
+    onSuccess: () => {
+      toast.success("Interés agregado");
+      queryClient.invalidateQueries({ queryKey: ["user-interests", user?.id] });
+    },
+    onError: (error) => toast.error(extractErrorMessage(error, "Error al agregar interés")),
+  });
+
+  const deleteInterestMutation = useMutation({
+    mutationFn: ProfileAPI.deleteInterest,
+    onSuccess: () => {
+      toast.success("Interés eliminado");
+      queryClient.invalidateQueries({ queryKey: ["user-interests", user?.id] });
+    },
+    onError: (error) => toast.error(extractErrorMessage(error, "Error al eliminar interés")),
   });
 
   const addArticleMutation = useMutation<ArticleAPI.ArticleRes, unknown, APIPayloads.AddArticle>({
@@ -192,10 +225,11 @@ export function ProfileScreen() {
   // Lógica de logout
   const handleLogout = () => logout().then((success) => success && goToDashboard());
 
-  const userInterests = useMemo(
-    () => profile?.interests?.map((interest) => interest.keyword) ?? [],
-    [profile]
-  );
+  const userInterests = useMemo(() => {
+    return userProfileInterests
+      .map((pi) => allInterests.find((i) => i.id === pi.interest_id))
+      .filter((i): i is API.Interest => i !== undefined);
+  }, [userProfileInterests, allInterests]);
 
   // const dashboardRoute = useMemo(
   //   () => getDashboardRouteFromRole(normalizedRole),
@@ -204,7 +238,7 @@ export function ProfileScreen() {
 
   if (!user) return null; // o un loader/redirect
 
-  const personalInfoUser: API.User & { interests: string[] } = {
+  const personalInfoUser: API.User & { interests: API.Interest[] } = {
     ...user,
     interests: userInterests,
   };
@@ -247,6 +281,9 @@ export function ProfileScreen() {
           user={personalInfoUser}
           role={role}
           getRoleLabel={getRoleLabel}
+          allInterests={allInterests}
+          onAddInterest={(id) => addInterestMutation.mutate(id)}
+          onDeleteInterest={(id) => deleteInterestMutation.mutate(id)}
         />
       }
       contactInfo={

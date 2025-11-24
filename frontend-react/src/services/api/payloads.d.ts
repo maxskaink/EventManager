@@ -6,6 +6,7 @@ namespace APIPayloads {
   type AddArticle = Omit<API.Article, 'id' | 'created_at' | 'updated_at'>;
   type UpdateArticle = Partial<AddArticle>;
   type AddInterest = { keyword: string };
+  type AddProfileInterest = { interests: number[] };
 
   interface ProfileInterests {
     interests: number[]; // Array de IDs de interés

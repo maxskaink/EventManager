@@ -14,7 +14,7 @@ import { PublicationsScreen } from "../components/publications/PublicationsScree
 import { PublicationsScreen as SeePublicationsScreen } from "../pages/publications";
 import PublicationDetailPage from "../pages/publications/[publicationId]";
 import { CreateArticleScreen } from "../components/publications/CreatePublicationScreen";
-import { ProfileScreen } from "../components/profile/ProfileScreen";
+import { ProfileScreen } from "../pages/profile";
 import { CertificatesScreen } from "../components/certificates/CertificatesScreen";
 import NotificationsPage from "../pages/notifications";
 import CreateEventPage from "../pages/admin/create-event";

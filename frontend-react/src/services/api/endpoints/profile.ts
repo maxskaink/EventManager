@@ -13,19 +13,17 @@ async function updateProfile(data: APIPayloads.UpdateProfile) {
 }
 
 async function getInterests() {
-  const response = await axiosInstance.get<{ interests: API.Interest[] }>('/profile/interests');
+  const response = await axiosInstance.get<{ interests: API.ProfileInterest[] }>('/profile/interests');
   return response.data.interests;
 }
 
-async function addInterest() {
-  const response = await axiosInstance.post<{
-    interest: API.Interest[]
-  }>("/profile/interests");
+async function addInterest(data: APIPayloads.AddProfileInterest) {
+  const response = await axiosInstance.post<ProfileAPI.AddInterestRes>("/profile/interests", data);
   return response.data;
 }
 
 async function deleteInterest(interest_id: number) {
-  const response = await axiosInstance.delete<{ interest: API.Interest[] }>(`/profile/interests/${interest_id}`);
+  const response = await axiosInstance.delete<MessageRes>(`/profile/interests/${interest_id}`);
   return response.data;
 }
 

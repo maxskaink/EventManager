@@ -36,10 +36,6 @@ namespace API {
     phone: string | null;
     created_at: string;
     updated_at: string;
-    // Asumo que los intereses se pueden cargar aquí
-    interests?: Interest[];
-    // Asumo que el usuario se puede cargar aquí
-    user?: User;
   }
 
   interface Event {
@@ -91,6 +87,15 @@ namespace API {
     keyword: string;
     created_at: string;
     updated_at: string;
+  }
+
+  interface ProfileInterest {
+    id: number;
+    user_id: number;
+    interest_id: number;
+    created_at: string;
+    updated_at: string;
+    user: User;
   }
 
   interface Publication {

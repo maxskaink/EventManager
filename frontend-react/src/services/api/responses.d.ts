@@ -39,38 +39,43 @@ namespace UserAPI {
 }
 
 namespace ProfileAPI {
-    type GetProfileRes = {
-        profile: API.Profile
-    }
-    type UpdateProfileRes = {
-        message: string;
-        profile: API.Profile
-    }
-    
+  type GetProfileRes = {
+    profile: API.Profile
+  }
+  type UpdateProfileRes = {
+    message: string;
+    profile: API.Profile
+  }
+
+  type AddInterestRes = {
+    message: string;
+    interests: API.ProfileInterest[];
+  }
+
 }
 
 namespace EventAPI {
-    type ListEventsRes = API.Event[];
+  type ListEventsRes = API.Event[];
 }
 
 namespace CertificateAPI {
-    type ListCertificatesRes = {
-        certificates: API.Certificate[];
-    }
-    type UpdateCertificateRes = {
-        message: string;
-        certificate: API.Certificate;
-    }
+  type ListCertificatesRes = {
+    certificates: API.Certificate[];
+  }
+  type UpdateCertificateRes = {
+    message: string;
+    certificate: API.Certificate;
+  }
 }
 
 namespace ArticleAPI {
-    type ArticleRes = {
-        message: string;
-        article: API.Article;
-    }
-    type ListArticlesRes = {
-        articles: API.Article[];
-    }
+  type ArticleRes = {
+    message: string;
+    article: API.Article;
+  }
+  type ListArticlesRes = {
+    articles: API.Article[];
+  }
 
 
 }
