@@ -112,6 +112,7 @@ namespace API {
     created_at: string;
     updated_at: string;
   }
+
   interface ExternalEvent {
     id: number;
     user_id: number;

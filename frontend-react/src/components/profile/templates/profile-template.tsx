@@ -5,7 +5,8 @@ interface ProfileTemplateProps {
   personalInfo: ReactNode;
   contactInfo: ReactNode;
   participationStats: ReactNode;
-  myEvents: ReactNode;
+  myExternalEvents: ReactNode;
+  myCertificates: ReactNode;
   myArticles: ReactNode;
   recentCertificates: ReactNode;
   settings: ReactNode;
@@ -18,7 +19,8 @@ export const ProfileTemplate = ({
   personalInfo,
   contactInfo,
   participationStats,
-  myEvents,
+  myExternalEvents,
+  myCertificates,
   myArticles,
   recentCertificates,
   settings,
@@ -36,7 +38,9 @@ export const ProfileTemplate = ({
           <div className="border-t border-gray-200 my-6" />
           {participationStats}
           <div className="border-t border-gray-200 my-6" />
-          {myEvents}
+          {myExternalEvents}
+          <div className="border-t border-gray-200 my-6" />
+          {myCertificates}
           <div className="border-t border-gray-200 my-6" />
           {myArticles}
           <div className="border-t border-gray-200 my-6" />

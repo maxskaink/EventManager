@@ -1,12 +1,14 @@
 namespace APIPayloads {
   type UpdateProfile = Partial<Pick<API.Profile, 'university' | 'academic_program' | 'phone'>>;
   type AddEvent = Omit<API.Event, 'id' | 'created_at' | 'updated_at'>;
-  type AddCertificate = Omit<API.Certificate, 'id' | 'deleted' | 'created_at' | 'updated_at'>;
+  type AddCertificate = Omit<API.Certificate, 'id'   | 'created_at' | 'updated_at'>;
   type UpdateCertificate = Partial<Omit<AddCertificate, 'user_id'>>;
   type AddArticle = Omit<API.Article, 'id' | 'created_at' | 'updated_at'>;
   type UpdateArticle = Partial<AddArticle>;
   type AddInterest = { keyword: string };
   type AddProfileInterest = { interests: number[] };
+
+  type PatchExternalEvent = Partial<Omit<API.ExternalEvent, 'id' | 'user_id' | 'created_at' | 'updated_at'>>;
 
   interface ProfileInterests {
     interests: number[]; // Array de IDs de interés

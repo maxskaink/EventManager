@@ -1,10 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useAuthStore } from "@/stores/auth.store";
-import { useApp } from "@/components/context/AppContext";
 import useLogout from "@/hooks/useLogout";
 import useGoToDashboard from "@/hooks/useGoToDashboard";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { ProfileAPI, ArticleAPI, InterestsAPI } from "@/services/api";
+import { ProfileAPI, ArticleAPI, InterestsAPI, ExternalEventsAPI, CertificateAPI } from "@/services/api";
 import { toast } from "sonner";
 
 // Importaciones de la nueva estructura
@@ -14,12 +13,15 @@ import { ProfileTemplate } from "@/components/profile/templates/profile-template
 import { PersonalInfoCard } from "@/components/profile/molecules/personal-info-card";
 import { ContactInfoCard } from "@/components/profile/molecules/contact-info-card";
 import { ParticipationStats } from "@/components/profile/organisms/participation-stats";
-import { MyEventsSection } from "@/components/profile/organisms/my-events-section";
+import { MyExternalEventsSection } from "@/components/profile/organisms/my-external-events-section";
+import { MyCertificatesSection } from "@/components/profile/organisms/my-certificates-section";
 import { MyArticlesSection } from "@/components/profile/organisms/my-articles-section";
 import { RecentCertificatesSection } from "@/components/profile/organisms/recent-certificates-section";
 import { SettingsSection } from "@/components/profile/organisms/settings-section";
 import { EditContactDialog } from "@/components/profile/dialogs/edit-contact-dialog";
 import { AddArticleDialog } from "@/components/profile/dialogs/add-article-dialog";
+import { AddExternalEventDialog } from "@/components/profile/dialogs/add-external-event-dialog";
+import { AddCertificateDialog } from "@/components/profile/dialogs/add-certificate-dialog";
 import { ConfirmDeleteDialog } from "@/components/profile/dialogs/confirm-delete-dialog";
 // import { AddEventDialog } from "./dialogs/add-event-dialog"; // Necesitarías crear este dialog
 import BottomNavbarWrapper from "@/components/nav/BottomNavbarWrapper";
@@ -41,94 +43,12 @@ const extractErrorMessage = (error: unknown, fallback: string): string => {
     if (maybeError.response?.data?.message) {
       return maybeError.response.data.message;
     }
-
-    if (maybeError.message) {
-      return maybeError.message;
-    }
   }
-
   return fallback;
 };
 
-type ProfileArticle = {
-  id: string;
-  title: string;
-  description: string;
-  authors: string;
-  publicationDate: string;
-  publicationUrl: string;
-  userId?: string;
-};
-
-type AddArticleFormValues = {
-  title: string;
-  description: string;
-  publicationDate: string;
-  authors: string;
-  publicationUrl: string;
-};
-
-const mapContextArticleToProfile = (article: {
-  id: string;
-  title: string;
-  description: string;
-  publicationDate: string;
-  authors: string;
-  publicationUrl: string;
-  userId: string;
-}): ProfileArticle => ({
-  id: article.id,
-  title: article.title,
-  description: article.description,
-  authors: article.authors,
-  publicationDate: article.publicationDate,
-  publicationUrl: article.publicationUrl,
-  userId: article.userId,
-});
-
-const mapApiArticleToProfile = (
-  apiArticle: API.Article | null | undefined,
-  fallback: APIPayloads.AddArticle
-): ProfileArticle => ({
-  id: apiArticle ? String(apiArticle.id) : `art-${Date.now()}`,
-  title: apiArticle?.title ?? fallback.title,
-  description: apiArticle?.description ?? fallback.description ?? "",
-  authors: apiArticle?.authors ?? fallback.authors,
-  publicationDate: apiArticle?.publication_date ?? fallback.publication_date,
-  publicationUrl: apiArticle?.publication_url ?? fallback.publication_url ?? "",
-  userId: apiArticle ? String(apiArticle.user_id) : String(fallback.user_id),
-});
-
-const mapDialogArticleToPayload = (data: AddArticleFormValues, userId: number): APIPayloads.AddArticle => ({
-  user_id: userId,
-  title: data.title,
-  description: data.description,
-  authors: data.authors,
-  publication_date: data.publicationDate,
-  publication_url: data.publicationUrl,
-});
-
-type ProfileEvent = {
-  id: string;
-  title: string;
-  category: string;
-  date: string;
-  time: string;
-  modality: string;
-};
-
-const mapContentToProfileEvent = (event: Content): ProfileEvent => ({
-  id: event.id,
-  title: event.title,
-  category: event.type,
-  date: event.date,
-  time: event.time ?? "Por definir",
-  modality: event.modality ?? "por definir",
-});
-
 export function ProfileScreen() {
   const queryClient = useQueryClient();
-  const { certificates, events, articles, userEventParticipations } = useApp(); // Usando mock data por ahora
   const user = useAuthStore((s) => s.user);
   const role = user?.role ?? "";
   const { logout } = useLogout();
@@ -138,25 +58,10 @@ export function ProfileScreen() {
   const [isEditContactOpen, setEditContactOpen] = useState(false);
   const [isAddArticleOpen, setAddArticleOpen] = useState(false);
   const [articleToDelete, setArticleToDelete] = useState<string | null>(null);
-
-  const userIdString = user ? String(user.id) : "";
-  const normalizedRole = role === "active-member" || role === "seed" ? "member" : role;
-
-  const baseUserArticles = useMemo<ProfileArticle[]>(() => {
-    if (!userIdString) {
-      return [];
-    }
-
-    return articles
-      .filter((article) => article.userId === userIdString)
-      .map(mapContextArticleToProfile);
-  }, [articles, userIdString]);
-
-  const [myArticles, setMyArticles] = useState<ProfileArticle[]>(baseUserArticles);
-
-  useEffect(() => {
-    setMyArticles(baseUserArticles);
-  }, [baseUserArticles]);
+  const [isAddExternalEventOpen, setAddExternalEventOpen] = useState(false);
+  const [externalEventToDelete, setExternalEventToDelete] = useState<number | null>(null);
+  const [isAddCertificateOpen, setAddCertificateOpen] = useState(false);
+  const [certificateToDelete, setCertificateToDelete] = useState<number | null>(null);
   // const [isAddEventOpen, setAddEventOpen] = useState(false);
   // const [participationToDelete, setParticipationToDelete] = useState<string | null>(null);
 
@@ -180,6 +85,30 @@ export function ProfileScreen() {
     enabled: !!user,
   });
 
+  const { data: externalEventsData, isLoading: isLoadingExternalEvents } = useQuery({
+    queryKey: ["external-events", "my"],
+    queryFn: ExternalEventsAPI.listMyExternalEvents,
+    enabled: !!user,
+  });
+
+  const externalEvents = externalEventsData?.external_events ?? [];
+
+  const { data: certificatesData, isLoading: isLoadingCertificates } = useQuery({
+    queryKey: ["certificates", "my"],
+    queryFn: CertificateAPI.listMyCertificates,
+    enabled: !!user,
+  });
+
+  const certificates = certificatesData?.certificates ?? [];
+  console.log(certificatesData);
+
+  const { data: articlesData, isLoading: isLoadingArticles } = useQuery({
+    queryKey: ["articles", "my"],
+    queryFn: ArticleAPI.listMyArticles,
+    enabled: !!user,
+  });
+
+  const articles = articlesData ?? [];
   // --- API MUTATIONS ---
   const updateProfileMutation = useMutation<API.Profile, unknown, APIPayloads.UpdateProfile>({
     mutationFn: ProfileAPI.updateProfile,
@@ -211,15 +140,54 @@ export function ProfileScreen() {
     onError: (error) => toast.error(extractErrorMessage(error, "Error al eliminar interés")),
   });
 
-  const addArticleMutation = useMutation<ArticleAPI.ArticleRes, unknown, APIPayloads.AddArticle>({
+  const addArticleMutation = useMutation({
     mutationFn: ArticleAPI.addArticle,
-    onSuccess: (resp, variables) => {
-      const displayArticle = mapApiArticleToProfile(resp?.article, variables);
-      setMyArticles((prev) => [displayArticle, ...prev]);
+    onSuccess: () => {
       toast.success("Artículo agregado exitosamente");
+      queryClient.invalidateQueries({ queryKey: ["articles", "my"] });
       setAddArticleOpen(false);
     },
     onError: (error) => toast.error(extractErrorMessage(error, "Error al agregar el artículo")),
+  });
+
+  const addExternalEventMutation = useMutation({
+    mutationFn: ExternalEventsAPI.createExternalEvent,
+    onSuccess: () => {
+      toast.success("Evento externo agregado exitosamente");
+      queryClient.invalidateQueries({ queryKey: ["external-events", "my"] });
+      setAddExternalEventOpen(false);
+    },
+    onError: (error) => toast.error(extractErrorMessage(error, "Error al agregar evento externo")),
+  });
+
+  const deleteExternalEventMutation = useMutation({
+    mutationFn: ExternalEventsAPI.deleteExternalEvent,
+    onSuccess: () => {
+      toast.success("Evento externo eliminado exitosamente");
+      queryClient.invalidateQueries({ queryKey: ["external-events", "my"] });
+      setExternalEventToDelete(null);
+    },
+    onError: (error) => toast.error(extractErrorMessage(error, "Error al eliminar evento externo")),
+  });
+
+  const addCertificateMutation = useMutation({
+    mutationFn: CertificateAPI.addCertificate,
+    onSuccess: () => {
+      toast.success("Certificado agregado exitosamente");
+      queryClient.invalidateQueries({ queryKey: ["certificates", "my"] });
+      setAddCertificateOpen(false);
+    },
+    onError: (error) => toast.error(extractErrorMessage(error, "Error al agregar certificado")),
+  });
+
+  const deleteCertificateMutation = useMutation({
+    mutationFn: CertificateAPI.deleteCertificate,
+    onSuccess: () => {
+      toast.success("Certificado eliminado exitosamente");
+      queryClient.invalidateQueries({ queryKey: ["certificates", "my"] });
+      setCertificateToDelete(null);
+    },
+    onError: (error) => toast.error(extractErrorMessage(error, "Error al eliminar certificado")),
   });
 
   // Lógica de logout
@@ -244,19 +212,12 @@ export function ProfileScreen() {
   };
 
   // --- DATA DERIVATION ---
-  const userCertificates = certificates.filter((cert) => cert.userId === userIdString);
-  const userParticipations = userEventParticipations.filter((p) => p.userId === userIdString);
-  const participatedEvents = events
-    .filter((event) => userParticipations.some((p) => p.eventId === event.id))
-    .map(mapContentToProfileEvent);
-
   const handleConfirmDeleteArticle = () => {
     if (!articleToDelete) {
       return;
     }
-
-    setMyArticles((prev) => prev.filter((article) => article.id !== articleToDelete));
-    toast.success("Artículo eliminado de la vista");
+    queryClient.invalidateQueries({ queryKey: ["articles", "my"] });
+    toast.success("Artículo eliminado");
     setArticleToDelete(null);
   };
 
@@ -296,29 +257,50 @@ export function ProfileScreen() {
       }
       participationStats={
         <ParticipationStats
-          eventsCount={userParticipations.length}
-          certificatesCount={userCertificates.length}
-          articlesCount={myArticles.length}
+          eventsCount={externalEvents.length}
+          certificatesCount={certificates.length}
+          articlesCount={articles.length}
         />
       }
-      myEvents={
-        <MyEventsSection
-          participatedEvents={participatedEvents}
-          userParticipations={userParticipations}
-          onAddEvent={() => toast.info("Funcionalidad pendiente")} // () => setAddEventOpen(true)
-          onDeleteParticipation={(id) => toast.info(`Eliminar participación ${id}`)} // () => setParticipationToDelete(id)
+      myExternalEvents={
+        <MyExternalEventsSection
+          events={externalEvents}
+          onAddEvent={() => setAddExternalEventOpen(true)}
+          onDeleteEvent={(id) => setExternalEventToDelete(id)}
           formatDate={formatDate}
+          isLoading={isLoadingExternalEvents}
         />
       }
       myArticles={
         <MyArticlesSection
-          articles={myArticles}
+          articles={articles.map((article) => ({
+            id: String(article.id),
+            title: article.title,
+            description: article.description ?? "",
+            authors: article.authors,
+            publicationDate: article.publication_date,
+            publicationUrl: article.publication_url ?? "",
+          }))}
           onAddArticle={() => setAddArticleOpen(true)}
           onDeleteArticle={(id) => setArticleToDelete(id)}
           formatDate={formatDate}
         />
       }
-      recentCertificates={<RecentCertificatesSection certificates={userCertificates} formatDate={formatDate} />}
+      myCertificates={
+        <MyCertificatesSection
+          certificates={certificates}
+          onAddCertificate={() => setAddCertificateOpen(true)}
+          onDeleteCertificate={(id) => setCertificateToDelete(id)}
+          formatDate={formatDate}
+          isLoading={isLoadingCertificates}
+        />
+      }
+      recentCertificates={<RecentCertificatesSection certificates={certificates.slice(0, 3).map((cert: API.Certificate) => ({
+        id: String(cert.id),
+        title: cert.name,
+        topic: cert.issuing_organization,
+        uploadDate: cert.issue_date,
+      }))} formatDate={formatDate} />}
       settings={<SettingsSection onLogout={handleLogout} />}
       dialogs={
         <>
@@ -331,7 +313,14 @@ export function ProfileScreen() {
           <AddArticleDialog
             open={isAddArticleOpen}
             onOpenChange={setAddArticleOpen}
-            onAddArticle={(data) => addArticleMutation.mutate(mapDialogArticleToPayload(data, user.id))}
+            onAddArticle={(data) => addArticleMutation.mutate({
+              user_id: user.id,
+              title: data.title,
+              description: data.description,
+              authors: data.authors,
+              publication_date: data.publicationDate,
+              publication_url: data.publicationUrl,
+            })}
             isPending={addArticleMutation.isPending}
           />
           <ConfirmDeleteDialog
@@ -344,6 +333,46 @@ export function ProfileScreen() {
             onConfirm={handleConfirmDeleteArticle}
             title="¿Eliminar artículo?"
             description="Esta acción no se puede deshacer. El artículo será eliminado permanentemente."
+          />
+
+          <AddExternalEventDialog
+            open={isAddExternalEventOpen}
+            onOpenChange={setAddExternalEventOpen}
+            onAddEvent={(data) => addExternalEventMutation.mutate({
+              ...data,
+              user_id: user.id,
+            })}
+            isPending={addExternalEventMutation.isPending}
+          />
+
+          <ConfirmDeleteDialog
+            open={externalEventToDelete !== null}
+            onOpenChange={(open) => !open && setExternalEventToDelete(null)}
+            onConfirm={() => deleteExternalEventMutation.mutate(externalEventToDelete!)}
+            title="¿Eliminar evento externo?"
+            description="Esta acción no se puede deshacer. El evento será eliminado permanentemente."
+          />
+
+          <AddCertificateDialog
+            open={isAddCertificateOpen}
+            onOpenChange={setAddCertificateOpen}
+            onAddCertificate={(data) => addCertificateMutation.mutate({
+              ...data,
+              user_id: user.id,
+              expiration_date: data.expiration_date || null,
+              credential_id: data.credential_id || null,
+              credential_url: data.credential_url || null,
+              does_not_expire: data.does_not_expire || false,
+            })}
+            isPending={addCertificateMutation.isPending}
+          />
+
+          <ConfirmDeleteDialog
+            open={certificateToDelete !== null}
+            onOpenChange={(open) => !open && setCertificateToDelete(null)}
+            onConfirm={() => deleteCertificateMutation.mutate(certificateToDelete!)}
+            title="¿Eliminar certificado?"
+            description="Esta acción no se puede deshacer. El certificado será eliminado permanentemente."
           />
         </>
       }
