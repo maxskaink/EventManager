@@ -1,6 +1,6 @@
 import { Button } from "../../ui/button";
 import { Card, CardContent } from "../../ui/card";
-import { Plus, Trash2, ExternalLink, BookOpen } from "lucide-react";
+import { Plus, Trash2, ExternalLink, BookOpen, Pencil } from "lucide-react";
 
 interface Article {
   id: string;
@@ -14,11 +14,12 @@ interface Article {
 interface MyArticlesSectionProps {
   articles: Article[];
   onAddArticle: () => void;
+  onEditArticle: (id: string) => void;
   onDeleteArticle: (id: string) => void;
   formatDate: (dateString: string) => string;
 }
 
-export const MyArticlesSection = ({ articles, onAddArticle, onDeleteArticle, formatDate }: MyArticlesSectionProps) => {
+export const MyArticlesSection = ({ articles, onAddArticle, onEditArticle, onDeleteArticle, formatDate }: MyArticlesSectionProps) => {
   return (
     <section>
       <div className="flex items-center justify-between mb-4">
@@ -48,10 +49,10 @@ export const MyArticlesSection = ({ articles, onAddArticle, onDeleteArticle, for
               <CardContent className="p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
-                    <h4 className="mb-2 line-clamp-2 tracking-tight font-semibold text-[#0a2740]">
+                    <h4 className="mb-2 tracking-tight font-semibold text-[#0a2740] overflow-hidden" style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
                       {article.title}
                     </h4>
-                    <p className="text-sm text-gray-600 mb-3 line-clamp-2">{article.description}</p>
+                    <p className="text-sm text-gray-600 mb-3 overflow-hidden" style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{article.description}</p>
                     <div className="flex flex-wrap gap-2 text-xs text-gray-500 mb-2">
                       <span>
                         <strong>Autores:</strong> {article.authors}
@@ -68,14 +69,26 @@ export const MyArticlesSection = ({ articles, onAddArticle, onDeleteArticle, for
                       Ver publicación <ExternalLink className="h-3 w-3" />
                     </a>
                   </div>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => onDeleteArticle(article.id)}
-                    className="text-destructive hover:text-destructive transition-transform hover:scale-105 active:scale-95"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                  <div className="flex flex-col gap-2 shrink-0">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => onEditArticle(article.id)}
+                      className="transition-transform hover:scale-105 active:scale-95"
+                      title="Editar artículo"
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => onDeleteArticle(article.id)}
+                      className="text-destructive hover:text-destructive transition-transform hover:scale-105 active:scale-95"
+                      title="Eliminar artículo"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>

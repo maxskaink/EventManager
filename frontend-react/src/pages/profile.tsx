@@ -20,8 +20,11 @@ import { RecentCertificatesSection } from "@/components/profile/organisms/recent
 import { SettingsSection } from "@/components/profile/organisms/settings-section";
 import { EditContactDialog } from "@/components/profile/dialogs/edit-contact-dialog";
 import { AddArticleDialog } from "@/components/profile/dialogs/add-article-dialog";
+import { EditArticleDialog } from "@/components/profile/dialogs/edit-article-dialog";
 import { AddExternalEventDialog } from "@/components/profile/dialogs/add-external-event-dialog";
+import { EditExternalEventDialog } from "@/components/profile/dialogs/edit-external-event-dialog";
 import { AddCertificateDialog } from "@/components/profile/dialogs/add-certificate-dialog";
+import { EditCertificateDialog } from "@/components/profile/dialogs/edit-certificate-dialog";
 import { ConfirmDeleteDialog } from "@/components/profile/dialogs/confirm-delete-dialog";
 // import { AddEventDialog } from "./dialogs/add-event-dialog"; // Necesitarías crear este dialog
 import BottomNavbarWrapper from "@/components/nav/BottomNavbarWrapper";
@@ -57,10 +60,13 @@ export function ProfileScreen() {
   // State para manejar visibilidad de dialogs
   const [isEditContactOpen, setEditContactOpen] = useState(false);
   const [isAddArticleOpen, setAddArticleOpen] = useState(false);
+  const [articleToEdit, setArticleToEdit] = useState<string | null>(null);
   const [articleToDelete, setArticleToDelete] = useState<string | null>(null);
   const [isAddExternalEventOpen, setAddExternalEventOpen] = useState(false);
+  const [externalEventToEdit, setExternalEventToEdit] = useState<number | null>(null);
   const [externalEventToDelete, setExternalEventToDelete] = useState<number | null>(null);
   const [isAddCertificateOpen, setAddCertificateOpen] = useState(false);
+  const [certificateToEdit, setCertificateToEdit] = useState<number | null>(null);
   const [certificateToDelete, setCertificateToDelete] = useState<number | null>(null);
   // const [isAddEventOpen, setAddEventOpen] = useState(false);
   // const [participationToDelete, setParticipationToDelete] = useState<string | null>(null);
@@ -190,6 +196,36 @@ export function ProfileScreen() {
     onError: (error) => toast.error(extractErrorMessage(error, "Error al eliminar certificado")),
   });
 
+  const updateArticleMutation = useMutation({
+    mutationFn: ({ id, data }: { id: number; data: APIPayloads.UpdateArticle }) => ArticleAPI.updateArticle(id, data),
+    onSuccess: () => {
+      toast.success("Artículo actualizado exitosamente");
+      queryClient.invalidateQueries({ queryKey: ["articles", "my"] });
+      setArticleToEdit(null);
+    },
+    onError: (error) => toast.error(extractErrorMessage(error, "Error al actualizar artículo")),
+  });
+
+  const updateExternalEventMutation = useMutation({
+    mutationFn: ({ id, data }: { id: number; data: APIPayloads.PatchExternalEvent }) => ExternalEventsAPI.patchExternalEvent(id, data),
+    onSuccess: () => {
+      toast.success("Evento externo actualizado exitosamente");
+      queryClient.invalidateQueries({ queryKey: ["external-events", "my"] });
+      setExternalEventToEdit(null);
+    },
+    onError: (error) => toast.error(extractErrorMessage(error, "Error al actualizar evento externo")),
+  });
+
+  const updateCertificateMutation = useMutation({
+    mutationFn: ({ id, data }: { id: number; data: APIPayloads.UpdateCertificate }) => CertificateAPI.updateCertificate(id, data),
+    onSuccess: () => {
+      toast.success("Certificado actualizado exitosamente");
+      queryClient.invalidateQueries({ queryKey: ["certificates", "my"] });
+      setCertificateToEdit(null);
+    },
+    onError: (error) => toast.error(extractErrorMessage(error, "Error al actualizar certificado")),
+  });
+
   // Lógica de logout
   const handleLogout = () => logout().then((success) => success && goToDashboard());
 
@@ -266,6 +302,7 @@ export function ProfileScreen() {
         <MyExternalEventsSection
           events={externalEvents}
           onAddEvent={() => setAddExternalEventOpen(true)}
+          onEditEvent={(id) => setExternalEventToEdit(id)}
           onDeleteEvent={(id) => setExternalEventToDelete(id)}
           formatDate={formatDate}
           isLoading={isLoadingExternalEvents}
@@ -282,6 +319,7 @@ export function ProfileScreen() {
             publicationUrl: article.publication_url ?? "",
           }))}
           onAddArticle={() => setAddArticleOpen(true)}
+          onEditArticle={(id) => setArticleToEdit(id)}
           onDeleteArticle={(id) => setArticleToDelete(id)}
           formatDate={formatDate}
         />
@@ -290,6 +328,7 @@ export function ProfileScreen() {
         <MyCertificatesSection
           certificates={certificates}
           onAddCertificate={() => setAddCertificateOpen(true)}
+          onEditCertificate={(id) => setCertificateToEdit(id)}
           onDeleteCertificate={(id) => setCertificateToDelete(id)}
           formatDate={formatDate}
           isLoading={isLoadingCertificates}
@@ -335,6 +374,30 @@ export function ProfileScreen() {
             description="Esta acción no se puede deshacer. El artículo será eliminado permanentemente."
           />
 
+          <EditArticleDialog
+            open={articleToEdit !== null}
+            onOpenChange={(open) => !open && setArticleToEdit(null)}
+            article={articleToEdit ? articles.find(a => String(a.id) === articleToEdit) ? {
+              id: String(articles.find(a => String(a.id) === articleToEdit)!.id),
+              title: articles.find(a => String(a.id) === articleToEdit)!.title,
+              description: articles.find(a => String(a.id) === articleToEdit)!.description ?? "",
+              authors: articles.find(a => String(a.id) === articleToEdit)!.authors,
+              publicationDate: articles.find(a => String(a.id) === articleToEdit)!.publication_date,
+              publicationUrl: articles.find(a => String(a.id) === articleToEdit)!.publication_url ?? "",
+            } : null : null}
+            onEditArticle={(data) => updateArticleMutation.mutate({
+              id: Number(articleToEdit),
+              data: {
+                title: data.title,
+                description: data.description,
+                authors: data.authors,
+                publication_date: data.publicationDate,
+                publication_url: data.publicationUrl,
+              }
+            })}
+            isPending={updateArticleMutation.isPending}
+          />
+
           <AddExternalEventDialog
             open={isAddExternalEventOpen}
             onOpenChange={setAddExternalEventOpen}
@@ -351,6 +414,17 @@ export function ProfileScreen() {
             onConfirm={() => deleteExternalEventMutation.mutate(externalEventToDelete!)}
             title="¿Eliminar evento externo?"
             description="Esta acción no se puede deshacer. El evento será eliminado permanentemente."
+          />
+
+          <EditExternalEventDialog
+            open={externalEventToEdit !== null}
+            onOpenChange={(open) => !open && setExternalEventToEdit(null)}
+            event={externalEventToEdit ? externalEvents.find(e => e.id === externalEventToEdit) ?? null : null}
+            onEditEvent={(data) => updateExternalEventMutation.mutate({
+              id: externalEventToEdit!,
+              data: data
+            })}
+            isPending={updateExternalEventMutation.isPending}
           />
 
           <AddCertificateDialog
@@ -373,6 +447,25 @@ export function ProfileScreen() {
             onConfirm={() => deleteCertificateMutation.mutate(certificateToDelete!)}
             title="¿Eliminar certificado?"
             description="Esta acción no se puede deshacer. El certificado será eliminado permanentemente."
+          />
+
+          <EditCertificateDialog
+            open={certificateToEdit !== null}
+            onOpenChange={(open) => !open && setCertificateToEdit(null)}
+            certificate={certificateToEdit ? certificates.find(c => c.id === certificateToEdit) ?? null : null}
+            onEditCertificate={(data) => updateCertificateMutation.mutate({
+              id: certificateToEdit!,
+              data: {
+                name: data.name,
+                issuing_organization: data.issuing_organization,
+                issue_date: data.issue_date,
+                expiration_date: data.expiration_date || null,
+                does_not_expire: data.does_not_expire || false,
+                credential_id: data.credential_id || null,
+                credential_url: data.credential_url || null,
+              }
+            })}
+            isPending={updateCertificateMutation.isPending}
           />
         </>
       }

@@ -1,11 +1,12 @@
 import { Button } from "../../ui/button";
 import { Card, CardContent } from "../../ui/card";
 import { Badge } from "../../ui/badge";
-import { Plus, Trash2, Calendar, Award, Building2, Loader2, ExternalLink } from "lucide-react";
+import { Plus, Trash2, Calendar, Award, Building2, Loader2, ExternalLink, Pencil } from "lucide-react";
 
 interface MyCertificatesSectionProps {
   certificates: API.Certificate[];
   onAddCertificate: () => void;
+  onEditCertificate: (certificateId: number) => void;
   onDeleteCertificate: (certificateId: number) => void;
   formatDate: (dateString: string) => string;
   isLoading?: boolean;
@@ -14,6 +15,7 @@ interface MyCertificatesSectionProps {
 export const MyCertificatesSection = ({
   certificates,
   onAddCertificate,
+  onEditCertificate,
   onDeleteCertificate,
   formatDate,
   isLoading = false,
@@ -91,15 +93,26 @@ export const MyCertificatesSection = ({
                       )}
                     </div>
                   </div>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => onDeleteCertificate(cert.id)}
-                    className="shrink-0 text-destructive transition-transform hover:scale-105 active:scale-95 hover:bg-destructive/10"
-                    title="Eliminar certificado"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                  <div className="flex flex-col gap-2 shrink-0">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => onEditCertificate(cert.id)}
+                      className="transition-transform hover:scale-105 active:scale-95"
+                      title="Editar certificado"
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => onDeleteCertificate(cert.id)}
+                      className="shrink-0 text-destructive transition-transform hover:scale-105 active:scale-95 hover:bg-destructive/10"
+                      title="Eliminar certificado"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>

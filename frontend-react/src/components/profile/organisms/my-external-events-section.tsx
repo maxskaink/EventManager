@@ -1,11 +1,12 @@
 import { Button } from "../../ui/button";
 import { Card, CardContent } from "../../ui/card";
 import { Badge } from "../../ui/badge";
-import { Plus, Trash2, Calendar, MapPinIcon, Building2, Loader2 } from "lucide-react";
+import { Plus, Trash2, Calendar, MapPinIcon, Building2, Loader2, Pencil } from "lucide-react";
 
 interface MyExternalEventsSectionProps {
     events: API.ExternalEvent[];
     onAddEvent: () => void;
+    onEditEvent: (eventId: number) => void;
     onDeleteEvent: (eventId: number) => void;
     formatDate: (dateString: string) => string;
     isLoading?: boolean;
@@ -14,6 +15,7 @@ interface MyExternalEventsSectionProps {
 export const MyExternalEventsSection = ({
     events,
     onAddEvent,
+    onEditEvent,
     onDeleteEvent,
     formatDate,
     isLoading = false,
@@ -78,15 +80,26 @@ export const MyExternalEventsSection = ({
                                             </div>
                                         </div>
                                     </div>
-                                    <Button
-                                        variant="outline"
-                                        size="icon"
-                                        onClick={() => onDeleteEvent(event.id)}
-                                        className="shrink-0 text-destructive transition-transform hover:scale-105 active:scale-95 hover:bg-destructive/10"
-                                        title="Eliminar evento"
-                                    >
-                                        <Trash2 className="h-4 w-4" />
-                                    </Button>
+                                    <div className="flex flex-col gap-2 shrink-0">
+                                        <Button
+                                            variant="outline"
+                                            size="icon"
+                                            onClick={() => onEditEvent(event.id)}
+                                            className="transition-transform hover:scale-105 active:scale-95"
+                                            title="Editar evento"
+                                        >
+                                            <Pencil className="h-4 w-4" />
+                                        </Button>
+                                        <Button
+                                            variant="outline"
+                                            size="icon"
+                                            onClick={() => onDeleteEvent(event.id)}
+                                            className="shrink-0 text-destructive transition-transform hover:scale-105 active:scale-95 hover:bg-destructive/10"
+                                            title="Eliminar evento"
+                                        >
+                                            <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                    </div>
                                 </div>
                             </CardContent>
                         </Card>
