@@ -81,12 +81,9 @@ const PublicationDetailPage = () => {
   }
 
   // Determine image source
-  let imageSrc = "https://source.unsplash.com/random/1200x600?abstract"; // Default fallback
+  let imageSrc: string | null = null;
   if (publication.image_url) {
       imageSrc = resolveImageUrl(publication.image_url);
-  } else if (event) {
-      // Use a random image based on event type if no specific image
-       imageSrc = `https://source.unsplash.com/random/1200x600?${event.event_type}`;
   }
 
 
@@ -95,7 +92,7 @@ const PublicationDetailPage = () => {
   return (
     <div className="min-h-screen pb-20 bg-gray-50/50">
       {/* Header */}
-      <div className="bg-[#0a2740] p-4 shadow-sm text-white sticky top-0 z-10">
+      <div className="bg-[#0a2740] p-4 shadow-sm text-white sticky top-0 z-20">
         <div className="max-w-4xl mx-auto flex items-center gap-4">
           <Button
             variant="ghost"
@@ -115,61 +112,84 @@ const PublicationDetailPage = () => {
       </div>
 
       <div className="max-w-4xl mx-auto">
-         {/* Hero Image */}
          {/* Hero Image with Blurred Background */}
-        <div 
-            className="relative w-full h-[500px] bg-gray-900 overflow-hidden group cursor-zoom-in"
-            onClick={() => setIsImageOpen(true)}
-        >
-          {/* Blurred Background Layer */}
-          <div 
-            className="absolute inset-0 bg-cover bg-center blur-xl opacity-50 scale-110 transition-transform duration-700 group-hover:scale-125"
-            style={{ backgroundImage: `url(${imageSrc})` }}
-          />
-          
-          {/* Foreground Image Layer */}
-          <div className="absolute inset-0 flex items-center justify-center p-4">
-             <img
-               src={imageSrc}
-               alt={publication.title}
-               className="max-w-full max-h-full object-contain shadow-2xl rounded-lg transition-transform duration-300 group-hover:scale-[1.02]"
-               onError={(e) => {
-                 e.currentTarget.src = "https://images.unsplash.com/photo-1557683316-973673baf926?w=800&q=80"; // Fallback
-               }}
-             />
-          </div>
+         {imageSrc && (
+            <div 
+                className="relative w-full h-[500px] bg-gray-900 overflow-hidden group cursor-zoom-in"
+                onClick={() => setIsImageOpen(true)}
+            >
+              {/* Blurred Background Layer */}
+              <div 
+                className="absolute inset-0 bg-cover bg-center blur-xl opacity-50 scale-110 transition-transform duration-700 group-hover:scale-125"
+                style={{ backgroundImage: `url(${imageSrc})` }}
+              />
+              
+              {/* Foreground Image Layer */}
+              <div className="absolute inset-0 flex items-center justify-center p-4">
+                 <img
+                   src={imageSrc}
+                   alt={publication.title}
+                   className="max-w-full max-h-full object-contain shadow-2xl rounded-lg transition-transform duration-300 group-hover:scale-[1.02]"
+                   onError={(e) => {
+                     e.currentTarget.style.display = 'none'; // Hide if fails
+                   }}
+                 />
+              </div>
 
-          <Badge
-            className="absolute top-4 right-4 capitalize shadow-sm z-10"
-            variant={publication.type === 'evento' ? 'default' : 'secondary'}
-          >
-            {publication.type}
-          </Badge>
-          
-          {/* Status Badge (if event) */}
-           {event && (
-             <div className="absolute top-4 left-4 z-10">
-                {(() => {
-                   const eventDate = new Date(event.start_date);
-                   const today = new Date();
-                   today.setHours(0,0,0,0);
-                   const eventDateOnly = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
-                   const diffTime = eventDateOnly.getTime() - today.getTime();
-                   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+              <Badge
+                className="absolute top-4 right-4 capitalize shadow-sm z-10"
+                variant={publication.type === 'evento' ? 'default' : 'secondary'}
+              >
+                {publication.type}
+              </Badge>
+              
+              {/* Status Badge (if event) */}
+               {event && (
+                 <div className="absolute top-4 left-4 z-10">
+                    {(() => {
+                       const eventDate = new Date(event.start_date);
+                       const today = new Date();
+                       today.setHours(0,0,0,0);
+                       const eventDateOnly = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
+                       const diffTime = eventDateOnly.getTime() - today.getTime();
+                       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-                   if (diffDays < 0) return <Badge className="bg-gray-500 shadow-sm">Finalizado</Badge>;
-                   if (diffDays === 0) return <Badge className="bg-green-600 animate-pulse shadow-sm">En curso</Badge>;
-                   if (diffDays <= 5) return <Badge className="bg-orange-500 shadow-sm">¡Pronto!</Badge>;
-                   return <Badge className="bg-blue-500 shadow-sm">Próximo</Badge>;
-                })()}
-             </div>
-           )}
-        </div>
+                       if (diffDays < 0) return <Badge className="bg-gray-500 shadow-sm">Finalizado</Badge>;
+                       if (diffDays === 0) return <Badge className="bg-green-600 animate-pulse shadow-sm">En curso</Badge>;
+                       if (diffDays <= 5) return <Badge className="bg-orange-500 shadow-sm">¡Pronto!</Badge>;
+                       return <Badge className="bg-blue-500 shadow-sm">Próximo</Badge>;
+                    })()}
+                 </div>
+               )}
+            </div>
+         )}
 
         <div className="p-4 space-y-6">
            {/* Title & Summary */}
            <section>
-             <h1 className="text-2xl font-bold text-gray-900 mb-2">{publication.title}</h1>
+             <div className="flex flex-col gap-2 mb-4">
+                {!imageSrc && (
+                    <div className="flex gap-2 mb-2">
+                        <Badge className="capitalize shadow-sm" variant={publication.type === 'evento' ? 'default' : 'secondary'}>
+                            {publication.type}
+                        </Badge>
+                         {event && (() => {
+                           const eventDate = new Date(event.start_date);
+                           const today = new Date();
+                           today.setHours(0,0,0,0);
+                           const eventDateOnly = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
+                           const diffTime = eventDateOnly.getTime() - today.getTime();
+                           const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                           if (diffDays < 0) return <Badge className="bg-gray-500 shadow-sm">Finalizado</Badge>;
+                           if (diffDays === 0) return <Badge className="bg-green-600 animate-pulse shadow-sm">En curso</Badge>;
+                           if (diffDays <= 5) return <Badge className="bg-orange-500 shadow-sm">¡Pronto!</Badge>;
+                           return <Badge className="bg-blue-500 shadow-sm">Próximo</Badge>;
+                        })()}
+                    </div>
+                )}
+                <h1 className="text-3xl font-bold text-gray-900 leading-tight">{publication.title}</h1>
+             </div>
              {publication.summary && (
                 <p className="text-muted-foreground text-lg leading-relaxed">
                     {publication.summary}
@@ -203,17 +223,19 @@ const PublicationDetailPage = () => {
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 bg-green-100 rounded-lg">
-                          <Clock className="h-5 w-5 text-green-600" />
-                        </div>
-                        <div>
-                          <p className="text-sm text-muted-foreground">Hora</p>
-                          <p className="font-medium">
-                             {event.start_date.split('T')[1]?.substring(0, 5)}
-                          </p>
-                        </div>
-                      </div>
+                      {event.start_date.includes('T') && event.start_date.split('T')[1] !== '00:00:00' && (
+                          <div className="flex items-center gap-3">
+                            <div className="p-2 bg-green-100 rounded-lg">
+                              <Clock className="h-5 w-5 text-green-600" />
+                            </div>
+                            <div>
+                              <p className="text-sm text-muted-foreground">Hora</p>
+                              <p className="font-medium">
+                                 {event.start_date.split('T')[1]?.substring(0, 5)}
+                              </p>
+                            </div>
+                          </div>
+                      )}
 
                       <div className="flex items-center gap-3">
                         <div className="p-2 bg-purple-100 rounded-lg">
@@ -227,6 +249,11 @@ const PublicationDetailPage = () => {
                               <span className="text-xs ml-2 text-gray-500">• {event.location}</span>
                             )}
                           </p>
+                          {event.virtual_url && (
+                              <a href={event.virtual_url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline block truncate max-w-[200px]">
+                                  {event.virtual_url}
+                              </a>
+                          )}
                         </div>
                       </div>
 

@@ -36,7 +36,7 @@ const BNavBarMentor = () => {
 
         <Button
           variant="ghost"
-          onClick={() => navigate("/see-publication")}
+          onClick={() => navigate("/publications")}
           className="flex h-auto flex-col items-center gap-1 py-2"
         >
           <CalendarDays className="h-5 w-5" />

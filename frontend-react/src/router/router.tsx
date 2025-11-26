@@ -7,11 +7,11 @@ import { GuestDashboard } from "../pages/dashboard/guest-dashboard";
 import { MemberDashboard } from "../pages/dashboard/member-dashboard";
 import { CoordinatorDashboardPage } from "../pages/dashboard/coordinator-dashboard";
 import { MentorDashboardPage } from "../pages/dashboard/mentor-dashboard";
-import { EventsScreen } from "../pages/events";
+
 import { EventBoardScreen } from "../pages/admin/event-board";
 import { ReportsScreen } from "../components/reports/ReportsScreen";
-import { PublicationsScreen } from "../components/publications/PublicationsScreen";
-import { PublicationsScreen as SeePublicationsScreen } from "../pages/publications";
+
+import { PublicationsScreen } from "../pages/publications";
 import PublicationDetailPage from "../pages/publications/[publicationId]";
 import { CreateArticleScreen } from "../components/publications/CreatePublicationScreen";
 import { ProfileScreen } from "../pages/profile";
@@ -46,7 +46,7 @@ export const router = createBrowserRouter([
       { path: "dashboard-guest", element: <GuestDashboard /> },
 
       // Events
-      { path: "events", element: <EventsScreen /> },
+      //{ path: "events", element: <EventsScreen /> },
       { path: "events/:eventId", element: <EventDetailWrapper /> },
       { path: "event-board", element: <EventBoardScreen /> },
 
@@ -71,9 +71,8 @@ export const router = createBrowserRouter([
 
               // Others
               { path: "reports", element: <ReportsScreen /> },
-              { path: "publications", element: <PublicationsScreen /> },
               { path: "publications/:publicationId", element: <PublicationDetailPage /> },
-              { path: "see-publication", element: <SeePublicationsScreen /> },
+              { path: "publications", element: <PublicationsScreen /> },
               { path: "create-article", element: <CreateArticleScreen /> },
               { path: "profile", element: <ProfileScreen /> },
               { path: "certificates", element: <CertificatesScreen /> },
