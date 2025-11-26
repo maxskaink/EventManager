@@ -56,6 +56,15 @@ namespace ProfileAPI {
 
 namespace EventAPI {
   type ListEventsRes = API.Event[];
+
+  type MutateParticipationRes = {
+    message: string;
+    participation: API.EventParticipation;
+  }
+
+  type ListParticipationsRes = {
+    participations: API.EventParticipation[];
+  }
 }
 
 namespace CertificateAPI {

@@ -9,9 +9,7 @@ import { useAuthStore } from '../../stores/auth.store';
 import { Button } from "../../components/ui/button";
 import { Card, CardContent, CardHeader } from "../../components/ui/card";
 import { Badge } from "../../components/ui/badge";
-import { ImageWithFallback } from "../../components/figma/ImageWithFallback";
 import { resolveImageUrl } from "../../features/api";
-import { useApp } from "../../components/context/AppContext";
 
 const PublicationDetailPage = () => {
   const { publicationId } = useParams<{ publicationId: string }>();
@@ -20,9 +18,9 @@ const PublicationDetailPage = () => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const { user } = useAuthStore();
-  const { registerEvent } = useApp();
-  const role = user?.role || 'guest';
+  const [registering, setRegistering] = useState(false);
 
+  const role = user?.role || 'guest';
   const [isImageOpen, setIsImageOpen] = useState(false);
 
   useEffect(() => {
@@ -53,13 +51,22 @@ const PublicationDetailPage = () => {
     navigate('/publications');
   };
 
-  const handleRegister = () => {
-    if (event) {
-        registerEvent(event.id.toString());
+  const handleRegister = async () => {
+    if (!event) return;
+    
+    try {
+        setRegistering(true);
+        await EventAPI.enroll(event.id);
         toast.success("🎉 ¡Te has inscrito exitosamente al evento!", {
             description: `Ahora eres parte de: ${event.name}`,
             duration: 4000,
         });
+    } catch (error: any) {
+        console.error(error);
+        const errorMessage = error.response?.data?.message || "Error al inscribirse al evento.";
+        toast.error(errorMessage);
+    } finally {
+        setRegistering(false);
     }
   };
 
@@ -289,10 +296,10 @@ const PublicationDetailPage = () => {
                      <Button 
                         size="lg" 
                         onClick={handleRegister} 
-                        disabled={isEventFull}
+                        disabled={isEventFull || registering}
                         className="w-full font-semibold text-lg h-12"
                      >
-                        {isEventFull ? "Evento lleno" : "Inscribirme al evento"}
+                        {registering ? "Inscribiendo..." : (isEventFull ? "Evento lleno" : "Inscribirme al evento")}
                      </Button>
                      {isEventFull && (
                         <p className="text-center text-sm text-muted-foreground">
@@ -328,7 +335,7 @@ const PublicationDetailPage = () => {
         >
             <div className="relative max-w-full max-h-full">
                 <img 
-                    src={imageSrc} 
+                    src={imageSrc ?? undefined} 
                     alt={publication.title} 
                     className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl"
                     onClick={(e) => e.stopPropagation()} // Prevent closing when clicking the image itself

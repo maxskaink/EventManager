@@ -30,6 +30,22 @@ async function deleteEvent(eventId: number) {
   return response.data;
 }
 
+// ------ PARTICIPATIONS ----------
+async function enroll(eventId: number) {
+  const response = await axiosInstance.post<EventAPI.MutateParticipationRes>(`/event/${eventId}/participation`);
+  return response.data;
+}
+
+async function cancelEnrollment(eventId: number) {
+  const response = await axiosInstance.delete<EventAPI.MutateParticipationRes>(`/event/${eventId}/participation`);
+  return response.data;
+}
+
+async function listEnrollments(eventId: number) {
+  const response = await axiosInstance.get<EventAPI.ListParticipationsRes>(`/event/${eventId}/participation`);
+  return response.data.participations;
+}
+
 export default {
   addEvent,
   listAllEvents,
@@ -37,4 +53,7 @@ export default {
   listPastEvents,
   getEventById,
   deleteEvent,
+  enroll,
+  cancelEnrollment,
+  listEnrollments,
 };

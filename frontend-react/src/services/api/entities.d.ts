@@ -55,6 +55,15 @@ namespace API {
     updated_at: string;
   }
 
+  interface EventParticipation {
+    id: number;
+    event_id: number;
+    user_id: number;
+    status: string;
+    created_at: string;
+    updated_at: string;
+  }
+
 
   interface Certificate {
     id: number;

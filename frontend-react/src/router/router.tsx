@@ -22,12 +22,10 @@ import { RootLayout } from "../components/nav/RootLayout";
 import { MainLayout } from "../components/layout/MainLayout";
 import GoogleCallbackScreen from "../pages/auth/google-callback";
 import DashboardRedirect from "../components/nav/DashboardRedirect";
-import EventDetailWrapper from "../components/nav/EventDetailWrapper";
 import { authMiddleware } from "./middlewares/auth.middleware";
 import { timingMiddleware } from "./middlewares/timing.middleware";
 import NotFoundPage from "../pages/not-found-page";
 import { ErrorPage } from "../pages/error-page";
-import GradientWrapper from "../components/layout/GradientWrapper";
 
 
 // Create the data router and export it for main.tsx to mount
@@ -47,7 +45,7 @@ export const router = createBrowserRouter([
 
       // Events
       //{ path: "events", element: <EventsScreen /> },
-      { path: "events/:eventId", element: <EventDetailWrapper /> },
+      //{ path: "events/:eventId", element: <EventDetailWrapper /> },
       { path: "event-board", element: <EventBoardScreen /> },
 
       // If user state is needed to choose a dashboard, use special redirect
@@ -57,7 +55,6 @@ export const router = createBrowserRouter([
       // Autenticated
       {
         middleware: [authMiddleware],
-        element: <GradientWrapper><Outlet /></GradientWrapper>,
         children: [
           // Layout Wrapper for pages with BottomNav
           {
