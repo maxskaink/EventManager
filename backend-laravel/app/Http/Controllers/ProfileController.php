@@ -157,4 +157,14 @@ class ProfileController extends Controller
         ]);
     }
 
+    public function listAllProfiles(): JsonResponse
+    {
+        $profiles = $this->profileService->getAllProfiles();
+
+        return response()->json([
+            'profiles' => $profiles,
+        ]);
+    }
+
+
 }

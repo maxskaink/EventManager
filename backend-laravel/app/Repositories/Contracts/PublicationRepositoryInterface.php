@@ -18,4 +18,6 @@ interface PublicationRepositoryInterface
     public function listDrafts(): Collection;
 
     public function listPublishedForUser(?User $user): Collection;
+    public function getAllProfiles(): Collection;
+
 }

@@ -5,15 +5,18 @@ namespace App\Services\Implementations;
 use App\Repositories\Contracts\ProfileRepositoryInterface;
 use App\Services\Contracts\ProfileServiceInterface;
 use App\Models\Profile;
+use App\Services\Contracts\UserServiceInterface;
 use Illuminate\Support\Facades\DB;
 
 class ProfileService implements ProfileServiceInterface
 {
     protected ProfileRepositoryInterface $profileRepository;
+    protected UserServiceInterface $userService;
 
-    public function __construct(ProfileRepositoryInterface $profileRepository)
+    public function __construct(ProfileRepositoryInterface $profileRepository, UserServiceInterface $userService)
     {
         $this->profileRepository = $profileRepository;
+        $this->userService = $userService;
     }
 
     public function updateProfile(int $userId, array $data): Profile
@@ -60,4 +63,14 @@ class ProfileService implements ProfileServiceInterface
         return $this->profileRepository->deleteProfileInterest($userId, $interestId);
     }
 
+    public function getAllProfiles(): array
+    {
+        $activeUsers = $this->userService->listActiveUsers();
+
+        $profiles = $activeUsers->map(function ($user) {
+            return $this->profileRepository->getOrCreateProfile($user->id);
+        });
+
+        return $profiles->toArray();
+    }
 }

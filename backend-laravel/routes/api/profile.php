@@ -14,5 +14,6 @@ Route::middleware('auth:sanctum')->prefix('profile')->group(function () {
 });
 
 Route::prefix('profile')->group(function () {
+    Route::get('/all', [ProfileController::class, 'listAllProfiles']);
     Route::get('/{profileId}', [ProfileController::class, 'getProfileById']);
 });
