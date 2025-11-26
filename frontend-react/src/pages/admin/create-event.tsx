@@ -88,7 +88,7 @@ export default function CreateEventPage() {
     const startDateTime = new Date(formatDateTime(formData.start_date, formData.start_time));
     const endDateTime = new Date(formatDateTime(formData.end_date, formData.end_time));
 
-    if (endDateTime <= startDateTime) {
+    if (endDateTime < startDateTime) {
       toast.error("La fecha de finalización debe ser posterior a la fecha de inicio");
       return;
     }
@@ -110,7 +110,8 @@ export default function CreateEventPage() {
         end_date: formatDateTime(formData.end_date, formData.end_time),
         event_type: formData.event_type,
         modality: formData.modality,
-        location: formData.location || null,
+        location: formData.modality === "virtual" ? null : formData.location,
+        virtual_url: formData.modality === "presencial" ? null : formData.location,
         status: "pendiente", // El evento en sí puede quedar pendiente o activo, pero la publicación es lo que importa
         capacity: formData.capacity ? parseInt(formData.capacity) : null,
       };

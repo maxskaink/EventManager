@@ -1,6 +1,6 @@
 namespace APIPayloads {
   type UpdateProfile = Partial<Pick<API.Profile, 'university' | 'academic_program' | 'phone'>>;
-  type AddEvent = Omit<API.Event, 'id' | 'created_at' | 'updated_at'>;
+  type AddEvent = Omit<API.Event, 'id' | 'created_at' | 'updated_at' | 'publication_id'>;
   type AddCertificate = Omit<API.Certificate, 'id'   | 'created_at' | 'updated_at'>;
   type UpdateCertificate = Partial<Omit<AddCertificate, 'user_id'>>;
   type AddArticle = Omit<API.Article, 'id' | 'created_at' | 'updated_at'>;
