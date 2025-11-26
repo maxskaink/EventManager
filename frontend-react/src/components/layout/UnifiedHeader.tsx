@@ -3,6 +3,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Button } from "../ui/button";
 import { LogOut, ArrowLeft, Loader2 } from "lucide-react";
 import { useAuthStore } from "../../stores/auth.store";
+import { NotificationPopover } from "../notifications/NotificationPopover";
 
 interface UnifiedHeaderProps {
     title?: string;
@@ -63,6 +64,11 @@ export const UnifiedHeader: React.FC<UnifiedHeaderProps> = ({
                     {loading && <Loader2 className="h-5 w-5 animate-spin text-white/50 mr-2" />}
 
                     {actions}
+                    
+                    {/* Default Actions if none provided */}
+                    {!actions && (
+                        <NotificationPopover />
+                    )}
 
                     {!onGoBack && (
                         <Button

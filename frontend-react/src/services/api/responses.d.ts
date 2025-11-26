@@ -65,6 +65,11 @@ namespace EventAPI {
   type ListParticipationsRes = {
     participations: API.EventParticipation[];
   }
+
+  type MarkAttendanceRes = {
+    message: string;
+    results: { [string]: string };
+  }
 }
 
 namespace CertificateAPI {

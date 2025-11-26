@@ -1,5 +1,7 @@
 # EventManager
 
+EventManager es una aplicación web que permite a los usuarios gestionar eventos, suscribirse a eventos, y crear eventos. Además de registrar usuarios con certificados, participaciones y demás
+
 ## Notas acerca de las entidades
 * la entidad guest es lo mismo que interested en el dominio del backend
 

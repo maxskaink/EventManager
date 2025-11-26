@@ -174,13 +174,9 @@ export function MentorDashboardPage() {
 
   return (
     <div className="space-y-6">
-      {/* Cabecera */}
-      {/* Cabecera */}
       <MentorHeader
         user={user}
         onLogout={logout}
-        onOpenNotifications={() => setIsNotificationsOpen(true)}
-        pendingCount={pendingCount} // Valor estático del mock original
       />
 
       <div className="container mx-auto px-4 py-6 space-y-6">

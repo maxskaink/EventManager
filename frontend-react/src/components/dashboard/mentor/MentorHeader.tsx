@@ -4,19 +4,16 @@ import { Badge } from '../../ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '../../ui/avatar';
 import { Bell, LogOut } from 'lucide-react';
 import brainImage from '../../../assets/brain.png';
+import { NotificationPopover } from '@/components/notifications/NotificationPopover';
 
 interface MentorHeaderProps {
   user: API.User;
   onLogout: () => void;
-  onOpenNotifications: () => void;
-  pendingCount: number;
 }
 
 export const MentorHeader: React.FC<MentorHeaderProps> = ({
   user,
-  onLogout,
-  onOpenNotifications,
-  pendingCount,
+  onLogout
 }) => {
   return (
     <header className="bg-[#0a2740] text-white shadow-sm">
@@ -53,22 +50,7 @@ export const MentorHeader: React.FC<MentorHeaderProps> = ({
               <Badge variant="secondary">Mentor</Badge>
             </div>
 
-
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={onOpenNotifications}
-              className="relative"
-              title="Notificaciones"
-              aria-label="Notificaciones"
-            >
-              <Bell className="h-5 w-5" />
-              {pendingCount > 0 && (
-                <Badge className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs bg-red-500">
-                  {pendingCount}
-                </Badge>
-              )}
-            </Button>
+            <NotificationPopover />
             <Button variant="ghost-destructive" size="icon" onClick={onLogout} title="Cerrar sesión" aria-label="Cerrar sesión">
               <LogOut className="h-5 w-5" />
             </Button>

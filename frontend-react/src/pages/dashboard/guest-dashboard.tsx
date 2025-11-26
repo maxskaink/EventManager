@@ -1,17 +1,15 @@
 import { useEffect, useState } from "react";
 import { Button } from "../../components/ui/button";
-import { LogOut } from "lucide-react";
 import { Card, CardContent, CardHeader } from "../../components/ui/card";
+import { UnifiedHeader } from "../../components/layout/UnifiedHeader";
 import { Badge } from "../../components/ui/badge";
 import { Calendar, Clock, MapPin } from "lucide-react";
 import { useNavigate } from "react-router";
 import { BNavBarInterested } from "../../components/ui/b-navbar-interested";
 import { EventAPI } from "../../services/api";
-import { useApp } from "../../components/context/AppContext";
 
 export function GuestDashboard() {
   const navigate = useNavigate()
-  const { logout } = useApp();
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -37,25 +35,11 @@ export function GuestDashboard() {
   return (
     <div className="min-h-screen pb-20">
       {/* Header */}
-      <div className="bg-[#0a2740] p-4 shadow-sm text-white">
-        <div className="max-w-4xl mx-auto flex items-center gap-4">
-          <button
-            data-slot="button"
-            onClick={logout}
-            className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50 size-9 rounded-md"
-            title="Cerrar sesión"
-            aria-label="Cerrar sesión"
-          >
-            <LogOut className="h-5 w-5" />
-          </button>
-          <div className="flex-1">
-            <h1>Bienvenido</h1>
-            <p className="text-white/80 mt-1">
-              Explora nuestros eventos y actividades
-            </p>
-          </div>
-        </div>
-      </div>
+      {/* Header */}
+      <UnifiedHeader 
+        title="Bienvenido" 
+        subtitle="Explora nuestros eventos y actividades"
+      />
       <div className="max-w-4xl mx-auto p-4 space-y-6">
         {/* Eventos Recomendados */}
         <section>

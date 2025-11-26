@@ -11,6 +11,7 @@ import { PublicationsCategoryTabs } from "../components/publications/wall/Public
 import { PublicationsSearchBar } from "../components/publications/wall/PublicationsSearchBar";
 import { publicationQueries, eventQueries } from "@/services/react-query/queries";
 import type { ContentItem } from "@/features/events/types";
+import { UnifiedHeader } from "@/components/layout/UnifiedHeader";
 
 export function PublicationsScreen() {
   const user = useAuthStore((s) => s.user);
@@ -25,7 +26,7 @@ export function PublicationsScreen() {
   // 1. Fetch Publications (Source of Truth)
   const { data: publications = [], isLoading: isLoadingPubs, isError: isErrorPubs } = useQuery(
     role === "mentor" || role === "coordinator" ?
-    publicationQueries.all() : publicationQueries.published()
+      publicationQueries.all() : publicationQueries.published()
   );
 
   // 2. Fetch Events (For enrichment only)
@@ -46,7 +47,7 @@ export function PublicationsScreen() {
   // Data Transformation & Enrichment
   const contentItems: ContentItem[] = useMemo(() => {
     if (!publications) return [];
-    
+
     // Helper to find event
     const findEvent = (eventId: number | null) => {
       if (!eventId) return null;
@@ -55,7 +56,7 @@ export function PublicationsScreen() {
 
     return publications.map(pub => {
       const associatedEvent = findEvent(pub.event_id);
-      
+
       // Base item
       const item: ContentItem = {
         id: `pub-${pub.id}`,
@@ -76,14 +77,14 @@ export function PublicationsScreen() {
         item.location = associatedEvent.location || associatedEvent.modality;
         item.capacity = associatedEvent.capacity || 0;
         item.eventId = associatedEvent.id.toString();
-        
+
         // If the publication doesn't have an image but the event might (logic placeholder)
         // We handle image fallback in the Card component using 'original'
-        
+
         // Store event in original as well if needed, or just rely on the fact that we have pub.event_id
         // Actually, let's attach the event object to the publication object in 'original' 
         // effectively merging them for the card to use
-        item.original = { ...pub, ...associatedEvent, image_url: pub.image_url }; 
+        item.original = { ...pub, ...associatedEvent, image_url: pub.image_url };
       }
 
       return item;
@@ -94,10 +95,10 @@ export function PublicationsScreen() {
   const filteredItems = useMemo(() => {
     return contentItems.filter(item => {
       // Search
-      const matchesSearch = 
-        item.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
+      const matchesSearch =
+        item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         item.description.toLowerCase().includes(searchTerm.toLowerCase());
-      
+
       // Category
       const matchesCategory = selectedCategory === "todos" || item.type === selectedCategory;
 
@@ -124,25 +125,15 @@ export function PublicationsScreen() {
 
   return (
     <div className="min-h-screen pb-20 bg-gray-50/50">
-      <div className="bg-[#0a2740] p-4 shadow-sm text-white sticky top-0 z-10">
-        <div className="max-w-4xl mx-auto flex items-center gap-4">
-          <button
-            type="button"
-            onClick={() => navigate(dashboardRoute)}
-            className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium hover:bg-white/10 size-9 rounded-md text-white transition-colors"
-            aria-label="Volver"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </button>
-          <h1 className="text-xl font-semibold tracking-tight">Publicaciones</h1>
-        </div>
-      </div>
-
+      <UnifiedHeader
+        title="Publicaciones"
+        onGoBack={() => navigate(dashboardRoute)}
+      />
       <div className="max-w-4xl mx-auto p-4 space-y-6">
         <PublicationsSearchBar searchTerm={searchTerm} onSearchChange={setSearchTerm} />
-        
+
         <PublicationsCategoryTabs selectedCategory={selectedCategory} onCategoryChange={setSelectedCategory}>
-           {renderContent()}
+          {renderContent()}
         </PublicationsCategoryTabs>
       </div>
 
