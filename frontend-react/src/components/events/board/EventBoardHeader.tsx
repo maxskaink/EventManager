@@ -1,14 +1,15 @@
 import { Button } from "../../ui/button";
-import { ArrowLeft, Plus } from "lucide-react";
+import { ArrowLeft, Plus, FileText } from "lucide-react";
 import { getDashboardRouteFromRole } from "../../../services/navigation/redirects";
 import type { NavigateFunction } from "react-router";
 
 type Props = {
   userRole: string;
   onNavigate: NavigateFunction;
+  onCreatePublication?: () => void;
 };
 
-export function EventBoardHeader({ userRole, onNavigate }: Props) {
+export function EventBoardHeader({ userRole, onNavigate, onCreatePublication }: Props) {
   return (
     <div className="bg-[#0a2740] p-4 shadow-sm text-white">
       <div className="max-w-6xl mx-auto flex items-center gap-4">
@@ -34,16 +35,16 @@ export function EventBoardHeader({ userRole, onNavigate }: Props) {
             <Plus className="h-4 w-4" />
             Nuevo Evento
           </Button>
-          {/*
-          <Button
-            variant="secondary"
-            onClick={() => onNavigate("/create-article")} // Asumiendo ruta
-            className="gap-2"
-          >
-            <Plus className="h-4 w-4" />
-            Nuevo Articulo
-          </Button>
-          */}
+          {onCreatePublication && (
+            <Button
+              variant="secondary"
+              onClick={onCreatePublication}
+              className="gap-2"
+            >
+              <FileText className="h-4 w-4" />
+              Crear Publicación
+            </Button>
+          )}
         </div>
       </div>
     </div>

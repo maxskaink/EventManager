@@ -1,6 +1,7 @@
 export type ContentItem = {
   id: string;
   type: string;
+  subtype?: string;  // For events: "charla" | "taller" | "conferencia" | "semillero"
   title: string;
   description: string;
   date: string;

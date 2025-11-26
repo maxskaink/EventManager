@@ -1,0 +1,314 @@
+import { Button } from "../../ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "../../ui/dialog";
+import { Input } from "../../ui/input";
+import { Label } from "../../ui/label";
+import { Textarea } from "../../ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../ui/select";
+import { CheckCircle2, Loader2, ImagePlus, X } from "lucide-react";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { useEffect, useState } from "react";
+
+// Zod validation schema for simple publications (non-event)
+const publicationSchema = z.object({
+  title: z.string()
+    .min(3, "El título debe tener al menos 3 caracteres")
+    .max(200, "El título no puede exceder 200 caracteres"),
+  content: z.string()
+    .min(10, "El contenido debe tener al menos 10 caracteres")
+    .max(5000, "El contenido no puede exceder 5000 caracteres"),
+  type: z.enum(["aviso", "comunicado", "material"], {
+    message: "Selecciona un tipo de publicación",
+  }),
+  summary: z.string()
+    .max(500, "El resumen no puede exceder 500 caracteres")
+    .optional(),
+  visibility: z.enum(["public", "private", "role_based"]),
+  status: z.enum(["borrador", "activo"]),
+});
+
+type PublicationFormData = z.infer<typeof publicationSchema>;
+
+interface CreatePublicationDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onCreatePublication: (data: PublicationFormData & { image?: File }) => void;
+  isPending?: boolean;
+}
+
+export const CreatePublicationDialog = ({
+  open,
+  onOpenChange,
+  onCreatePublication,
+  isPending = false
+}: CreatePublicationDialogProps) => {
+  const [image, setImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+
+  const {
+    register,
+    handleSubmit,
+    control,
+    formState: { errors },
+    reset,
+  } = useForm<PublicationFormData>({
+    resolver: zodResolver(publicationSchema),
+    defaultValues: {
+      title: "",
+      content: "",
+      type: "aviso",
+      summary: "",
+      visibility: "public",
+      status: "activo",
+    },
+  });
+
+  // Reset form when dialog closes
+  useEffect(() => {
+    if (!open) {
+      reset();
+      setImage(null);
+      setImagePreview(null);
+    }
+  }, [open, reset]);
+
+  // Clean up image preview URL
+  useEffect(() => {
+    return () => {
+      if (imagePreview) {
+        URL.revokeObjectURL(imagePreview);
+      }
+    };
+  }, [imagePreview]);
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      return;
+    }
+
+    setImage(file);
+    const previewUrl = URL.createObjectURL(file);
+    setImagePreview(previewUrl);
+  };
+
+  const removeImage = () => {
+    if (imagePreview) {
+      URL.revokeObjectURL(imagePreview);
+    }
+    setImage(null);
+    setImagePreview(null);
+  };
+
+  const onSubmit = (data: PublicationFormData) => {
+    onCreatePublication({
+      ...data,
+      image: image || undefined,
+    });
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Crear Publicación</DialogTitle>
+          <DialogDescription>
+            Crea una publicación simple (aviso, comunicado o material educativo).
+          </DialogDescription>
+        </DialogHeader>
+
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <div>
+            <Label htmlFor="pub-title">Título *</Label>
+            <Input
+              id="pub-title"
+              {...register("title")}
+              disabled={isPending}
+              className={errors.title ? "border-destructive" : ""}
+              placeholder="Título de la publicación"
+            />
+            {errors.title && (
+              <p className="text-sm text-destructive mt-1">{errors.title.message}</p>
+            )}
+          </div>
+
+          <div>
+            <Label htmlFor="pub-type">Tipo de publicación *</Label>
+            <Controller
+              name="type"
+              control={control}
+              render={({ field }) => (
+                <Select
+                  onValueChange={field.onChange}
+                  value={field.value}
+                  disabled={isPending}
+                >
+                  <SelectTrigger className={errors.type ? "border-destructive" : ""}>
+                    <SelectValue placeholder="Selecciona el tipo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="aviso">Aviso</SelectItem>
+                    <SelectItem value="comunicado">Comunicado</SelectItem>
+                    <SelectItem value="material">Material Educativo</SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
+            />
+            {errors.type && (
+              <p className="text-sm text-destructive mt-1">{errors.type.message}</p>
+            )}
+          </div>
+
+          <div>
+            <Label htmlFor="pub-content">Contenido *</Label>
+            <Textarea
+              id="pub-content"
+              {...register("content")}
+              disabled={isPending}
+              className={errors.content ? "border-destructive" : ""}
+              placeholder="Escribe el contenido de la publicación..."
+              rows={6}
+            />
+            {errors.content && (
+              <p className="text-sm text-destructive mt-1">{errors.content.message}</p>
+            )}
+          </div>
+
+          <div>
+            <Label htmlFor="pub-summary">Resumen (opcional)</Label>
+            <Textarea
+              id="pub-summary"
+              {...register("summary")}
+              disabled={isPending}
+              className={errors.summary ? "border-destructive" : ""}
+              placeholder="Breve resumen de la publicación..."
+              rows={2}
+            />
+            {errors.summary && (
+              <p className="text-sm text-destructive mt-1">{errors.summary.message}</p>
+            )}
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="pub-visibility">Visibilidad *</Label>
+              <Controller
+                name="visibility"
+                control={control}
+                render={({ field }) => (
+                  <Select
+                    onValueChange={field.onChange}
+                    value={field.value}
+                    disabled={isPending}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="public">Pública</SelectItem>
+                      <SelectItem value="private">Privada</SelectItem>
+                      <SelectItem value="role_based">Por Rol</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="pub-status">Estado *</Label>
+              <Controller
+                name="status"
+                control={control}
+                render={({ field }) => (
+                  <Select
+                    onValueChange={field.onChange}
+                    value={field.value}
+                    disabled={isPending}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="borrador">Borrador</SelectItem>
+                      <SelectItem value="activo">Activo</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+            </div>
+          </div>
+
+          <div>
+            <Label>Imagen (opcional)</Label>
+            {!imagePreview ? (
+              <div className="mt-2">
+                <label
+                  htmlFor="pub-image"
+                  className="flex items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-gray-400 transition-colors"
+                >
+                  <div className="flex flex-col items-center">
+                    <ImagePlus className="h-8 w-8 text-gray-400 mb-2" />
+                    <span className="text-sm text-gray-500">Click para subir imagen</span>
+                  </div>
+                  <input
+                    id="pub-image"
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleImageChange}
+                    disabled={isPending}
+                  />
+                </label>
+              </div>
+            ) : (
+              <div className="mt-2 relative">
+                <img
+                  src={imagePreview}
+                  alt="Preview"
+                  className="w-full h-48 object-cover rounded-lg"
+                />
+                <Button
+                  type="button"
+                  variant="destructive"
+                  size="icon"
+                  className="absolute top-2 right-2"
+                  onClick={removeImage}
+                  disabled={isPending}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
+          </div>
+
+          <div className="flex gap-2 justify-end pt-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+              disabled={isPending}
+            >
+              Cancelar
+            </Button>
+            <Button type="submit" disabled={isPending}>
+              {isPending ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Creando...
+                </>
+              ) : (
+                <>
+                  <CheckCircle2 className="h-4 w-4 mr-2" />
+                  Crear Publicación
+                </>
+              )}
+            </Button>
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+};

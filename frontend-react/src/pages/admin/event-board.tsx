@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useApp } from "../../components/context/AppContext";
 import { useNavigate } from "react-router";
-import { EventAPI, ArticleAPI } from "../../services/api";
+import { EventAPI, ArticleAPI, PublicationAPI } from "../../services/api";
 import { toast } from "sonner";
 import BottomNavbarWrapper from "../../components/nav/BottomNavbarWrapper";
 import { EventBoardHeader } from "../../components/events/board/EventBoardHeader";
@@ -13,6 +13,7 @@ import { EventDeleteDialog } from "../../components/events/board/EventDeleteDial
 import { getErrorMessageForToast } from "../../features/errors/error.helpers";
 import { type ContentItem, type ItemToDelete, isEventType, mapEventsToContentItems, mapPublicationsToContentItems } from "../../features/events";
 import { PublishContentModal } from "../../components/events/board/PublishContentModal";
+import { CreatePublicationDialog } from "../../components/events/board/CreatePublicationDialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/tabs";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { eventQueries, publicationQueries } from "../../services/react-query/queries";
@@ -35,6 +36,7 @@ export function EventBoardScreen() {
   const [itemToDelete, setItemToDelete] = useState<ItemToDelete | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isPublishModalOpen, setIsPublishModalOpen] = useState(false);
+  const [isCreatePublicationOpen, setCreatePublicationOpen] = useState(false);
   const [pinnedContent] = useState<string[]>([]); // Mock
 
   // Queries
@@ -77,12 +79,27 @@ export function EventBoardScreen() {
     }
   });
 
+  const createPublicationMutation = useMutation({
+    mutationFn: async (data: APIPayloads.CreatePublication) => {
+      await PublicationAPI.createPublication(data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['publications'] });
+      toast.success("✅ Publicación creada exitosamente");
+      setCreatePublicationOpen(false);
+    },
+    onError: (error) => {
+      console.error("Error creating publication:", error);
+      toast.error(getErrorMessageForToast(error, "Error al crear publicación"));
+    },
+  });
+
   // Transformación de Datos
   const safeEvents = Array.isArray(events) ? events : [];
   const safePublications = Array.isArray(publications) ? publications : [];
 
   const eventItems: ContentItem[] = mapEventsToContentItems(safeEvents);
-  const publicationItems: ContentItem[] = mapPublicationsToContentItems(safePublications);
+  const publicationItems: ContentItem[] = mapPublicationsToContentItems(safePublications, safeEvents);
 
   // Filtrado y Ordenamiento
   const filterAndSort = (items: ContentItem[]) => {
@@ -150,7 +167,11 @@ export function EventBoardScreen() {
 
   return (
     <div className="min-h-screen pb-20">
-      <EventBoardHeader userRole={user?.role || ""} onNavigate={navigate} />
+      <EventBoardHeader
+        userRole={user?.role || ""}
+        onNavigate={navigate}
+        onCreatePublication={() => setCreatePublicationOpen(true)}
+      />
 
       <div className="max-w-6xl mx-auto p-4 space-y-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -222,6 +243,21 @@ export function EventBoardScreen() {
         onOpenChange={setIsPublishModalOpen}
         onPublish={() => console.log("Publicado")}
         item={selectedItem}
+      />
+
+      <CreatePublicationDialog
+        open={isCreatePublicationOpen}
+        onOpenChange={setCreatePublicationOpen}
+        onCreatePublication={(data) => createPublicationMutation.mutate({
+          title: data.title,
+          content: data.content,
+          type: data.type,
+          status: data.status,
+          visibility: data.visibility,
+          summary: data.summary || "",
+          image: data.image,
+        })}
+        isPending={createPublicationMutation.isPending}
       />
     </div>
   );

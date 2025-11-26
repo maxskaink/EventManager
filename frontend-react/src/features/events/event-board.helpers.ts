@@ -91,7 +91,8 @@ export const isEventType = (type: string) => {
 export const mapEventsToContentItems = (events: API.Event[]): ContentItem[] => {
   return events.map((event) => ({
     id: event.id.toString(),
-    type: event.event_type,
+    type: "evento",
+    subtype: event.event_type,
     title: event.name,
     description: event.description,
     date: event.start_date.split("T")[0],
@@ -114,16 +115,28 @@ export const mapEventsToContentItems = (events: API.Event[]): ContentItem[] => {
   }));
 };
 
-export const mapPublicationsToContentItems = (publications: API.Publication[]): ContentItem[] => {
-  return publications.map((pub) => ({
-    id: `pub-${pub.id}`,
-    type: pub.type,
-    title: pub.title,
-    description: pub.summary || pub.content || "",
-    date: pub.published_at ? pub.published_at.split("T")[0] : pub.created_at.split("T")[0],
-    status: pub.status,
-    views: 0,
-    original: pub,
-    kind: 'publication' as const,
-  }));
+export const mapPublicationsToContentItems = (
+  publications: API.Publication[],
+  events: API.Event[] = []
+): ContentItem[] => {
+  return publications.map((pub) => {
+    // For event publications, find the associated event to get its subtype
+    const isEventPublication = pub.event_id !== null && pub.type === "evento";
+    const associatedEvent = isEventPublication 
+      ? events.find(e => e.id === pub.event_id)
+      : undefined;
+
+    return {
+      id: `pub-${pub.id}`,
+      type: pub.type,
+      subtype: associatedEvent?.event_type,  // Set subtype for event publications
+      title: pub.title,
+      description: pub.summary || pub.content || "",
+      date: pub.published_at ? pub.published_at.split("T")[0] : pub.created_at.split("T")[0],
+      status: pub.status,
+      views: 0,
+      original: pub,
+      kind: 'publication' as const,
+    };
+  });
 };
