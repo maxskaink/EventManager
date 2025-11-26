@@ -1,11 +1,17 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Calendar, Clock, MapPin, Users, Share2 } from 'lucide-react';
 import { PublicationAPI, EventAPI } from '../../services/api';
 import { toast } from 'sonner';
 import PublicationDetailSkeleton from '../../components/publications/PublicationDetailSkeleton';
 import BottomNavbarWrapper from '../../components/nav/BottomNavbarWrapper';
 import { useAuthStore } from '../../stores/auth.store';
+import { Button } from "../../components/ui/button";
+import { Card, CardContent, CardHeader } from "../../components/ui/card";
+import { Badge } from "../../components/ui/badge";
+import { ImageWithFallback } from "../../components/figma/ImageWithFallback";
+import { resolveImageUrl } from "../../features/api";
+import { useApp } from "../../components/context/AppContext";
 
 const PublicationDetailPage = () => {
   const { publicationId } = useParams<{ publicationId: string }>();
@@ -14,7 +20,10 @@ const PublicationDetailPage = () => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const { user } = useAuthStore();
+  const { registerEvent } = useApp();
   const role = user?.role || 'guest';
+
+  const [isImageOpen, setIsImageOpen] = useState(false);
 
   useEffect(() => {
     if (publicationId) {
@@ -29,6 +38,7 @@ const PublicationDetailPage = () => {
             setEvent(eventData);
           }
         } catch (error) {
+          console.error(error);
           toast.error('Error al cargar la publicación.');
         } finally {
           setLoading(false);
@@ -40,62 +50,275 @@ const PublicationDetailPage = () => {
   }, [publicationId]);
 
   const handleBack = () => {
-    navigate('/see-publication');
+    navigate('/publications');
   };
 
-  return (
-    <div className="flex flex-col h-screen bg-gray-100">
-      <header className="bg-white shadow-md w-full p-4 flex items-center">
-        <button onClick={handleBack} className="mr-4">
-          <ArrowLeft />
-        </button>
-        <h1 className="text-xl font-semibold truncate">
-          {loading ? 'Cargando...' : publication?.title || 'Detalle de Publicación'}
-        </h1>
-      </header>
+  const handleRegister = () => {
+    if (event) {
+        registerEvent(event.id.toString());
+        toast.success("🎉 ¡Te has inscrito exitosamente al evento!", {
+            description: `Ahora eres parte de: ${event.name}`,
+            duration: 4000,
+        });
+    }
+  };
 
-      <main className="flex-grow overflow-y-auto p-4">
-        {loading ? (
-          <PublicationDetailSkeleton />
-        ) : !publication ? (
-          <div>No se encontró la publicación.</div>
-        ) : (
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h1 className="text-3xl font-bold mb-4">{publication.title}</h1>
-            <p className="text-gray-600 mb-4">{publication.summary}</p>
-            <div
-              className="prose max-w-none"
-              dangerouslySetInnerHTML={{ __html: publication.content }}
-            />
-            {event && (
-              <div className="mt-6 pt-6 border-t">
-                <h2 className="text-2xl font-bold mb-4">Evento Asociado</h2>
-                <p>
-                  <strong>Nombre:</strong> {event.name}
-                </p>
-                <p>
-                  <strong>Descripción:</strong> {event.description}
-                </p>
-                <p>
-                  <strong>Fecha de inicio:</strong>{' '}
-                  {new Date(event.start_date).toLocaleDateString()}
-                </p>
-                <p>
-                  <strong>Fecha de fin:</strong>{' '}
-                  {new Date(event.end_date).toLocaleDateString()}
-                </p>
-                <p>
-                  <strong>Ubicación:</strong> {event.location}
-                </p>
-              </div>
-            )}
+  if (loading) {
+    return <PublicationDetailSkeleton />;
+  }
+
+  if (!publication) {
+    return (
+        <div className="min-h-screen flex items-center justify-center p-4">
+            <Card>
+                <CardContent className="p-8 text-center">
+                    <p className="text-muted-foreground mb-4">Publicación no encontrada</p>
+                    <Button onClick={handleBack}>Volver a publicaciones</Button>
+                </CardContent>
+            </Card>
+        </div>
+    );
+  }
+
+  // Determine image source
+  let imageSrc = "https://source.unsplash.com/random/1200x600?abstract"; // Default fallback
+  if (publication.image_url) {
+      imageSrc = resolveImageUrl(publication.image_url);
+  } else if (event) {
+      // Use a random image based on event type if no specific image
+       imageSrc = `https://source.unsplash.com/random/1200x600?${event.event_type}`;
+  }
+
+
+  const isEventFull = event && event.capacity ? (event.capacity <= 0) : false; // Placeholder logic for full event
+
+  return (
+    <div className="min-h-screen pb-20 bg-gray-50/50">
+      {/* Header */}
+      <div className="bg-[#0a2740] p-4 shadow-sm text-white sticky top-0 z-10">
+        <div className="max-w-4xl mx-auto flex items-center gap-4">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleBack}
+            className="text-white hover:bg-white/10"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <h1 className="text-lg font-semibold truncate flex-1">
+             {publication.title}
+          </h1>
+          <Button variant="ghost" size="icon" className="text-white hover:bg-white/10">
+            <Share2 className="h-5 w-5" />
+          </Button>
+        </div>
+      </div>
+
+      <div className="max-w-4xl mx-auto">
+         {/* Hero Image */}
+         {/* Hero Image with Blurred Background */}
+        <div 
+            className="relative w-full h-[500px] bg-gray-900 overflow-hidden group cursor-zoom-in"
+            onClick={() => setIsImageOpen(true)}
+        >
+          {/* Blurred Background Layer */}
+          <div 
+            className="absolute inset-0 bg-cover bg-center blur-xl opacity-50 scale-110 transition-transform duration-700 group-hover:scale-125"
+            style={{ backgroundImage: `url(${imageSrc})` }}
+          />
+          
+          {/* Foreground Image Layer */}
+          <div className="absolute inset-0 flex items-center justify-center p-4">
+             <img
+               src={imageSrc}
+               alt={publication.title}
+               className="max-w-full max-h-full object-contain shadow-2xl rounded-lg transition-transform duration-300 group-hover:scale-[1.02]"
+               onError={(e) => {
+                 e.currentTarget.src = "https://images.unsplash.com/photo-1557683316-973673baf926?w=800&q=80"; // Fallback
+               }}
+             />
           </div>
-        )}
-      </main>
+
+          <Badge
+            className="absolute top-4 right-4 capitalize shadow-sm z-10"
+            variant={publication.type === 'evento' ? 'default' : 'secondary'}
+          >
+            {publication.type}
+          </Badge>
+          
+          {/* Status Badge (if event) */}
+           {event && (
+             <div className="absolute top-4 left-4 z-10">
+                {(() => {
+                   const eventDate = new Date(event.start_date);
+                   const today = new Date();
+                   today.setHours(0,0,0,0);
+                   const eventDateOnly = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
+                   const diffTime = eventDateOnly.getTime() - today.getTime();
+                   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                   if (diffDays < 0) return <Badge className="bg-gray-500 shadow-sm">Finalizado</Badge>;
+                   if (diffDays === 0) return <Badge className="bg-green-600 animate-pulse shadow-sm">En curso</Badge>;
+                   if (diffDays <= 5) return <Badge className="bg-orange-500 shadow-sm">¡Pronto!</Badge>;
+                   return <Badge className="bg-blue-500 shadow-sm">Próximo</Badge>;
+                })()}
+             </div>
+           )}
+        </div>
+
+        <div className="p-4 space-y-6">
+           {/* Title & Summary */}
+           <section>
+             <h1 className="text-2xl font-bold text-gray-900 mb-2">{publication.title}</h1>
+             {publication.summary && (
+                <p className="text-muted-foreground text-lg leading-relaxed">
+                    {publication.summary}
+                </p>
+             )}
+           </section>
+
+           {/* Event Details Grid (Conditional) */}
+           {event && (
+             <section>
+                <Card>
+                  <CardHeader>
+                    <h3 className="font-semibold text-lg">Información del Evento</h3>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-blue-100 rounded-lg">
+                          <Calendar className="h-5 w-5 text-blue-600" />
+                        </div>
+                        <div>
+                          <p className="text-sm text-muted-foreground">Fecha</p>
+                          <p className="font-medium">
+                            {new Date(event.start_date).toLocaleDateString("es-ES", {
+                              weekday: "long",
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                            })}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-green-100 rounded-lg">
+                          <Clock className="h-5 w-5 text-green-600" />
+                        </div>
+                        <div>
+                          <p className="text-sm text-muted-foreground">Hora</p>
+                          <p className="font-medium">
+                             {event.start_date.split('T')[1]?.substring(0, 5)}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-purple-100 rounded-lg">
+                          <MapPin className="h-5 w-5 text-purple-600" />
+                        </div>
+                        <div>
+                          <p className="text-sm text-muted-foreground">Modalidad</p>
+                          <p className="capitalize font-medium">
+                            {event.modality}
+                            {event.location && event.modality === 'presencial' && (
+                              <span className="text-xs ml-2 text-gray-500">• {event.location}</span>
+                            )}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-orange-100 rounded-lg">
+                          <Users className="h-5 w-5 text-orange-600" />
+                        </div>
+                        <div>
+                          <p className="text-sm text-muted-foreground">Cupos</p>
+                          <p className="font-medium">
+                            {event.capacity ? `${event.capacity} cupos` : 'Ilimitado'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+             </section>
+           )}
+
+           {/* Action Buttons (Conditional for Events) */}
+           {event && (
+             <section>
+                {!user ? (
+                   <Card>
+                     <CardContent className="p-6 text-center">
+                       <p className="text-muted-foreground mb-4">Inicia sesión para inscribirte a este evento</p>
+                       <Button onClick={() => navigate("/login")}>Iniciar Sesión</Button>
+                     </CardContent>
+                   </Card>
+                ) : (
+                   <div className="grid gap-4">
+                     <Button 
+                        size="lg" 
+                        onClick={handleRegister} 
+                        disabled={isEventFull}
+                        className="w-full font-semibold text-lg h-12"
+                     >
+                        {isEventFull ? "Evento lleno" : "Inscribirme al evento"}
+                     </Button>
+                     {isEventFull && (
+                        <p className="text-center text-sm text-muted-foreground">
+                            Este evento ha alcanzado su capacidad máxima
+                        </p>
+                     )}
+                   </div>
+                )}
+             </section>
+           )}
+
+           {/* Main Content */}
+           <section>
+             <Card>
+               <CardContent className="p-6">
+                 <div 
+                    className="prose prose-blue max-w-none prose-headings:font-bold prose-a:text-blue-600"
+                    dangerouslySetInnerHTML={{ __html: publication.content }}
+                 />
+               </CardContent>
+             </Card>
+           </section>
+        </div>
+      </div>
 
       <BottomNavbarWrapper role={role} />
+
+      {/* Image Inspection Modal */}
+      {isImageOpen && (
+        <div 
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm p-4 animate-in fade-in duration-200"
+            onClick={() => setIsImageOpen(false)}
+        >
+            <div className="relative max-w-full max-h-full">
+                <img 
+                    src={imageSrc} 
+                    alt={publication.title} 
+                    className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl"
+                    onClick={(e) => e.stopPropagation()} // Prevent closing when clicking the image itself
+                />
+                <button 
+                    className="absolute -top-12 right-0 text-white hover:text-gray-300 transition-colors p-2"
+                    onClick={() => setIsImageOpen(false)}
+                >
+                    <span className="sr-only">Cerrar</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-x"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                </button>
+            </div>
+        </div>
+      )}
     </div>
   );
 };
 
 export default PublicationDetailPage;
+
