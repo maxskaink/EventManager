@@ -12,6 +12,8 @@ export type ContentItem = {
   enrolled?: number;
   views?: number;
   kind: 'event' | 'publication';
+  original?: any;
+  eventId?: string;
 };
 
 export type ItemToDelete = {

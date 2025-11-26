@@ -1,9 +1,10 @@
 import React from "react";
 import PublicationCard from "./PublicationCard";
 import { MasonryBox, MasonryContainer } from "../ui/mansory-layout";
+import type { ContentItem } from "../../features/events/types";
 
 interface PublicationListProps {
-  publications: API.Publication[];
+  publications: ContentItem[];
 }
 
 export const PublicationList: React.FC<PublicationListProps> = ({ publications }) => {

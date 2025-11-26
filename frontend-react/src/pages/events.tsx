@@ -67,6 +67,7 @@ const transformApiEvents = (apiEvents: API.Event[]): TransformedEvent[] => {
   });
 };
 
+/** @deprecated */
 export function EventsScreen() {
   const user = useAuthStore((s) => s.user);
   const role = user?.role ?? "";
