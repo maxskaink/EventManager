@@ -6,7 +6,7 @@ export const MainLayout = () => {
     const { user } = useAuthStore();
 
     return (
-        <div className="min-h-screen pb-20 bg-background">
+        <div className="min-h-screenz bg-background">
             {/* 
         The UnifiedHeader is NOT rendered here because we want to allow 
         each page to customize it (title, actions, back button).

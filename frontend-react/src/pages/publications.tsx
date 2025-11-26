@@ -4,29 +4,20 @@ import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft } from "lucide-react";
 import { useAuthStore } from "../stores/auth.store";
 import { getDashboardRouteFromRole } from "../services/navigation/redirects";
-import { PublicationAPI } from "../services/api"; // Asumiendo que existe
 import BottomNavbarWrapper from "../components/nav/BottomNavbarWrapper";
 
 import { PublicationList, PublicationLoading, PublicationEmpty } from "../components/publications";
-
-// Clave de la query para react-query
-const PUBLICATIONS_QUERY_KEY = ["publications"];
-
-// Hook para obtener las publicaciones
-function usePublications() {
-  return useQuery<API.Publication[], Error>({
-    queryKey: PUBLICATIONS_QUERY_KEY,
-    queryFn: PublicationAPI.listAllPublications, // Asumiendo que esta función existe
-    // staleTime: 1000 * 60 * 5, // Cache por 5 minutos
-  });
-}
+import { publicationQueries } from "@/services/react-query/queries";
 
 export function PublicationsScreen() {
   const user = useAuthStore((s) => s.user);
   const role = user?.role ?? "";
   const navigate = useNavigate();
 
-  const { data: publications, isLoading, isError } = usePublications();
+  const { data: publications, isLoading, isError } = useQuery(
+    role === "mentor" ?
+    publicationQueries.all() : publicationQueries.published()
+  );
 
   const normalizedRole = React.useMemo(() => {
     if (role === "active-member" || role === "seed") {

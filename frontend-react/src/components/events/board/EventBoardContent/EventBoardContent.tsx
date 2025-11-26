@@ -18,6 +18,8 @@ type Props = {
   onDeleteClick: (item: ItemToDelete) => void;
   onPublish: (item: ContentItem) => void;
   onNavigate: NavigateFunction;
+  onCreatePublication: () => void;
+  onCreateEvent: () => void;
 };
 
 
@@ -30,7 +32,8 @@ export function EventBoardContent({
   onViewDetails,
   onDeleteClick,
   onPublish,
-  onNavigate,
+  onCreatePublication,
+  onCreateEvent,
 }: Props) {
   if (loading) {
     return (
@@ -53,16 +56,16 @@ export function EventBoardContent({
             Intenta ajustar los filtros o crea nuevo contenido.
           </p>
           <div className="flex gap-2 justify-center">
-            <Button onClick={() => onNavigate("/create-event")}>
+            <Button onClick={onCreateEvent}>
               <Plus className="h-4 w-4 mr-2" />
               Crear Evento
             </Button>
             <Button
               variant="outline"
-              onClick={() => onNavigate("/create-article")}
+              onClick={onCreatePublication}
             >
               <Plus className="h-4 w-4 mr-2" />
-              Crear Articulo
+              Crear Publicación
             </Button>
           </div>
         </CardContent>

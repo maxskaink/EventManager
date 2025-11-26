@@ -209,6 +209,8 @@ export function EventBoardScreen() {
               onDeleteClick={handleDeleteClick}
               onPublish={handlePublish}
               onNavigate={navigate}
+              onCreateEvent={() => navigate("/create-event")}
+              onCreatePublication={() => setCreatePublicationOpen(true)}
             />
           </TabsContent>
 
@@ -222,6 +224,8 @@ export function EventBoardScreen() {
               onDeleteClick={handleDeleteClick}
               onPublish={handlePublish}
               onNavigate={navigate}
+              onCreateEvent={() => navigate("/create-event")}
+              onCreatePublication={() => setCreatePublicationOpen(true)}
             />
           </TabsContent>
         </Tabs>

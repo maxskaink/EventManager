@@ -26,8 +26,6 @@ import { EditExternalEventDialog } from "@/components/profile/dialogs/edit-exter
 import { AddCertificateDialog } from "@/components/profile/dialogs/add-certificate-dialog";
 import { EditCertificateDialog } from "@/components/profile/dialogs/edit-certificate-dialog";
 import { ConfirmDeleteDialog } from "@/components/profile/dialogs/confirm-delete-dialog";
-// import { AddEventDialog } from "./dialogs/add-event-dialog"; // Necesitarías crear este dialog
-import BottomNavbarWrapper from "@/components/nav/BottomNavbarWrapper";
 
 const formatDate = (dateString: string): string =>
   new Date(dateString).toLocaleDateString("es-ES", {
@@ -108,7 +106,7 @@ export function ProfileScreen() {
   const certificates = certificatesData?.certificates ?? [];
   console.log(certificatesData);
 
-  const { data: articlesData, isLoading: isLoadingArticles } = useQuery({
+  const { data: articlesData } = useQuery({
     queryKey: ["articles", "my"],
     queryFn: ArticleAPI.listMyArticles,
     enabled: !!user,
@@ -469,7 +467,7 @@ export function ProfileScreen() {
           />
         </>
       }
-      navbar={<BottomNavbarWrapper role={role} />}
+      
     />
   );
 }

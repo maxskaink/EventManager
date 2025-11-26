@@ -21,4 +21,21 @@ export const publicationQueries = {
                 return Array.isArray(data) ? data : [];
             },
         }),
+    published: () => 
+        queryOptions({
+            queryKey: ["publications","published"],
+            queryFn: async () => {
+                const data = await PublicationAPI.listPublishedPublications();
+                return Array.isArray(data) ? data : [];
+            },
+        }),
+    draft: () =>
+        queryOptions({
+            queryKey: ["publications","draft"],
+            queryFn: async () => {
+                const data = await PublicationAPI.listDraftPublications();
+                return Array.isArray(data) ? data : [];
+            },
+        })
+    
 };

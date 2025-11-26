@@ -11,7 +11,6 @@ interface ProfileTemplateProps {
   recentCertificates: ReactNode;
   settings: ReactNode;
   dialogs: ReactNode; // Para todos los modales
-  navbar: ReactNode;
 }
 
 export const ProfileTemplate = ({
@@ -25,9 +24,8 @@ export const ProfileTemplate = ({
   recentCertificates,
   settings,
   dialogs,
-  navbar,
 }: ProfileTemplateProps) => (
-  <div className="min-h-screen pb-20 bg-gradient-to-br from-[#f7fafd] via-[#eef2f7] to-[#dde3eb]">
+  <div className="min-h-screen bg-gradient-to-br from-[#f7fafd] via-[#eef2f7] to-[#dde3eb]">
     {header}
     <main className="mx-auto max-w-4xl space-y-6 p-4">
       <div className="rounded-2xl border border-slate-200/70 bg-white/90 backdrop-blur-sm shadow-[0_4px_12px_rgba(0,0,0,0.06),0_1px_3px_rgba(0,0,0,0.04)] p-4 md:p-6">
@@ -51,6 +49,5 @@ export const ProfileTemplate = ({
       </div>
     </main>
     {dialogs}
-    {navbar}
   </div>
 );
