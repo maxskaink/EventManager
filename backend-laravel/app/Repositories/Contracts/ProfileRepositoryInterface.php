@@ -21,4 +21,5 @@ interface ProfileRepositoryInterface
     public function getProfileInterestById(int $userId, int $interestId): ?ProfileInterest;
 
     public function deleteProfileInterest(int $userId, int $interestId): bool;
+    public function getAllProfiles(): Collection;
 }
