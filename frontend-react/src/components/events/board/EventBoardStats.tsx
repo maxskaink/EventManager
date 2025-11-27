@@ -1,5 +1,5 @@
 import { Card, CardContent } from "../../ui/card";
-import { Calendar, Users, Pin, Eye } from "lucide-react";
+import { Calendar, Users, Pin } from "lucide-react";
 
 type Props = {
   loading: boolean;

@@ -2,28 +2,43 @@ import { Button } from "../../components/ui/button";
 import { Card, CardContent, CardHeader } from "../../components/ui/card";
 import { Badge } from "../../components/ui/badge";
 import { UnifiedHeader } from "../../components/layout/UnifiedHeader";
-import { useApp } from "../../components/context/AppContext";
-import { Calendar, Users, Award, Bell } from "lucide-react";
+import { Calendar, Users, Award } from "lucide-react";
 import { ImageWithFallback } from "../../components/figma/ImageWithFallback";
 import { useNavigate } from "react-router";
+import { certificateQueries, eventQueries } from "@/services/react-query/queries";
+import { useQuery } from "@tanstack/react-query";
+import { isEventUpcoming } from "@/features/events";
+import { useAuthStore } from "@/stores/auth.store";
 
 export function MemberDashboard() {
-  const { user, events, certificates, notifications } = useApp();
+  const user = useAuthStore((state) => state.user);
+
+  //const userInterestsQuery = useQuery(profileQueries.interests());
+  //const userInterests = userInterestsQuery.data;
+
   const navigate = useNavigate();
 
+  const eventQuery = useQuery(eventQueries.all());
+  const events = eventQuery.data ?? [];
+
+  const certificateQuery = useQuery(certificateQueries.my());
+  const certificates = certificateQuery.data ?? [];
+
   const recommendedEvents = events
-    .filter((event) => event.status === "upcoming")
+    .filter((event) => isEventUpcoming(event))
+    /*
     .filter((event) =>
-      user?.interests?.some(
+      userInterests?.some(
         (interest) =>
-          event.title.toLowerCase().includes(interest.toLowerCase()) ||
+          event.name.toLowerCase().includes(interest..toLowerCase()) ||
           event.description.toLowerCase().includes(interest.toLowerCase()),
       ),
+      
     )
+      */
     .slice(0, 2);
 
   const recentCertificates = certificates.slice(0, 2);
-  const unreadNotifications = notifications.filter((n) => !n.read).length;
 
   return (
     <div className="space-y-6">
@@ -31,16 +46,6 @@ export function MemberDashboard() {
       <UnifiedHeader
         title={`Hola, ${user?.name}`}
         subtitle="Integrante del semillero"
-        actions={
-          <Button variant="ghost" size="icon" onClick={() => navigate("/notifications")} className="relative text-white hover:bg-white/10">
-            <Bell className="h-5 w-5" />
-            {unreadNotifications > 0 && (
-              <Badge className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs bg-red-500">
-                {unreadNotifications}
-              </Badge>
-            )}
-          </Button>
-        }
       />
 
       <div className="max-w-4xl mx-auto p-4 space-y-6">
@@ -58,25 +63,25 @@ export function MemberDashboard() {
               {recommendedEvents.map((event) => (
                 <Card key={event.id} className="hover:shadow-md transition-shadow">
                   <div className="aspect-video relative overflow-hidden rounded-t-lg">
-                    <ImageWithFallback src={event.image} alt={event.title} className="w-full h-full object-cover" />
+                    <ImageWithFallback src={""} alt={event.name} className="w-full h-full object-cover" />
                     <Badge className="absolute top-2 right-2">Recomendado</Badge>
                   </div>
 
                   <CardHeader className="pb-2">
-                    <h3 className="line-clamp-2">{event.title}</h3>
+                    <h3 className="line-clamp-2">{event.name}</h3>
                   </CardHeader>
 
                   <CardContent className="space-y-3">
                     <div className="space-y-2 text-sm">
                       <div className="flex items-center gap-2 text-muted-foreground">
                         <Calendar className="h-4 w-4" />
-                        <span>{new Date(event.date).toLocaleDateString("es-ES")}</span>
+                        <span>{new Date(event.start_date).toLocaleDateString("es-ES")}</span>
                       </div>
 
                       <div className="flex items-center gap-2 text-muted-foreground">
                         <Users className="h-4 w-4" />
                         <span>
-                          {event.enrolled}/{event.capacity} inscritos
+                          {event.capacity}/{event.capacity} inscritos
                         </span>
                       </div>
                     </div>
@@ -117,9 +122,9 @@ export function MemberDashboard() {
                     <Award className="h-6 w-6 text-primary" />
                   </div>
                   <div className="flex-1">
-                    <h4>{cert.eventName}</h4>
+                    <h4>{cert.name}</h4>
                     <p className="text-sm text-muted-foreground">
-                      {new Date(cert.date).toLocaleDateString("es-ES")} • {cert.hours}h
+                      {new Date(cert.issue_date).toLocaleDateString("es-ES")}
                     </p>
                   </div>
                   <Button size="sm" variant="outline">
@@ -139,12 +144,12 @@ export function MemberDashboard() {
               <Card key={event.id}>
                 <CardContent className="p-4 flex items-center gap-4">
                   <div className="w-12 h-12 rounded-lg overflow-hidden">
-                    <ImageWithFallback src={event.image} alt={event.title} className="w-full h-full object-cover" />
+                    <ImageWithFallback src={""} alt={event.name} className="w-full h-full object-cover" />
                   </div>
                   <div className="flex-1">
-                    <h4 className="line-clamp-1">{event.title}</h4>
+                    <h4 className="line-clamp-1">{event.name}</h4>
                     <p className="text-sm text-muted-foreground">
-                      {new Date(event.date).toLocaleDateString("es-ES")} • {event.time}
+                      {new Date(event.start_date).toLocaleDateString("es-ES")}
                     </p>
                   </div>
                   <Button size="sm" variant="outline">

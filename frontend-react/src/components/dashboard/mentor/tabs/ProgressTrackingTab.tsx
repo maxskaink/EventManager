@@ -3,12 +3,7 @@ import { Button } from "../../../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../../../ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "../../../ui/avatar";
 import { Calendar, Award } from "lucide-react";
-
-type MemberProgressData = API.User & {
-  joinDate: string;
-  eventsAttended: number;
-  certificatesEarned: number;
-};
+import type { MemberProgressData } from "./types";
 
 interface ProgressTrackingTabProps {
   users: API.User[];
@@ -55,7 +50,7 @@ export const ProgressTrackingTab: React.FC<ProgressTrackingTabProps> = ({
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-3">
                       <Avatar className="h-10 w-10">
-                        <AvatarImage src={user.avatar} />
+                        <AvatarImage src={user.avatar ?? undefined} />
                         <AvatarFallback>
                           {user.name?.split(" ").map((n) => n[0]).join("") ||
                             "?"}

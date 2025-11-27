@@ -61,7 +61,9 @@ const certificateSchema = z.object({
     path: ["expiration_date"],
 });
 
-type CertificateFormData = z.infer<typeof certificateSchema>;
+type CertificateFormData = Omit<z.infer<typeof certificateSchema>, "credential_url"> & {
+    credential_url?: string | undefined;
+};
 
 interface AddCertificateDialogProps {
     open: boolean;

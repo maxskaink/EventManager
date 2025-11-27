@@ -12,7 +12,7 @@ export const UserSearchScreen = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
 
-  const { data: usersResponse, isLoading, error } = useQuery({
+  const { data: usersResponse, isLoading, isError } = useQuery({
     queryKey: ['activeUsers'],
     queryFn: userAPI.listActiveUsers,
   });
@@ -44,9 +44,9 @@ export const UserSearchScreen = () => {
 
         {isLoading && <div className="text-center py-8">Cargando usuarios...</div>}
         
-        {error && <div className="text-center py-8 text-red-500">Error al cargar usuarios</div>}
+        {isError && <div className="text-center py-8 text-red-500">Error al cargar usuarios</div>}
 
-        {!isLoading && !error && (
+        {!isLoading && !isError && (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {filteredUsers.map((user: API.User) => (
               <Card 

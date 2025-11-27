@@ -129,7 +129,7 @@ export const UserManagementTab: React.FC<UserManagementTabProps> = ({
                     <TableCell>
                     <div className="flex items-center gap-3">
                       <Avatar className="h-8 w-8">
-                        <AvatarImage src={user.avatar} />
+                        <AvatarImage src={user.avatar ?? undefined} />
                         <AvatarFallback>
                           {user.name?.split(" ").map((n) => n[0]).join("") ||
                             "?"}

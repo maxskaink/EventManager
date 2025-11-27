@@ -4,9 +4,10 @@ import { Card, CardContent } from '../../ui/card';
 import { Badge } from '../../ui/badge';
 import { Settings, Eye } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import type { ContentItem } from '@/features/events';
 
 interface DashboardUpcomingEventsProps {
-  events: Content[];
+  events: ContentItem[];
 }
 
 export const DashboardUpcomingEvents: React.FC<DashboardUpcomingEventsProps> = ({
@@ -33,7 +34,7 @@ export const DashboardUpcomingEvents: React.FC<DashboardUpcomingEventsProps> = (
                     <div className="flex items-center gap-2 mb-1">
                       <h4 className="line-clamp-1">{event.title}</h4>
                       <Badge variant="outline" className="text-xs">
-                        {event.category}
+                        {event.type}
                       </Badge>
                     </div>
                     <p className="text-sm text-muted-foreground">
@@ -45,7 +46,7 @@ export const DashboardUpcomingEvents: React.FC<DashboardUpcomingEventsProps> = (
                         {event.enrolled}/{event.capacity} inscritos
                       </span>
                       <span className="text-muted-foreground">
-                        {Math.round((event.enrolled / event.capacity) * 100)}%
+                        {Math.round(((event.enrolled ?? 0) / (event.capacity ?? 1)) * 100)}%
                         ocupación
                       </span>
                     </div>

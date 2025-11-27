@@ -23,7 +23,7 @@ export const UserDetailScreen = () => {
     queryFn: userAPI.listActiveUsers,
   });
 
-  const user = usersResponse?.users?.find((u: API.User) => u.id === id);
+  const user = usersResponse?.find((u: API.User) => u.id === id);
 
   // 2. Fetch Certificates
   const { data: certificatesResponse } = useQuery({

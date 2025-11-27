@@ -40,3 +40,12 @@ export const translateEventType = (type: string) => {
             return "No se ha definido un tipo";
     }
 }
+
+export const isEventUpcoming = (event: API.Event) => {
+    const today = new Date();
+    const eventDate = new Date(event.start_date);
+    const todayTime = today.getTime();
+    const eventTime = eventDate.getTime();
+    const daysToBeUpcoming = 5
+    return eventTime - todayTime <= daysToBeUpcoming * 24 * 60 * 60 * 1000;
+}

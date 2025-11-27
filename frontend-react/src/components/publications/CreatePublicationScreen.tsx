@@ -1,11 +1,10 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardHeader } from '../ui/card';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Textarea } from '../ui/textarea';
 import { Badge } from '../ui/badge';
-import { useApp } from '../context/AppContext';
 import {
   ArrowLeft,
   Eye,
@@ -19,10 +18,10 @@ import { useAuthStore } from '../../stores/auth.store';
 import { ArticleAPI } from '../../services/api';
 import { toast } from 'sonner';
 import { getDashboardRouteFromRole } from '../../services/navigation/redirects';
+import { getErrorMessageForToast } from '@/features/errors/error.helpers';
 
 export function CreateArticleScreen() {
   const navigate = useNavigate()
-  const { user } = useApp();
   const authUser = useAuthStore(s => s.user);
   const [loading, setLoading] = useState(false);
 
@@ -36,7 +35,7 @@ export function CreateArticleScreen() {
 
   const [preview, setPreview] = useState(false);
 
-  const handleInputChange = (field: string, value: any) => {
+  const handleInputChange = (field: string, value: unknown) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
@@ -81,9 +80,8 @@ export function CreateArticleScreen() {
       
       // Navegar de vuelta
       navigate(getDashboardRouteFromRole(authUser?.role || ''));
-    } catch (error: any) {
-      console.error('Error creating art0icle:', error);
-      const message = error.response?.data?.message || 'Error al crear el artículo';
+    } catch (error) {
+      const message = getErrorMessageForToast(error);
       toast.error(message);
     } finally {
       setLoading(false);

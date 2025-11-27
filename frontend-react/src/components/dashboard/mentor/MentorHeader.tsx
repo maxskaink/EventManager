@@ -2,7 +2,7 @@ import React from 'react';
 import { Button } from '../../ui/button';
 import { Badge } from '../../ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '../../ui/avatar';
-import { Bell, LogOut } from 'lucide-react';
+import { LogOut } from 'lucide-react';
 import brainImage from '../../../assets/brain.png';
 import { NotificationPopover } from '@/components/notifications/NotificationPopover';
 
@@ -38,7 +38,7 @@ export const MentorHeader: React.FC<MentorHeaderProps> = ({
 
             <div className="flex items-center gap-2">
               <Avatar className="h-8 w-8">
-                <AvatarImage src={user?.avatar} />
+                <AvatarImage src={user?.avatar ?? undefined} />
                 <AvatarFallback>
                   {user?.name
                     ?.split(" ")

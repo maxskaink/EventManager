@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useApp } from "../../components/context/AppContext";
 import { useNavigate } from "react-router";
 import { EventAPI, ArticleAPI, PublicationAPI } from "../../services/api";
 import { toast } from "sonner";
@@ -18,9 +17,11 @@ import { AttendanceModal } from "../../components/events/board/AttendanceModal";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/tabs";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { eventQueries, publicationQueries } from "../../services/react-query/queries";
+import { useAuthStore } from "@/stores/auth.store";
 
 export function EventBoardScreen() {
-  const { user } = useApp();
+
+  const user = useAuthStore(s => s.user);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
@@ -220,7 +221,6 @@ export function EventBoardScreen() {
               onDeleteClick={handleDeleteClick}
               onPublish={handlePublish}
               onAttendance={handleAttendance}
-              onNavigate={navigate}
               onCreateEvent={() => navigate("/create-event")}
               onCreatePublication={() => setCreatePublicationOpen(true)}
             />
@@ -236,7 +236,6 @@ export function EventBoardScreen() {
               onDeleteClick={handleDeleteClick}
               onPublish={handlePublish}
               onAttendance={handleAttendance}
-              onNavigate={navigate}
               onCreateEvent={() => navigate("/create-event")}
               onCreatePublication={() => setCreatePublicationOpen(true)}
             />

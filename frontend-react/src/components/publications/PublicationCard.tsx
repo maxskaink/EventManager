@@ -32,10 +32,10 @@ const getTimeCategory = (date: string) => {
 }
 
 // these are dummy values
-const EVENT_CARD_HEIGHT_WITH_IMAGE = 350;
-const EVENT_CARD_HEIGHT_WITHOUT_IMAGE = 250;
-const PUBLICATION_CARD_HEIGHT = 250;
-const PUBLICATION_CARD_HEIGHT_WITH_IMAGE = 350;
+// const EVENT_CARD_HEIGHT_WITH_IMAGE = 350;
+// const EVENT_CARD_HEIGHT_WITHOUT_IMAGE = 250;
+// const PUBLICATION_CARD_HEIGHT = 250;
+// const PUBLICATION_CARD_HEIGHT_WITH_IMAGE = 350;
 
 const PublicationCard: React.FC<PublicationCardProps> = ({ publication }) => {
   const isEvent = publication.kind === 'event' || publication.type === 'evento';

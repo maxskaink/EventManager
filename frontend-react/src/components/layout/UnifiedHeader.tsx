@@ -42,7 +42,7 @@ export const UnifiedHeader: React.FC<UnifiedHeaderProps> = ({
                         </Button>
                     ) : (
                         <Avatar className="h-10 w-10 border-2 border-white/20">
-                            <AvatarImage src={user?.avatar} />
+                            <AvatarImage src={user?.avatar ?? undefined} />
                             <AvatarFallback className="bg-blue-800 text-white">
                                 {user?.name?.charAt(0).toUpperCase()}
                             </AvatarFallback>

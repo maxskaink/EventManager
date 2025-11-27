@@ -40,7 +40,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             <h4 className="font-semibold mb-3"><Users /> Tu Información</h4>
             <div className="flex items-center gap-4 p-4 bg-muted rounded-lg">
               <Avatar className="h-16 w-16">
-                <AvatarImage src={user?.avatar} />
+                <AvatarImage src={user?.avatar ?? undefined} />
                 <AvatarFallback>{user?.name?.split(" ").map(n => n[0]).join("") || "?"}</AvatarFallback>
               </Avatar>
               <div className="flex-1">
@@ -57,7 +57,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             <div className="grid grid-cols-2 gap-4">
               <div className="p-4 bg-blue-50 rounded-lg"><p>Usuarios Gestionados</p><p>{users.length}</p></div>
               <div className="p-4 bg-yellow-50 rounded-lg"><p>Pendientes</p><p>{pendingSubmissions.length}</p></div>
-              <div className="p-4 bg-green-50 rounded-lg"><p>Integrantes Activos</p><p>{getStat("member")}</p></div>
+              <div className="p-4 bg-green-50 rounded-lg"><p>Integrantes Activos</p><p>{getStat("seed")}</p></div>
               <div className="p-4 bg-purple-50 rounded-lg"><p>Total Aprobados</p><p>{submissions.filter(s => s.status === "approved").length}</p></div>
             </div>
           </div>

@@ -73,7 +73,7 @@ export const GeneralReportModal: React.FC<GeneralReportModalProps> = ({
                 <div key={user.id} className="flex items-center justify-between p-3 bg-muted rounded-lg">
                   <div className="flex items-center gap-3">
                     <Avatar className="h-8 w-8">
-                      <AvatarImage src={user.avatar} />
+                      <AvatarImage src={user.avatar ?? undefined} />
                       <AvatarFallback>{user.name?.split(" ").map(n => n[0]).join("") || "?"}</AvatarFallback>
                     </Avatar>
                     <div>

@@ -1,5 +1,5 @@
 import { queryOptions } from "@tanstack/react-query";
-import { EventAPI, PublicationAPI } from "../api";
+import { CertificateAPI, EventAPI, ProfileAPI, PublicationAPI } from "../api";
 
 export const eventQueries = {
     all: () =>
@@ -39,3 +39,25 @@ export const publicationQueries = {
         })
     
 };
+
+export const profileQueries = {
+    interests: () => queryOptions({
+            queryKey: ["profile", "interests"],
+            queryFn: () => ProfileAPI.getInterests(),
+        }),
+    user: () => queryOptions({
+            queryKey: ["profile", "user"],
+            queryFn: () => ProfileAPI.getProfile(),
+        }),
+}
+
+
+export const certificateQueries = {
+    my: () => queryOptions({
+            queryKey: ["certificates"],
+            queryFn: async () => {
+                const data = await CertificateAPI.listMyCertificates()
+                return data.certificates ?? [];
+            },
+        }),
+}

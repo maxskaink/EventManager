@@ -1,4 +1,3 @@
-import { useApp } from '../../components/context/AppContext';
 import { UnifiedHeader } from '../../components/layout/UnifiedHeader';
 import {
   DashboardMetrics,
@@ -7,14 +6,23 @@ import {
   DashboardUpcomingEvents,
   DashboardAdminActions,
 } from '../../components/dashboard/coordinator';
+import { useAuthStore } from '@/stores/auth.store';
+import { useQuery } from '@tanstack/react-query';
+import { EventAPI } from '@/services/api';
+import { mapEventsToContentItems } from '@/features/events';
 
 // Nota: Renombrado a '...Page' para claridad, o puedes llamarlo 'CoordinatorDashboard'
 export function CoordinatorDashboardPage() {
-  const { user, events } = useApp();
+  const user = useAuthStore(s => s.user);
 
+  const eventQuery = useQuery({
+    queryKey: ['events'],
+    queryFn: () => EventAPI.listAllEvents(),
+  });
+  const events = eventQuery.data ?? [];
   // Lógica y datos derivados se mantienen en el componente 'padre'
   const totalEvents = events.length;
-  const totalEnrolled = events.reduce((sum, event) => sum + (event.enrolled ?? 0), 0);
+  const totalEnrolled = events.reduce((sum, event) => sum + (event.capacity ?? 0), 0);
   const totalCapacity = events.reduce((sum, event) => sum + (event.capacity ?? 0), 0);
 
   // Evitar división por cero
@@ -23,8 +31,11 @@ export function CoordinatorDashboardPage() {
     : 0;
 
   const upcomingEvents = events.filter(
-    (event) => event.status === 'upcoming',
+    (event) => (new Date(event.start_date)).getTime() - new Date().getTime() > -5 * 24 * 60 * 60 * 1000,
   );
+
+
+  const upcomingContent = mapEventsToContentItems(upcomingEvents);
 
   // Idealmente, deberías tener un estado de carga o un 'early return'
   if (!user) {
@@ -55,7 +66,7 @@ export function CoordinatorDashboardPage() {
         <DashboardContentManagement />
 
         {/* 5. Próximos Eventos */}
-        <DashboardUpcomingEvents events={upcomingEvents} />
+        <DashboardUpcomingEvents events={upcomingContent} />
 
         {/* 6. Administración */}
         <DashboardAdminActions />

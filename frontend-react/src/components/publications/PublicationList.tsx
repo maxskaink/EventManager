@@ -7,10 +7,12 @@ interface PublicationListProps {
   publications: ContentItem[];
 }
 
+/*
 const ESTIMATED_CARD_WIDTH = 300;
 const EVENT_BASE_HEIGHT = 200;
 const PUBLICATION_BASE_HEIGHT = 200;
 const NO_IMAGE_EXTRA_HEIGHT = 50;
+
 
 const resolveCardHeight = (publication: ContentItem) => {
    const isEvent = publication.kind === 'event' || publication.type === 'evento';
@@ -53,6 +55,7 @@ const resolveCardHeight = (publication: ContentItem) => {
    const baseHeight = isEvent ? EVENT_BASE_HEIGHT : PUBLICATION_BASE_HEIGHT;
    return baseHeight + imageHeight;
 }
+*/
 
 export const PublicationList: React.FC<PublicationListProps> = ({ publications }) => {
   return (

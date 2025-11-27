@@ -13,7 +13,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({ user, onLogout
     <div className="bg-[#0a2740] p-4 shadow-sm text-white">
       <div className="max-w-4xl mx-auto flex items-center gap-4">
         <Avatar className="h-12 w-12">
-          <AvatarImage src={user.avatar} />
+          <AvatarImage src={user.avatar ?? undefined} />
           <AvatarFallback>{user.name?.charAt(0).toUpperCase()}</AvatarFallback>
         </Avatar>
         <button

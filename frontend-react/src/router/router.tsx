@@ -15,7 +15,6 @@ import { PublicationsScreen } from "../pages/publications";
 import PublicationDetailPage from "../pages/publications/[publicationId]";
 import { CreateArticleScreen } from "../components/publications/CreatePublicationScreen";
 import { ProfileScreen } from "../pages/profile";
-import { CertificatesScreen } from "../components/certificates/CertificatesScreen";
 import NotificationsPage from "../pages/notifications";
 import CreateEventPage from "../pages/admin/create-event";
 import { UserSearchScreen } from "../pages/users";
@@ -74,7 +73,6 @@ export const router = createBrowserRouter([
               { path: "publications", element: <PublicationsScreen /> },
               { path: "create-article", element: <CreateArticleScreen /> },
               { path: "profile", element: <ProfileScreen /> },
-              { path: "certificates", element: <CertificatesScreen /> },
               { path: "notifications", element: <NotificationsPage /> },
               { path: "users", element: <UserSearchScreen /> },
               { path: "users/:userId", element: <UserDetailScreen /> },

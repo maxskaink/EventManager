@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Button } from "../ui/button";
-import { Card, CardContent, CardHeader } from "../ui/card";
+import { Card, CardContent } from "../ui/card";
 import { Badge } from "../ui/badge";
 import {
   Avatar,
@@ -14,9 +14,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
-import { useApp } from "../context/AppContext";
-import { BNavBarMentor } from "../ui/b-navbar-mentor";
-import { BNavBarCoordinator } from "../ui/b-navbar-coordinator";
 import {
   ArrowLeft,
   Users,
@@ -35,7 +32,6 @@ import BottomNavbarWrapper from "../nav/BottomNavbarWrapper";
 import { useAuthStore } from "../../stores/auth.store";
 
 export function ReportsScreen() {
-  const { user } = useApp();
   const someUser = useAuthStore(s => s.user);
   const navigate = useNavigate()
   const [reportType, setReportType] = useState("participation");
