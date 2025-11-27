@@ -119,18 +119,12 @@ const PublicationDetailPage = () => {
       </div>
 
       <div className="max-w-4xl mx-auto">
-         {/* Hero Image with Blurred Background */}
+         {/* Hero Image */}
          {imageSrc && (
             <div 
                 className="relative w-full h-[500px] bg-gray-900 overflow-hidden group cursor-zoom-in"
                 onClick={() => setIsImageOpen(true)}
             >
-              {/* Blurred Background Layer */}
-              <div 
-                className="absolute inset-0 bg-cover bg-center blur-xl opacity-50 scale-110 transition-transform duration-700 group-hover:scale-125"
-                style={{ backgroundImage: `url(${imageSrc})` }}
-              />
-              
               {/* Foreground Image Layer */}
               <div className="absolute inset-0 flex items-center justify-center p-4">
                  <img

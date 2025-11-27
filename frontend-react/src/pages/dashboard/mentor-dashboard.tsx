@@ -168,7 +168,6 @@ export function MentorDashboardPage() {
   };
 
   const pendingSubmissions = submissions.filter(s => s.status === "pending");
-  const pendingCount = 3; // Mock value
 
   if (!user) return null; // O un spinner de carga
 

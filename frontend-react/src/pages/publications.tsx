@@ -1,7 +1,6 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft } from "lucide-react";
 import { useAuthStore } from "../stores/auth.store";
 import { getDashboardRouteFromRole } from "../services/navigation/redirects";
 import BottomNavbarWrapper from "../components/nav/BottomNavbarWrapper";
@@ -9,7 +8,7 @@ import BottomNavbarWrapper from "../components/nav/BottomNavbarWrapper";
 import { PublicationList, PublicationLoading, PublicationEmpty } from "../components/publications";
 import { PublicationsCategoryTabs } from "../components/publications/wall/PublicationsCategoryTabs";
 import { PublicationsSearchBar } from "../components/publications/wall/PublicationsSearchBar";
-import { publicationQueries, eventQueries } from "@/services/react-query/queries";
+import { publicationQueries} from "@/services/react-query/queries";
 import type { ContentItem } from "@/features/events/types";
 import { UnifiedHeader } from "@/components/layout/UnifiedHeader";
 
@@ -29,9 +28,6 @@ export function PublicationsScreen() {
       publicationQueries.all() : publicationQueries.published()
   );
 
-  // 2. Fetch Events (For enrichment only)
-  const { data: events = [] } = useQuery(eventQueries.all());
-
   const isLoading = isLoadingPubs;
   const isError = isErrorPubs;
 
@@ -48,14 +44,8 @@ export function PublicationsScreen() {
   const contentItems: ContentItem[] = useMemo(() => {
     if (!publications) return [];
 
-    // Helper to find event
-    const findEvent = (eventId: number | null) => {
-      if (!eventId) return null;
-      return events.find(e => e.id === eventId);
-    };
-
     return publications.map(pub => {
-      const associatedEvent = findEvent(pub.event_id);
+      const associatedEvent = pub.event;
 
       // Base item
       const item: ContentItem = {
@@ -89,7 +79,7 @@ export function PublicationsScreen() {
 
       return item;
     });
-  }, [publications, events]);
+  }, [publications]);
 
   // Filtering
   const filteredItems = useMemo(() => {

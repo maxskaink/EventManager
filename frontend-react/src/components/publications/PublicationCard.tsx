@@ -31,6 +31,12 @@ const getTimeCategory = (date: string) => {
   return null;
 }
 
+// these are dummy values
+const EVENT_CARD_HEIGHT_WITH_IMAGE = 350;
+const EVENT_CARD_HEIGHT_WITHOUT_IMAGE = 250;
+const PUBLICATION_CARD_HEIGHT = 250;
+const PUBLICATION_CARD_HEIGHT_WITH_IMAGE = 350;
+
 const PublicationCard: React.FC<PublicationCardProps> = ({ publication }) => {
   const isEvent = publication.kind === 'event' || publication.type === 'evento';
 
@@ -47,12 +53,6 @@ const PublicationCard: React.FC<PublicationCardProps> = ({ publication }) => {
     }
   }
 
-  // Use a random placeholder if no image (optional, based on user preference for "pretty")
-  // For masonry, images are good. Let's use a placeholder if no image is found to keep it visual.
-  if (!imageSrc) {
-    imageSrc = `https://source.unsplash.com/random/800x600?${publication.type}`;
-  }
-
 
   const timeCategory = getTimeCategory(publication.date);
 
@@ -60,14 +60,18 @@ const PublicationCard: React.FC<PublicationCardProps> = ({ publication }) => {
     <Link to={`/publications/${publication.id.replace('pub-', '')}`}>
       <div className="bg-white rounded-xl shadow-md overflow-hidden transition-transform duration-200 ease-in-out cursor-pointer flex flex-col h-full hover:-translate-y-1 hover:shadow-lg group">
         <div className="relative">
-          <img
-            className="w-full h-auto object-cover"
-            src={imageSrc}
-            alt={publication.title}
-            onError={(e) => {
-              e.currentTarget.src = "https://images.unsplash.com/photo-1557683316-973673baf926?w=800&q=80"; // Fallback
-            }}
-          />
+          {imageSrc ? (
+            <img
+              className="w-full h-auto object-cover"
+              src={imageSrc}
+              alt={publication.title}
+              onError={(e) => {
+                e.currentTarget.src = "https://images.unsplash.com/photo-1557683316-973673baf926?w=800&q=80"; // Fallback
+              }}
+            />
+          ) : (
+            <div className="h-8" />
+          )}
           <div className="absolute top-2 right-2 flex flex-col gap-1 items-end">
             <Badge className={`${getTypeColor(publication.type)} shadow-sm`}>
               {publication.subtype || publication.type}

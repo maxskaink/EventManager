@@ -18,6 +18,7 @@ const MasonryBox: React.FC<MasonryBoxProps> = ({ children, style }) => {
     // Removed fixed height, as in a real masonry layout,
     // the height should be determined by the content.
     // height: '10rem',
+    marginBottom: '1rem',
     ...style, // Apply any custom styles passed in props
   };
 

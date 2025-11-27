@@ -53,6 +53,16 @@ async function listAllEnrollements() {
   return response.data.participations;
 }
 
+async function listEnrollmentsByEvent(eventId: number) {
+  const response = await axiosInstance.get<EventAPI.ListParticipationsRes>(`/event/${eventId}/participation`);
+  return response.data.participations;
+}
+
+async function listEnrollmentsByUser(userId: number) {
+  const response = await axiosInstance.get<EventAPI.ListParticipationsRes>(`/event/participation/user/${userId}`);
+  return response.data.participations;
+}
+
 async function markAttendance(eventId: number, userIds: number[]) {
   const response = await axiosInstance.post<EventAPI.MarkAttendanceRes>(`/event/${eventId}/attend`, { users: userIds });
   return response.data;
@@ -72,8 +82,9 @@ export default {
   deleteEvent,
   enroll,
   cancelEnrollment,
-  //listEnrollments,
   listAllEnrollements,
+  listEnrollmentsByEvent,
+  listEnrollmentsByUser,
   markAttendance,
   markAbscense,
 };

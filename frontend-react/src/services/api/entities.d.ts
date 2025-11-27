@@ -120,6 +120,7 @@ namespace API {
     visibility: PublicationVisibility;
     created_at: string;
     updated_at: string;
+    event: Event | null;
   }
 
   interface ExternalEvent {
