@@ -84,13 +84,11 @@ class ProfileController extends Controller
      *
      * @param int $userId
      * @return JsonResponse
-     * @throws AuthorizationException
+
      */
     public function getProfileById(int $userId): JsonResponse
     {
         $authUser = Auth::user();
-
-        $this->authorize('view', [Profile::class, User::query()->findOrFail($userId)]);
 
         $profile = $this->profileService->getProfile($userId);
 
@@ -158,5 +156,15 @@ class ProfileController extends Controller
             'message' => 'Interest removed successfully.',
         ]);
     }
+
+    public function listAllProfiles(): JsonResponse
+    {
+        $profiles = $this->profileService->getAllProfiles();
+
+        return response()->json([
+            'profiles' => $profiles,
+        ]);
+    }
+
 
 }

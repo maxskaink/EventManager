@@ -70,5 +70,9 @@ class ProfileRepository implements ProfileRepositoryInterface
         return (bool) $interest->delete();
     }
 
+    public function getAllProfiles(): Collection
+    {
+        return Profile::query()->with('user')->get();
+    }
 
 }

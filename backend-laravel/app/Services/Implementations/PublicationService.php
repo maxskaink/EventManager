@@ -88,33 +88,9 @@ class PublicationService implements PublicationServiceInterface
 
     public function listPublishedPublications(?User $user): Collection
     {
-        // Usuario no autenticado → solo públicas
-        if ($user === null) {
-            return $this->publicationRepo
-                ->listPublished()
-                ->where('visibility', 'public')
-                ->load(['event']);
-        }
-
-        // Roles con acceso total
-        if (in_array($user->role, ['mentor', 'coordinator'], true)) {
-            return $this->publicationRepo
-                ->listPublished()
-                ->load(['event']);
-        }
-
-        // Usuario normal: filtrar
-        $allPublished = $this->publicationRepo->listPublished();
-
-        $filtered = $allPublished->filter(function (Publication $pub) use ($user) {
-            if ($pub->visibility === 'public') {
-                return true;
-            }
-            return $this->accessRepo->exists($pub->id, $user->id);
-        });
-
-        return $filtered->load(['event']);
+        return $this->publicationRepo->listPublishedForUser($user);
     }
+
 
 
     public function listDraftPublications(): Collection

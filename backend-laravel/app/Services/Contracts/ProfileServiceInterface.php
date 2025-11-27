@@ -37,4 +37,6 @@ interface ProfileServiceInterface
     public function getProfileInterestById(int $userId, int $interestId): ?array;
 
     public function removeProfileInterest(int $userId, int $interestId): bool;
+
+    public function getAllProfiles(): array;
 }
