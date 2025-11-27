@@ -1,28 +1,31 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
+import { useQuery } from "@tanstack/react-query";
 import { Input } from "../../components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "../../components/ui/avatar";
 import { Search, User } from "lucide-react";
 import { UnifiedHeader } from "../../components/layout/UnifiedHeader";
-
-// Mock data for users
-const MOCK_USERS = [
-  { id: 1, name: "Alice Johnson", email: "alice@example.com", role: "Member", avatar: "https://i.pravatar.cc/150?u=alice" },
-  { id: 2, name: "Bob Smith", email: "bob@example.com", role: "Coordinator", avatar: "https://i.pravatar.cc/150?u=bob" },
-  { id: 3, name: "Charlie Brown", email: "charlie@example.com", role: "Mentor", avatar: "https://i.pravatar.cc/150?u=charlie" },
-  { id: 4, name: "David Lee", email: "david@example.com", role: "Member", avatar: "https://i.pravatar.cc/150?u=david" },
-  { id: 5, name: "Eva Green", email: "eva@example.com", role: "Interested", avatar: "https://i.pravatar.cc/150?u=eva" },
-];
+import userAPI from "../../services/api/endpoints/user";
 
 export const UserSearchScreen = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
 
-  const filteredUsers = MOCK_USERS.filter((user) =>
-    user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.email.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const { data: usersResponse, isLoading, error } = useQuery({
+    queryKey: ['activeUsers'],
+    queryFn: userAPI.listActiveUsers,
+  });
+
+  const users = usersResponse || [];
+
+  const filteredUsers = users.filter((user: API.User) => {
+    const searchLower = searchTerm.toLowerCase();
+    return (
+      user.name.toLowerCase().includes(searchLower) ||
+      user.email.toLowerCase().includes(searchLower)
+    );
+  });
 
   return (
     <div className="min-h-screen bg-background pb-20">
@@ -39,35 +42,41 @@ export const UserSearchScreen = () => {
           />
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {filteredUsers.map((user) => (
-            <Card 
-              key={user.id} 
-              className="cursor-pointer hover:shadow-md transition-shadow"
-              onClick={() => navigate(`/users/${user.id}`)}
-            >
-              <CardHeader className="flex flex-row items-center gap-4 pb-2">
-                <Avatar>
-                  <AvatarImage src={user.avatar} alt={user.name} />
-                  <AvatarFallback><User /></AvatarFallback>
-                </Avatar>
-                <div className="flex flex-col">
-                  <CardTitle className="text-base">{user.name}</CardTitle>
-                  <span className="text-xs text-muted-foreground">{user.role}</span>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground">{user.email}</p>
-              </CardContent>
-            </Card>
-          ))}
-          
-          {filteredUsers.length === 0 && (
-            <div className="col-span-full text-center py-8 text-muted-foreground">
-              No se encontraron usuarios.
-            </div>
-          )}
-        </div>
+        {isLoading && <div className="text-center py-8">Cargando usuarios...</div>}
+        
+        {error && <div className="text-center py-8 text-red-500">Error al cargar usuarios</div>}
+
+        {!isLoading && !error && (
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {filteredUsers.map((user: API.User) => (
+              <Card 
+                key={user.id} 
+                className="cursor-pointer hover:shadow-md transition-shadow"
+                onClick={() => navigate(`/users/${user.id}`)}
+              >
+                <CardHeader className="flex flex-row items-center gap-4 pb-2">
+                  <Avatar>
+                    <AvatarImage src={user.avatar || undefined} alt={user.name} />
+                    <AvatarFallback><User /></AvatarFallback>
+                  </Avatar>
+                  <div className="flex flex-col">
+                    <CardTitle className="text-base">{user.name}</CardTitle>
+                    <span className="text-xs text-muted-foreground">{user.role}</span>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground">{user.email}</p>
+                </CardContent>
+              </Card>
+            ))}
+            
+            {filteredUsers.length === 0 && (
+              <div className="col-span-full text-center py-8 text-muted-foreground">
+                No se encontraron usuarios.
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

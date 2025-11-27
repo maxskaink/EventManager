@@ -1,52 +1,74 @@
 import { useParams, useNavigate } from "react-router";
+import { useQuery } from "@tanstack/react-query";
 import { UnifiedHeader } from "../../../components/layout/UnifiedHeader";
 import { Avatar, AvatarFallback, AvatarImage } from "../../../components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../../components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "../../../components/ui/card";
 import { Badge } from "../../../components/ui/badge";
 import { User, Award, CalendarDays, FileText, ExternalLink } from "lucide-react";
-
-// Mock data for user details
-const MOCK_USER_DETAILS = {
-  1: { name: "Alice Johnson", email: "alice@example.com", role: "Member", avatar: "https://i.pravatar.cc/150?u=alice" },
-  2: { name: "Bob Smith", email: "bob@example.com", role: "Coordinator", avatar: "https://i.pravatar.cc/150?u=bob" },
-  3: { name: "Charlie Brown", email: "charlie@example.com", role: "Mentor", avatar: "https://i.pravatar.cc/150?u=charlie" },
-  4: { name: "David Lee", email: "david@example.com", role: "Member", avatar: "https://i.pravatar.cc/150?u=david" },
-  5: { name: "Eva Green", email: "eva@example.com", role: "Interested", avatar: "https://i.pravatar.cc/150?u=eva" },
-};
-
-// Mock data for tabs
-const MOCK_CERTIFICATES = [
-  { id: 1, title: "React Fundamentals", date: "2023-10-15", issuer: "Tech Academy" },
-  { id: 2, title: "Advanced TypeScript", date: "2023-11-20", issuer: "Code Masters" },
-];
-
-const MOCK_EXTERNAL_EVENTS = [
-  { id: 1, title: "Tech Conference 2023", date: "2023-09-10", location: "Convention Center" },
-  { id: 2, title: "Local Hackathon", date: "2023-12-05", location: "University Hall" },
-];
-
-const MOCK_PARTICIPATIONS = [
-  { id: 1, eventName: "Intro to AI", role: "Attendee", status: "Completed" },
-  { id: 2, eventName: "Web Dev Workshop", role: "Volunteer", status: "Completed" },
-];
-
-const MOCK_ARTICLES = [
-  { id: 1, title: "Understanding React Hooks", date: "2023-08-22", summary: "A deep dive into useEffect and useState." },
-  { id: 2, title: "TypeScript Best Practices", date: "2023-09-15", summary: "How to write clean and type-safe code." },
-];
+import userAPI from "../../../services/api/endpoints/user";
+import certificateAPI from "../../../services/api/endpoints/certificate";
+import externalEventAPI from "../../../services/api/endpoints/external-events";
+import eventAPI from "../../../services/api/endpoints/event";
+import articleAPI from "../../../services/api/endpoints/article";
 
 export const UserDetailScreen = () => {
   const { userId } = useParams();
   const navigate = useNavigate();
-  const user = MOCK_USER_DETAILS[Number(userId) as keyof typeof MOCK_USER_DETAILS];
+  const id = Number(userId);
+
+  // 1. Fetch User Details (using listActiveUsers as fallback for now)
+  const { data: usersResponse, isLoading: isLoadingUser } = useQuery({
+    queryKey: ['activeUsers'],
+    queryFn: userAPI.listActiveUsers,
+  });
+
+  const user = usersResponse?.users?.find((u: API.User) => u.id === id);
+
+  // 2. Fetch Certificates
+  const { data: certificatesResponse } = useQuery({
+    queryKey: ['certificates', id],
+    queryFn: () => certificateAPI.listCertificatesByUser(id),
+    enabled: !!id,
+  });
+  const certificates = certificatesResponse?.certificates || [];
+
+  // 3. Fetch External Events
+  const { data: externalEventsResponse } = useQuery({
+    queryKey: ['externalEvents', id],
+    queryFn: () => externalEventAPI.listUserExternalEvents(id),
+    enabled: !!id,
+  });
+  const externalEvents = externalEventsResponse?.external_events || [];
+
+  // 4. Fetch Participations
+  const { data: participations } = useQuery({
+    queryKey: ['participations', id],
+    queryFn: () => eventAPI.listEnrollmentsByUser(id),
+    enabled: !!id,
+  });
+
+  // 5. Fetch Articles
+  const { data: articles } = useQuery({
+    queryKey: ['articles', id],
+    queryFn: () => articleAPI.listArticlesByUser(id),
+    enabled: !!id,
+  });
+
+  if (isLoadingUser) {
+    return (
+      <div className="min-h-screen bg-background pb-20 flex items-center justify-center">
+        <p>Cargando perfil...</p>
+      </div>
+    );
+  }
 
   if (!user) {
     return (
       <div className="min-h-screen bg-background pb-20">
         <UnifiedHeader title="Usuario no encontrado" onGoBack={() => navigate(-1)} />
         <div className="p-4 text-center text-muted-foreground">
-          El usuario que buscas no existe.
+          El usuario que buscas no existe o no está activo.
         </div>
       </div>
     );
@@ -60,7 +82,7 @@ export const UserDetailScreen = () => {
         {/* Profile Header */}
         <div className="flex flex-col items-center gap-4 py-6">
           <Avatar className="h-24 w-24 border-4 border-background shadow-lg">
-            <AvatarImage src={user.avatar} alt={user.name} />
+            <AvatarImage src={user.avatar || undefined} alt={user.name} />
             <AvatarFallback className="text-2xl"><User /></AvatarFallback>
           </Avatar>
           <div className="text-center space-y-1">
@@ -80,73 +102,89 @@ export const UserDetailScreen = () => {
           </TabsList>
 
           <TabsContent value="certificates" className="mt-4 space-y-4">
-            {MOCK_CERTIFICATES.map((cert) => (
-              <Card key={cert.id}>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <Award className="h-4 w-4 text-primary" />
-                    {cert.title}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground">Emitido por: {cert.issuer}</p>
-                  <p className="text-xs text-muted-foreground mt-1">{cert.date}</p>
-                </CardContent>
-              </Card>
-            ))}
+            {certificates.length === 0 ? (
+              <p className="text-center text-muted-foreground py-4">No hay certificados.</p>
+            ) : (
+              certificates.map((cert) => (
+                <Card key={cert.id}>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <Award className="h-4 w-4 text-primary" />
+                      {cert.name}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground">Emitido por: {cert.issuing_organization}</p>
+                    <p className="text-xs text-muted-foreground mt-1">{cert.issue_date}</p>
+                  </CardContent>
+                </Card>
+              ))
+            )}
           </TabsContent>
 
           <TabsContent value="external" className="mt-4 space-y-4">
-            {MOCK_EXTERNAL_EVENTS.map((event) => (
-              <Card key={event.id}>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <ExternalLink className="h-4 w-4 text-primary" />
-                    {event.title}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground">{event.location}</p>
-                  <p className="text-xs text-muted-foreground mt-1">{event.date}</p>
-                </CardContent>
-              </Card>
-            ))}
+            {externalEvents.length === 0 ? (
+              <p className="text-center text-muted-foreground py-4">No hay eventos externos.</p>
+            ) : (
+              externalEvents.map((event) => (
+                <Card key={event.id}>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <ExternalLink className="h-4 w-4 text-primary" />
+                      {event.name}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground">{event.location}</p>
+                    <p className="text-xs text-muted-foreground mt-1">{event.start_date}</p>
+                  </CardContent>
+                </Card>
+              ))
+            )}
           </TabsContent>
 
           <TabsContent value="participations" className="mt-4 space-y-4">
-            {MOCK_PARTICIPATIONS.map((part) => (
-              <Card key={part.id}>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <CalendarDays className="h-4 w-4 text-primary" />
-                    {part.eventName}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex justify-between items-center">
-                    <p className="text-sm text-muted-foreground">{part.role}</p>
-                    <Badge variant="outline">{part.status}</Badge>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+            {(!participations || participations.length === 0) ? (
+              <p className="text-center text-muted-foreground py-4">No hay participaciones.</p>
+            ) : (
+              participations.map((part) => (
+                <Card key={part.id}>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <CalendarDays className="h-4 w-4 text-primary" />
+                      {/* Note: EventParticipation entity usually has event_id, we might need to fetch event details or if it's included */}
+                      Evento ID: {part.event_id}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex justify-between items-center">
+                      <Badge variant="outline">{part.status}</Badge>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            )}
           </TabsContent>
 
           <TabsContent value="articles" className="mt-4 space-y-4">
-            {MOCK_ARTICLES.map((article) => (
-              <Card key={article.id}>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <FileText className="h-4 w-4 text-primary" />
-                    {article.title}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground">{article.summary}</p>
-                  <p className="text-xs text-muted-foreground mt-1">{article.date}</p>
-                </CardContent>
-              </Card>
-            ))}
+            {(!articles || articles.length === 0) ? (
+              <p className="text-center text-muted-foreground py-4">No hay artículos.</p>
+            ) : (
+              articles.map((article) => (
+                <Card key={article.id}>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <FileText className="h-4 w-4 text-primary" />
+                      {article.title}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground">{article.description}</p>
+                    <p className="text-xs text-muted-foreground mt-1">{article.publication_date}</p>
+                  </CardContent>
+                </Card>
+              ))
+            )}
           </TabsContent>
         </Tabs>
       </div>
