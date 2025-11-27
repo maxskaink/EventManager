@@ -54,12 +54,12 @@ async function listAllEnrollements() {
 }
 
 async function listEnrollmentsByEvent(eventId: number) {
-  const response = await axiosInstance.get<EventAPI.ListParticipationsRes>(`/event/${eventId}/participation`);
+  const response = await axiosInstance.get<EventAPI.ListParticipationsRes>(`/event/${eventId}/participations`);
   return response.data.participations;
 }
 
 async function listEnrollmentsByUser(userId: number) {
-  const response = await axiosInstance.get<EventAPI.ListParticipationsRes>(`/event/participation/user/${userId}`);
+  const response = await axiosInstance.get<EventAPI.ListParticipationsRes>(`/event/participations/user/${userId}`);
   return response.data.participations;
 }
 

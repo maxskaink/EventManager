@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { ArrowLeft, Calendar, Clock, MapPin, Users, Share2 } from 'lucide-react';
+import { Calendar, Clock, MapPin, Users, Share2 } from 'lucide-react';
 import { PublicationAPI, EventAPI } from '../../services/api';
 import { toast } from 'sonner';
 import PublicationDetailSkeleton from '../../components/publications/PublicationDetailSkeleton';
@@ -10,6 +10,7 @@ import { Button } from "../../components/ui/button";
 import { Card, CardContent, CardHeader } from "../../components/ui/card";
 import { Badge } from "../../components/ui/badge";
 import { resolveImageUrl } from "../../features/api";
+import { UnifiedHeader } from '@/components/layout/UnifiedHeader';
 
 const PublicationDetailPage = () => {
   const { publicationId } = useParams<{ publicationId: string }>();
@@ -23,9 +24,12 @@ const PublicationDetailPage = () => {
   const role = user?.role || 'guest';
   const [isImageOpen, setIsImageOpen] = useState(false);
 
+  const [isEnrolled, setIsEnrolled] = useState(false);
+  const [canceling, setCanceling] = useState(false);
+
   useEffect(() => {
     if (publicationId) {
-      const fetchPublication = async () => {
+      const fetchData = async () => {
         try {
           setLoading(true);
           const pub = await PublicationAPI.getPublicationById(Number(publicationId));
@@ -34,6 +38,17 @@ const PublicationDetailPage = () => {
           if (pub.type === 'evento' && pub.event_id) {
             const eventData = await EventAPI.getEventById(pub.event_id);
             setEvent(eventData);
+
+            // Check enrollment if user is logged in
+            if (user) {
+                try {
+                    const enrollments = await EventAPI.listEnrollmentsByUser(user.id);
+                    const enrolled = enrollments.some(e => e.event_id === pub.event_id && e.status === 'active');
+                    setIsEnrolled(enrolled);
+                } catch (err) {
+                    console.error("Failed to fetch enrollments", err);
+                }
+            }
           }
         } catch (error) {
           console.error(error);
@@ -43,9 +58,9 @@ const PublicationDetailPage = () => {
         }
       };
 
-      fetchPublication();
+      fetchData();
     }
-  }, [publicationId]);
+  }, [publicationId, user]);
 
   const handleBack = () => {
     navigate('/publications');
@@ -57,6 +72,7 @@ const PublicationDetailPage = () => {
     try {
         setRegistering(true);
         await EventAPI.enroll(event.id);
+        setIsEnrolled(true);
         toast.success("🎉 ¡Te has inscrito exitosamente al evento!", {
             description: `Ahora eres parte de: ${event.name}`,
             duration: 4000,
@@ -68,6 +84,22 @@ const PublicationDetailPage = () => {
     } finally {
         setRegistering(false);
     }
+  };
+
+  const handleCancelEnrollment = async () => {
+      if (!event) return;
+
+      try {
+          setCanceling(true);
+          await EventAPI.cancelEnrollment(event.id);
+          setIsEnrolled(false);
+          toast.success("Inscripción cancelada exitosamente.");
+      } catch (error: any) {
+          console.error(error);
+          toast.error("Error al cancelar la inscripción.");
+      } finally {
+          setCanceling(false);
+      }
   };
 
   if (loading) {
@@ -96,27 +128,35 @@ const PublicationDetailPage = () => {
 
   const isEventFull = event && event.capacity ? (event.capacity <= 0) : false; // Placeholder logic for full event
 
+  const handleShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: publication.title,
+          text: publication.summary || 'Mira esta publicación',
+          url: window.location.href,
+        });
+      } catch (error) {
+        console.error('Error sharing:', error);
+      }
+    } else {
+      navigator.clipboard.writeText(window.location.href);
+      toast.success('Enlace copiado al portapapeles');
+    }
+  };
+
   return (
     <div className="min-h-screen pb-20 bg-gray-50/50">
       {/* Header */}
-      <div className="bg-[#0a2740] p-4 shadow-sm text-white sticky top-0 z-20">
-        <div className="max-w-4xl mx-auto flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={handleBack}
-            className="text-white hover:bg-white/10"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <h1 className="text-lg font-semibold truncate flex-1">
-             {publication.title}
-          </h1>
-          <Button variant="ghost" size="icon" className="text-white hover:bg-white/10">
+      <UnifiedHeader 
+        title={publication.title}
+        onGoBack={handleBack}
+        actions={
+          <Button variant="ghost" size="icon" onClick={handleShare} className="text-white hover:bg-white/10">
             <Share2 className="h-5 w-5" />
           </Button>
-        </div>
-      </div>
+        }
+      />
 
       <div className="max-w-4xl mx-auto">
          {/* Hero Image */}
@@ -287,15 +327,28 @@ const PublicationDetailPage = () => {
                    </Card>
                 ) : (
                    <div className="grid gap-4">
-                     <Button 
-                        size="lg" 
-                        onClick={handleRegister} 
-                        disabled={isEventFull || registering}
-                        className="w-full font-semibold text-lg h-12"
-                     >
-                        {registering ? "Inscribiendo..." : (isEventFull ? "Evento lleno" : "Inscribirme al evento")}
-                     </Button>
-                     {isEventFull && (
+                     {isEnrolled ? (
+                        <Button 
+                            size="lg" 
+                            variant="destructive"
+                            onClick={handleCancelEnrollment} 
+                            disabled={canceling}
+                            className="w-full font-semibold text-lg h-12"
+                        >
+                            {canceling ? "Cancelando..." : "Cancelar inscripción"}
+                        </Button>
+                     ) : (
+                        <Button 
+                            size="lg" 
+                            onClick={handleRegister} 
+                            disabled={isEventFull || registering}
+                            className="w-full font-semibold text-lg h-12"
+                        >
+                            {registering ? "Inscribiendo..." : (isEventFull ? "Evento lleno" : "Inscribirme al evento")}
+                        </Button>
+                     )}
+                     
+                     {isEventFull && !isEnrolled && (
                         <p className="text-center text-sm text-muted-foreground">
                             Este evento ha alcanzado su capacidad máxima
                         </p>

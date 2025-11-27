@@ -65,8 +65,8 @@ export const UnifiedHeader: React.FC<UnifiedHeaderProps> = ({
 
                     {actions}
                     
-                    {/* Default Actions if none provided */}
-                    {!actions && (
+                    {/* Notifications */}
+                    {user && (
                         <NotificationPopover />
                     )}
 
