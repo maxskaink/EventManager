@@ -64,12 +64,12 @@ async function listEnrollmentsByUser(userId: number) {
 }
 
 async function markAttendance(eventId: number, userIds: number[]) {
-  const response = await axiosInstance.post<EventAPI.MarkAttendanceRes>(`/event/${eventId}/attend`, { users: userIds });
+  const response = await axiosInstance.patch<EventAPI.MarkAttendanceRes>(`/event/${eventId}/participation/attend`, { users: userIds });
   return response.data;
 }
 
 async function markAbscense(eventId: number, userIds: number[]) {
-  const response = await axiosInstance.post<EventAPI.MarkAttendanceRes>(`/event/${eventId}/absent`, { users: userIds });
+  const response = await axiosInstance.patch<EventAPI.MarkAttendanceRes>(`/event/${eventId}/participation/absent`, { users: userIds });
   return response.data;
 }
 

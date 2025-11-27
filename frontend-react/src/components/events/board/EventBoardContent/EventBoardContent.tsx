@@ -1,15 +1,10 @@
-import { Card, CardContent } from "../../../ui/card";
 import { Button } from "../../../ui/button";
-import {
-  Plus,
-  Calendar,
-} from "lucide-react";
-import type { NavigateFunction } from "react-router";
+import { Plus } from "lucide-react";
+import type { ContentItem, ItemToDelete } from "@/features/events";
 import EventGridItem from "./EventGridItem";
 import EventListItem from "./EventListItem";
-import type { ContentItem, ItemToDelete } from "../../../../features/events";
 
-type Props = {
+interface EventBoardContentProps {
   loading: boolean;
   viewMode: "grid" | "list";
   content: ContentItem[];
@@ -17,14 +12,13 @@ type Props = {
   onViewDetails: (item: ContentItem) => void;
   onDeleteClick: (item: ItemToDelete) => void;
   onPublish: (item: ContentItem) => void;
-  onNavigate: NavigateFunction;
-  onCreatePublication: () => void;
+  onAttendance: (item: ContentItem) => void;
+  onNavigate: (path: string) => void;
   onCreateEvent: () => void;
-};
+  onCreatePublication: () => void;
+}
 
-
-// Componente Principal de Contenido
-export function EventBoardContent({
+const EventBoardContent = ({
   loading,
   viewMode,
   content,
@@ -32,51 +26,31 @@ export function EventBoardContent({
   onViewDetails,
   onDeleteClick,
   onPublish,
-  onCreatePublication,
+  onAttendance,
+  onNavigate,
   onCreateEvent,
-}: Props) {
+  onCreatePublication,
+}: EventBoardContentProps) => {
   if (loading) {
-    return (
-      <Card>
-        <CardContent className="p-8 text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Cargando contenido...</p>
-        </CardContent>
-      </Card>
-    );
+    return <div className="text-center py-10">Cargando contenido...</div>;
   }
 
   if (content.length === 0) {
-    return (
-      <Card>
-        <CardContent className="p-8 text-center">
-          <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <h3>No se encontró contenido</h3>
-          <p className="text-muted-foreground mb-4">
-            Intenta ajustar los filtros o crea nuevo contenido.
-          </p>
-          <div className="flex gap-2 justify-center">
-            <Button onClick={onCreateEvent}>
-              <Plus className="h-4 w-4 mr-2" />
-              Crear Evento
-            </Button>
-            <Button
-              variant="outline"
-              onClick={onCreatePublication}
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Crear Publicación
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    );
+      return <div className="text-center py-10 text-muted-foreground">No hay contenido para mostrar.</div>;
   }
 
   return (
     <section>
       <div className="flex items-center justify-between mb-4">
-        <h2>Contenido ({content.length})</h2>
+        <h2 className="text-xl font-semibold">Contenido ({content.length})</h2>
+        <div className="flex gap-2">
+            <Button onClick={onCreateEvent}>
+                <Plus className="mr-2 h-4 w-4" /> Nuevo Evento
+            </Button>
+            <Button variant="outline" onClick={onCreatePublication}>
+                <Plus className="mr-2 h-4 w-4" /> Nueva Publicación
+            </Button>
+        </div>
       </div>
 
       {viewMode === "grid" ? (
@@ -89,6 +63,7 @@ export function EventBoardContent({
               onViewDetails={onViewDetails}
               onDeleteClick={onDeleteClick}
               onPublish={onPublish}
+              onAttendance={onAttendance}
             />
           ))}
         </div>
@@ -102,6 +77,7 @@ export function EventBoardContent({
               onViewDetails={onViewDetails}
               onDeleteClick={onDeleteClick}
               onPublish={onPublish}
+              onAttendance={onAttendance}
             />
           ))}
         </div>
@@ -109,3 +85,5 @@ export function EventBoardContent({
     </section>
   );
 }
+
+export default EventBoardContent;

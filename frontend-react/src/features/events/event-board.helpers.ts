@@ -85,7 +85,7 @@ export const getOccupancyLevel = (enrolled: number, capacity: number) => {
 };
 
 export const isEventType = (type: string) => {
-  return type === "charla" || type === "curso" || type === "convocatoria" || type === "semillero" || type === "taller" || type === "conferencia";
+  return type === "charla" || type === "curso" || type === "convocatoria" || type === "semillero" || type === "taller" || type === "conferencia" || type === "evento";
 };
 
 export const mapEventsToContentItems = (events: API.Event[]): ContentItem[] => {

@@ -14,6 +14,7 @@ import { getErrorMessageForToast } from "../../features/errors/error.helpers";
 import { type ContentItem, type ItemToDelete, isEventType, mapEventsToContentItems, mapPublicationsToContentItems } from "../../features/events";
 import { PublishContentModal } from "../../components/events/board/PublishContentModal";
 import { CreatePublicationDialog } from "../../components/events/board/CreatePublicationDialog";
+import { AttendanceModal } from "../../components/events/board/AttendanceModal";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/tabs";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { eventQueries, publicationQueries } from "../../services/react-query/queries";
@@ -37,6 +38,8 @@ export function EventBoardScreen() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isPublishModalOpen, setIsPublishModalOpen] = useState(false);
   const [isCreatePublicationOpen, setCreatePublicationOpen] = useState(false);
+  const [isAttendanceModalOpen, setIsAttendanceModalOpen] = useState(false);
+  const [selectedEventForAttendance, setSelectedEventForAttendance] = useState<{ id: number; title: string } | null>(null);
   const [pinnedContent] = useState<string[]>([]); // Mock
 
   // Queries
@@ -143,6 +146,14 @@ export function EventBoardScreen() {
     setIsPublishModalOpen(true);
   };
 
+  const handleAttendance = (item: ContentItem) => {
+    const eventId = Number(item.id);
+    if (!isNaN(eventId)) {
+      setSelectedEventForAttendance({ id: eventId, title: item.title });
+      setIsAttendanceModalOpen(true);
+    }
+  };
+
   const handleConfirmDelete = () => {
     if (!itemToDelete) return;
 
@@ -208,6 +219,7 @@ export function EventBoardScreen() {
               onViewDetails={handleViewDetails}
               onDeleteClick={handleDeleteClick}
               onPublish={handlePublish}
+              onAttendance={handleAttendance}
               onNavigate={navigate}
               onCreateEvent={() => navigate("/create-event")}
               onCreatePublication={() => setCreatePublicationOpen(true)}
@@ -223,6 +235,7 @@ export function EventBoardScreen() {
               onViewDetails={handleViewDetails}
               onDeleteClick={handleDeleteClick}
               onPublish={handlePublish}
+              onAttendance={handleAttendance}
               onNavigate={navigate}
               onCreateEvent={() => navigate("/create-event")}
               onCreatePublication={() => setCreatePublicationOpen(true)}
@@ -262,6 +275,13 @@ export function EventBoardScreen() {
           image: data.image,
         })}
         isPending={createPublicationMutation.isPending}
+      />
+
+      <AttendanceModal
+        isOpen={isAttendanceModalOpen}
+        onOpenChange={setIsAttendanceModalOpen}
+        eventId={selectedEventForAttendance?.id || null}
+        eventTitle={selectedEventForAttendance?.title || ""}
       />
     </div>
   );

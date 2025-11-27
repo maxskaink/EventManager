@@ -1,3 +1,3 @@
-import { EventBoardContent } from "./EventBoardContent";
+import EventBoardContent from "./EventBoardContent";
 
 export default EventBoardContent;

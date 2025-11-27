@@ -1,4 +1,4 @@
-import {  Edit2, Eye, MoreVertical, Pin, Share, Trash2 } from "lucide-react";
+import {  Edit2, Eye, MoreVertical, Pin, Share, Trash2, Users } from "lucide-react";
 import { Button } from "../../../ui/button";
 import { Card, CardContent } from "../../../ui/card";
 import {
@@ -20,15 +20,29 @@ const EventGridItem = ({
   onViewDetails,
   onDeleteClick,
   onPublish,
+  onAttendance,
 }: {
   item: ContentItem;
   isPinned: boolean;
   onViewDetails: (item: ContentItem) => void;
   onDeleteClick: (item: ItemToDelete) => void;
   onPublish: (item: ContentItem) => void;
+  onAttendance: (item: ContentItem) => void;
 }) => {
   const isEvent = isEventType(item.type);
   const occupancy = isEvent && item.capacity && item.enrolled ? getOccupancyLevel(item.enrolled, item.capacity) : null;
+
+  const eventDate = new Date(item.date);
+  const currentDate = new Date();
+
+  console.log(isEvent)
+  console.log(item.type)
+  
+  // Check if event has ended
+  const hasEnded = isEvent && (eventDate < currentDate);
+  console.log(eventDate)
+  console.log(currentDate)
+  console.log(hasEnded)
 
   return (
     <Card className={isPinned ? "border-blue-500 border-2" : ""}>
@@ -47,6 +61,12 @@ const EventGridItem = ({
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
+                {hasEnded && (
+                  <DropdownMenuItem onClick={() => onAttendance(item)}>
+                    <Users className="h-4 w-4 mr-2" />
+                    Asistencia
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuItem
                   variant="destructive"
                   onClick={() =>

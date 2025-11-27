@@ -2,7 +2,7 @@ import { Card, CardContent } from "../../../ui/card";
 import { Button } from "../../../ui/button";
 import { Badge } from "../../../ui/badge";
 
-import { Edit, Trash2, Eye, Pin, Share, Settings } from "lucide-react";
+import { Edit, Trash2, Eye, Pin, Share, Settings, Users } from "lucide-react";
 import {
   getTypeColor,
   getStatusColor,
@@ -11,7 +11,7 @@ import {
   isEventType,
 } from "../../../../features/events/event-board.helpers"; // Importar helpers
 import type { ContentItem, ItemToDelete } from "../../../../features/events";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@radix-ui/react-tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../../../ui/tooltip";
 
 // Componente Interno: List Item
 const EventListItem = ({
@@ -20,16 +20,21 @@ const EventListItem = ({
   onViewDetails,
   onDeleteClick,
   onPublish,
+  onAttendance,
 }: {
   item: ContentItem;
   isPinned: boolean;
   onViewDetails: (item: ContentItem) => void;
   onDeleteClick: (item: ItemToDelete) => void;
   onPublish: (item: ContentItem) => void;
+  onAttendance: (item: ContentItem) => void;
 }) => {
   const isEvent = isEventType(item.type);
 
   const occupancy = isEvent && item.capacity && item.enrolled ? getOccupancyLevel(item.enrolled, item.capacity) : null;
+  
+  // Check if event has ended
+  const hasEnded = isEvent && new Date(item.date) < new Date();
 
   return (
     <Card className={isPinned ? "border-blue-500 border-l-4" : ""}>
@@ -46,6 +51,20 @@ const EventListItem = ({
             {/* ... (Descripción y detalles en línea) ... */}
           </div>
           <div className="flex gap-1">
+            {hasEnded && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button size="sm" variant="ghost" onClick={() => onAttendance(item)}>
+                      <Users className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent sideOffset={5}>
+                    <p>Asistencia</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
             <Button size="sm" variant="ghost" onClick={() => onViewDetails(item)}>
               <Eye className="h-4 w-4" />
             </Button>
