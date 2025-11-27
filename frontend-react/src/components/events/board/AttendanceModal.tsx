@@ -138,7 +138,7 @@ export function AttendanceModal({ isOpen, onOpenChange, eventId, eventTitle }: A
                     />
                     <div className="flex items-center gap-3 flex-1">
                       <Avatar className="h-8 w-8">
-                        <AvatarImage src={enrollment.user?.avatar || undefined} />
+                        <AvatarImage src={/*enrollment.user?.avatar ||*/ undefined} />
                         <AvatarFallback><User className="h-4 w-4" /></AvatarFallback>
                       </Avatar>
                       <div className="grid gap-0.5">
@@ -146,9 +146,9 @@ export function AttendanceModal({ isOpen, onOpenChange, eventId, eventTitle }: A
                           htmlFor={`user-${enrollment.user_id}`}
                           className="text-sm font-medium leading-none cursor-pointer"
                         >
-                          {enrollment.user?.name || `Usuario ${enrollment.user_id}`}
+                          {/*enrollment.user?.name ||*/ `Usuario ${enrollment.user_id}`}
                         </label>
-                        <p className="text-xs text-muted-foreground">{enrollment.user?.email}</p>
+                        <p className="text-xs text-muted-foreground">{/*enrollment.user?.email*/}</p>
                       </div>
                       <div className="ml-auto">
                          {/* We could show current status if available in enrollment object */}

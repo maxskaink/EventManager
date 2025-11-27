@@ -13,7 +13,6 @@ interface EventBoardContentProps {
   onDeleteClick: (item: ItemToDelete) => void;
   onPublish: (item: ContentItem) => void;
   onAttendance: (item: ContentItem) => void;
-  onNavigate: (path: string) => void;
   onCreateEvent: () => void;
   onCreatePublication: () => void;
 }
@@ -27,7 +26,6 @@ const EventBoardContent = ({
   onDeleteClick,
   onPublish,
   onAttendance,
-  onNavigate,
   onCreateEvent,
   onCreatePublication,
 }: EventBoardContentProps) => {
