@@ -75,11 +75,11 @@ class EventPolicy
         return in_array($user->role, ['mentor', 'coordinator'], true);
     }
 
-    // List participations for a specific user
-    public function listParticipationsByUser(User $authUser, array $params): bool
+
+    public function listParticipationsByUser(User $authUser, string $model, int $userId): bool
     {
-        $targetUserId = $params[0];
-        return $authUser->id === $targetUserId ||
+        return $authUser->id === $user_id ||
             in_array($authUser->role, ['mentor', 'coordinator'], true);
     }
+
 }
