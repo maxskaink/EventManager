@@ -27,10 +27,22 @@ async function deleteInterest(interest_id: number) {
   return response.data;
 }
 
+async function getAllProfiles() {
+  const response = await axiosInstance.get<{ profiles: API.Profile[] }>("/profile/all");
+  return response.data.profiles;
+}
+
+async function getProfileById(id: number) {
+  const response = await axiosInstance.get<{ profile: API.Profile }>(`/profile/${id}`);
+  return response.data.profile;
+}
+
 export default {
   getProfile,
   updateProfile,
   getInterests,
   addInterest,
   deleteInterest,
+  getAllProfiles,
+  getProfileById,
 };

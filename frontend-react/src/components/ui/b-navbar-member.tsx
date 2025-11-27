@@ -4,6 +4,7 @@ import {
   Home,
   CalendarDays,
   User,
+  Users,
 } from "lucide-react";
 import { useNavigate } from "react-router";
 
@@ -35,6 +36,14 @@ const BNavBarMember = () => {
         >
           <Award className="h-5 w-5" />
           <span className="text-xs">Certificados</span>
+        </Button>
+        <Button
+          variant="ghost"
+          onClick={() => navigate("/users")}
+          className="flex flex-col items-center gap-1 h-auto py-2"
+        >
+          <Users className="h-5 w-5" />
+          <span className="text-xs">Usuarios</span>
         </Button>
         <Button
           variant="ghost"

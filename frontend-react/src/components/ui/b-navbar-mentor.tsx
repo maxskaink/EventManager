@@ -2,6 +2,7 @@ import {
   LayoutDashboard,
   CalendarDays,
   User,
+  Users,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "./button";
@@ -41,6 +42,14 @@ const BNavBarMentor = () => {
         >
           <CalendarDays className="h-5 w-5" />
           <span className="text-xs">Publicaciones</span>
+        </Button>
+        <Button
+          variant="ghost"
+          onClick={() => navigate("/users")}
+          className="flex h-auto flex-col items-center gap-1 py-2"
+        >
+          <Users className="h-5 w-5" />
+          <span className="text-xs">Usuarios</span>
         </Button>
 
         {/* Botón de Perfil */}

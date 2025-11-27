@@ -3,6 +3,7 @@ import {
   CalendarDays,
   User,
   Home,
+  Users,
 } from "lucide-react";
 import { useNavigate } from "react-router";
 import { useAuthStore } from "../../stores/auth.store";
@@ -37,6 +38,14 @@ const BNavBarInterested = () => {
         >
           <CalendarDays className="h-5 w-5" />
           <span className="text-xs">Publicaciones</span>
+        </Button>
+        <Button
+          variant="ghost"
+          onClick={() => navigate("/users")}
+          className="flex flex-col items-center gap-1 h-auto py-2"
+        >
+          <Users className="h-5 w-5" />
+          <span className="text-xs">Usuarios</span>
         </Button>
         <Button
           variant="ghost"

@@ -5,6 +5,7 @@ import {
   MessageSquare,
   CalendarDays,
   LayoutDashboard,
+  Users,
 } from "lucide-react";
 import { useNavigate } from "react-router";
 
@@ -46,6 +47,14 @@ const BNavBarCoordinator = () => {
         >
           <BarChart className="h-5 w-5" />
           <span className="text-xs">Reportes</span>
+        </Button>
+        <Button
+          variant="ghost"
+          onClick={() => navigate("/users")}
+          className="flex flex-col items-center gap-1 h-auto py-2"
+        >
+          <Users className="h-5 w-5" />
+          <span className="text-xs">Usuarios</span>
         </Button>
         <Button
           variant="ghost"

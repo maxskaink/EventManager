@@ -1,4 +1,4 @@
-import { createBrowserRouter, Navigate, Outlet } from "react-router";
+import { createBrowserRouter, Navigate } from "react-router";
 
 import { LoginScreen } from "../components/auth/LoginScreen";
 import { RegisterScreen } from "../components/auth/RegisterScreen";
@@ -18,6 +18,8 @@ import { ProfileScreen } from "../pages/profile";
 import { CertificatesScreen } from "../components/certificates/CertificatesScreen";
 import NotificationsPage from "../pages/notifications";
 import CreateEventPage from "../pages/admin/create-event";
+import { UserSearchScreen } from "../pages/users";
+import { UserDetailScreen } from "../pages/users/[userId]";
 import { RootLayout } from "../components/nav/RootLayout";
 import { MainLayout } from "../components/layout/MainLayout";
 import GoogleCallbackScreen from "../pages/auth/google-callback";
@@ -74,6 +76,8 @@ export const router = createBrowserRouter([
               { path: "profile", element: <ProfileScreen /> },
               { path: "certificates", element: <CertificatesScreen /> },
               { path: "notifications", element: <NotificationsPage /> },
+              { path: "users", element: <UserSearchScreen /> },
+              { path: "users/:userId", element: <UserDetailScreen /> },
               // Create Event usually has its own header but we can wrap it too if we want the bottom nav
               // The user asked to unify headers, so let's wrap it and handle the header inside
               { path: "create-event", element: <CreateEventPage /> },
