@@ -3,7 +3,6 @@ import {
   CalendarDays,
   User,
   Home,
-  Users,
 } from "lucide-react";
 import { useNavigate } from "react-router";
 import { useAuthStore } from "../../stores/auth.store";
@@ -17,7 +16,7 @@ const BNavBarInterested = () => {
       <div className="max-w-4xl mx-auto flex justify-around">
         <Button
           variant="ghost"
-          onClick={() => navigate("/dashboard-guest")}
+          onClick={() => navigate("/dashboard-interested")}
           className="flex flex-col items-center gap-1 h-auto py-2"
         >
           <Home className="h-5 w-5" />
@@ -25,27 +24,11 @@ const BNavBarInterested = () => {
         </Button>
         <Button
           variant="ghost"
-          onClick={() => navigate("/events")}
-          className="flex flex-col items-center gap-1 h-auto py-2"
-        >
-          <CalendarDays className="h-5 w-5" />
-          <span className="text-xs">Eventos</span>
-        </Button>
-        <Button
-          variant="ghost"
-          onClick={() => navigate("/see-publication")}
+          onClick={() => navigate("/publications")}
           className="flex h-auto flex-col items-center gap-1 py-2"
         >
           <CalendarDays className="h-5 w-5" />
           <span className="text-xs">Publicaciones</span>
-        </Button>
-        <Button
-          variant="ghost"
-          onClick={() => navigate("/users")}
-          className="flex flex-col items-center gap-1 h-auto py-2"
-        >
-          <Users className="h-5 w-5" />
-          <span className="text-xs">Usuarios</span>
         </Button>
         <Button
           variant="ghost"

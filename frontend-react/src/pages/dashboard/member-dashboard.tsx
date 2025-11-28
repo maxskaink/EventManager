@@ -3,7 +3,6 @@ import { Card, CardContent, CardHeader } from "../../components/ui/card";
 import { Badge } from "../../components/ui/badge";
 import { UnifiedHeader } from "../../components/layout/UnifiedHeader";
 import { Calendar, Users, Award } from "lucide-react";
-import { ImageWithFallback } from "../../components/figma/ImageWithFallback";
 import { useNavigate } from "react-router";
 import { certificateQueries, eventQueries } from "@/services/react-query/queries";
 import { useQuery } from "@tanstack/react-query";
@@ -62,8 +61,7 @@ export function MemberDashboard() {
             <div className="grid gap-4 md:grid-cols-2">
               {recommendedEvents.map((event) => (
                 <Card key={event.id} className="hover:shadow-md transition-shadow">
-                  <div className="aspect-video relative overflow-hidden rounded-t-lg">
-                    <ImageWithFallback src={""} alt={event.name} className="w-full h-full object-cover" />
+                  <div className="aspect-video relative overflow-hidden rounded-t-lg bg-gray-100">
                     <Badge className="absolute top-2 right-2">Recomendado</Badge>
                   </div>
 
@@ -143,8 +141,7 @@ export function MemberDashboard() {
             {events.slice(0, 3).map((event) => (
               <Card key={event.id}>
                 <CardContent className="p-4 flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-lg overflow-hidden">
-                    <ImageWithFallback src={""} alt={event.name} className="w-full h-full object-cover" />
+                  <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-100">
                   </div>
                   <div className="flex-1">
                     <h4 className="line-clamp-1">{event.name}</h4>
