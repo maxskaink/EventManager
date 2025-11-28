@@ -63,8 +63,8 @@ Route::middleware('auth:sanctum')->prefix('event')->group(function () {
     Route::patch('/{eventId}/participation/absent', [EventController::class, 'markUsersAsAbsent']);
 
     Route::get('/participations', [EventController::class, 'listAllParticipations']); // all participations (mentor/coordinator)
+    Route::get('/participations/user/{userId}', [EventController::class, 'listParticipationsByUser']); // by user (must be before /{eventId} routes)
     Route::get('/{eventId}/participations', [EventController::class, 'listParticipationsByEvent']); // by event
-    Route::get('/participations/user/{userId}', [EventController::class, 'listParticipationsByUser']); // by user
 
     /**
      * Get a specific event by ID
