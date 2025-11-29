@@ -5,6 +5,8 @@ namespace App\Providers;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\URL;
+
 
 // MODELS
 use App\Models\{
@@ -84,6 +86,7 @@ use App\Repositories\Implementations\{ArticleRepository,
     PublicationAccessRepository,
     UserRepository};
 
+
 class AppServiceProvider extends ServiceProvider
 {
     /**
@@ -140,8 +143,18 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(User::class, UserPolicy::class);
         Gate::policy(Notification::class, NotificationPolicy::class);
 
-        // CORS override
-        Config::set('cors.allowed_origins', ['http://localhost:5173']);
+        // CORS override (you will change this later)
+
         Config::set('cors.supports_credentials', true);
+
+        // Force HTTPS in production
+        if ($this->app->environment('production')) {
+            URL::forceScheme('https');
+            Config::set('cors.allowed_origins', ['https://cdatosunicauca.org', 'https://www.cdatosunicauca.org']);
+        }
+        else{
+            Config::set('cors.allowed_origins', ['http://localhost:5173']);
+        }
     }
+
 }
