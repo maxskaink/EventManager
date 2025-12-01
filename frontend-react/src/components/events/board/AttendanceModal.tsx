@@ -6,7 +6,7 @@ import { ScrollArea } from "../../ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "../../ui/avatar";
 import { User } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { EventAPI } from "../../../services/api";
+import { EventAPI, UserAPI } from "../../../services/api";
 import { toast } from "sonner";
 import { getErrorMessageForToast } from "../../../features/errors/error.helpers";
 
@@ -27,6 +27,28 @@ export function AttendanceModal({ isOpen, onOpenChange, eventId, eventTitle }: A
     queryFn: () => eventId ? EventAPI.listEnrollmentsByEvent(eventId) : Promise.resolve([]),
     enabled: !!eventId && isOpen,
   });
+
+  // Fetch active users to resolve names/emails by user_id
+  // Resolve user by id on-demand to ensure we can display name/email even if not in active/inactive lists
+  const { data: usersResolved } = useQuery({
+    queryKey: ['eventEnrollmentsUsers', eventId],
+    queryFn: async () => {
+      if (!eventId) return new Map<number, API.User>();
+      const enrolls = await EventAPI.listEnrollmentsByEvent(eventId);
+      const ids = Array.from(new Set(enrolls.map(e => e.user_id)));
+      const entries = await Promise.all(ids.map(async (id) => {
+        try {
+          const user = await UserAPI.getUserById(id);
+          return [id, user] as const;
+        } catch {
+          return [id, undefined] as const;
+        }
+      }));
+      return new Map<number, API.User | undefined>(entries);
+    },
+    enabled: !!eventId && isOpen,
+  });
+  const userById = usersResolved ?? new Map<number, API.User | undefined>();
 
   // Reset selection when modal opens/closes or event changes
   useEffect(() => {
@@ -138,7 +160,7 @@ export function AttendanceModal({ isOpen, onOpenChange, eventId, eventTitle }: A
                     />
                     <div className="flex items-center gap-3 flex-1">
                       <Avatar className="h-8 w-8">
-                        <AvatarImage src={/*enrollment.user?.avatar ||*/ undefined} />
+                        <AvatarImage src={userById.get(enrollment.user_id)?.avatar || undefined} />
                         <AvatarFallback><User className="h-4 w-4" /></AvatarFallback>
                       </Avatar>
                       <div className="grid gap-0.5">
@@ -146,9 +168,13 @@ export function AttendanceModal({ isOpen, onOpenChange, eventId, eventTitle }: A
                           htmlFor={`user-${enrollment.user_id}`}
                           className="text-sm font-medium leading-none cursor-pointer"
                         >
-                          {/*enrollment.user?.name ||*/ `Usuario ${enrollment.user_id}`}
+                          {userById.get(enrollment.user_id)?.name 
+                            || userById.get(enrollment.user_id)?.email 
+                            || `ID ${enrollment.user_id}`}
                         </label>
-                        <p className="text-xs text-muted-foreground">{/*enrollment.user?.email*/}</p>
+                        {userById.get(enrollment.user_id)?.email && (
+                          <p className="text-xs text-muted-foreground">{userById.get(enrollment.user_id)!.email}</p>
+                        )}
                       </div>
                       <div className="ml-auto">
                          {/* We could show current status if available in enrollment object */}

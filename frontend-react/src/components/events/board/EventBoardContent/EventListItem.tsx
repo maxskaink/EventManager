@@ -51,6 +51,18 @@ const EventListItem = ({
             {/* ... (Descripción y detalles en línea) ... */}
           </div>
           <div className="flex gap-1">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button size="sm" variant="ghost" onClick={() => onAttendance(item)}>
+                    <Users className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent sideOffset={5}>
+                  <p>Ver participantes</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
             {hasEnded && (
               <TooltipProvider>
                 <Tooltip>

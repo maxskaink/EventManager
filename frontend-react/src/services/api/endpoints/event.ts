@@ -25,8 +25,11 @@ async function getEventById(eventId: number) {
   return response.data.event;
 }
 
+// Backend no soporta DELETE /event/{id}; usar PATCH para actualizar estado
 async function deleteEvent(eventId: number) {
-  const response = await axiosInstance.delete<MessageRes>(`/event/${eventId}`);
+  const response = await axiosInstance.patch<{ message: string; event: API.Event }>(`/event/${eventId}`, {
+    status: "cancelado",
+  });
   return response.data;
 }
 

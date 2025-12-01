@@ -61,6 +61,10 @@ const EventGridItem = ({
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => onAttendance(item)}>
+                    <Users className="h-4 w-4 mr-2" />
+                    Ver participantes
+                </DropdownMenuItem>
                 {hasEnded && (
                   <DropdownMenuItem onClick={() => onAttendance(item)}>
                     <Users className="h-4 w-4 mr-2" />

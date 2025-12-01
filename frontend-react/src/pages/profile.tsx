@@ -255,13 +255,24 @@ export function ProfileScreen() {
     setArticleToDelete(null);
   };
 
-  const getRoleLabel = (role: string) =>
-    ({
+  const getRoleLabel = (role: string) => {
+    const normalized = (role || "")
+      .toLowerCase()
+      .replace(/\s+/g, "-")
+      .replace(/_/g, "-");
+
+    const map: Record<string, string> = {
       mentor: "Mentor",
       interested: "Interesado",
       coordinator: "Coordinador",
       member: "Miembro",
-    })[role] || "Rol no definido";
+      "active-member": "Miembro Activo",
+      "member-active": "Miembro Activo",
+      "active_member": "Miembro Activo",
+    };
+
+    return map[normalized] ?? "Rol no definido";
+  };
 
   return (
     <ProfileTemplate
