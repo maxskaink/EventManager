@@ -185,7 +185,7 @@ export function EventBoardScreen() {
         onCreatePublication={() => setCreatePublicationOpen(true)}
       />
 
-      <div className="max-w-7xl mx-auto p-6 space-y-8">
+      <div className="max-w-7xl mx-auto p-4 md:p-6 space-y-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
 
           <EventBoardStats

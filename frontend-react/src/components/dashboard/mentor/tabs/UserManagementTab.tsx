@@ -78,9 +78,9 @@ export const UserManagementTab: React.FC<UserManagementTabProps> = ({
   return (
     <Card>
       <CardHeader>
-        <div className="flex flex-col sm:flex-row gap-4 justify-between">
+        <div className="flex flex-col sm:flex-row gap-4 justify-between mb-4">
           <CardTitle>Gestión de Usuarios</CardTitle>
-          <div className="flex flex-col sm:flex-row gap-2">
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
@@ -113,121 +113,123 @@ export const UserManagementTab: React.FC<UserManagementTabProps> = ({
           <p>No se encontraron usuarios.</p>
         ) : (
           <>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Usuario</TableHead>
-                  <TableHead>Rol Actual</TableHead>
-                  <TableHead>Email Verificado</TableHead>
-                  <TableHead>Último Acceso</TableHead>
-                  <TableHead>Acciones</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {visibleUsers.map((user) => (
-                  <TableRow key={user.id}>
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        <Avatar className="h-8 w-8">
-                          <AvatarImage src={user.avatar ?? undefined} />
-                          <AvatarFallback>
-                            {user.name?.split(" ").map((n) => n[0]).join("") ||
-                              "?"}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <p className="font-medium">
-                            {user.name || "Sin nombre"}
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            {user.email}
-                          </p>
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={user.role === "mentor" ? "default" : "outline"}>
-                        {translateUserRole(user.role)}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      {user.email_verified_at ? "Verificado" : "Pendiente"}
-                    </TableCell>
-                    <TableCell>
-                      {user.last_login_at
-                        ? new Date(user.last_login_at).toLocaleDateString()
-                        : "Nunca"}
-                    </TableCell>
-                    <TableCell>
-                      <Dialog
-                        open={isRoleChangeOpen && selectedUserId === user.id}
-                        onOpenChange={(open: boolean) => {
-                          setIsRoleChangeOpen(open);
-                          if (!open) setSelectedUserId(null);
-                        }}
-                      >
-                        <DialogTrigger asChild>
-                          <Button
-                            variant="default"
-                            size="sm"
-                            className="bg-[#0a2740] hover:bg-[#10385c] text-white border-transparent"
-                            onClick={() => {
-                              setSelectedUserId(user.id);
-                              setIsRoleChangeOpen(true);
-                              setNewRole(user.role);
-                            }}
-                          >
-                            <Settings className="h-4 w-4 mr-2" />
-                            Cambiar Rol
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent>
-                          <DialogHeader>
-                            <DialogTitle>Cambiar Rol de Usuario</DialogTitle>
-                          </DialogHeader>
-                          <div className="space-y-4">
-                            <p>
-                              Cambiar rol de: <strong>{user.name}</strong>
-                            </p>
-                            <div>
-                              <Label htmlFor="new-role">Nuevo Rol</Label>
-                              <Select value={newRole} onValueChange={setNewRole}>
-                                <SelectTrigger id="new-role">
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {USER_ROLES.map((type) => (
-                                    <SelectItem key={type} value={type}>
-                                      {translateUserRole(type)}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                            </div>
-                            <div className="flex gap-2 justify-end">
-                              <Button
-                                variant="outline"
-                                onClick={() => setIsRoleChangeOpen(false)}
-                              >
-                                Cancelar
-                              </Button>
-                              <Button
-                                onClick={() =>
-                                  handleRoleChangeClick(user.id, newRole)
-                                }
-                                disabled={!newRole || newRole === user.role}
-                              >
-                                Confirmar
-                              </Button>
-                            </div>
-                          </div>
-                        </DialogContent>
-                      </Dialog>
-                    </TableCell>
+            <div className="w-full overflow-x-auto -mx-4 px-4">
+              <Table className="min-w-full">
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="whitespace-nowrap text-xs sm:text-sm">Usuario</TableHead>
+                    <TableHead className="whitespace-nowrap text-xs sm:text-sm">Rol Actual</TableHead>
+                    <TableHead className="whitespace-nowrap text-xs sm:text-sm hidden md:table-cell">Email Verificado</TableHead>
+                    <TableHead className="whitespace-nowrap text-xs sm:text-sm hidden lg:table-cell">Último Acceso</TableHead>
+                    <TableHead className="whitespace-nowrap text-xs sm:text-sm">Acciones</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {visibleUsers.map((user) => (
+                    <TableRow key={user.id}>
+                      <TableCell>
+                        <div className="flex items-center gap-2 sm:gap-3">
+                          <Avatar className="h-6 w-6 sm:h-8 sm:w-8 shrink-0">
+                            <AvatarImage src={user.avatar ?? undefined} />
+                            <AvatarFallback className="text-xs">
+                              {user.name?.split(" ").map((n) => n[0]).join("") ||
+                                "?"}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0">
+                            <p className="font-medium text-xs sm:text-sm truncate">
+                              {user.name || "Sin nombre"}
+                            </p>
+                            <p className="text-xs text-muted-foreground truncate">
+                              {user.email}
+                            </p>
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={user.role === "mentor" ? "default" : "outline"} className="text-xs">
+                          {translateUserRole(user.role)}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="hidden md:table-cell text-xs">
+                        {user.email_verified_at ? "Verificado" : "Pendiente"}
+                      </TableCell>
+                      <TableCell className="hidden lg:table-cell text-xs">
+                        {user.last_login_at
+                          ? new Date(user.last_login_at).toLocaleDateString()
+                          : "Nunca"}
+                      </TableCell>
+                      <TableCell>
+                        <Dialog
+                          open={isRoleChangeOpen && selectedUserId === user.id}
+                          onOpenChange={(open: boolean) => {
+                            setIsRoleChangeOpen(open);
+                            if (!open) setSelectedUserId(null);
+                          }}
+                        >
+                          <DialogTrigger asChild>
+                            <Button
+                              variant="default"
+                              size="sm"
+                              className="bg-[#0a2740] hover:bg-[#10385c] text-white border-transparent text-xs"
+                              onClick={() => {
+                                setSelectedUserId(user.id);
+                                setIsRoleChangeOpen(true);
+                                setNewRole(user.role);
+                              }}
+                            >
+                              <Settings className="h-4 w-4 mr-2" />
+                              Cambiar Rol
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent>
+                            <DialogHeader>
+                              <DialogTitle>Cambiar Rol de Usuario</DialogTitle>
+                            </DialogHeader>
+                            <div className="space-y-4">
+                              <p>
+                                Cambiar rol de: <strong>{user.name}</strong>
+                              </p>
+                              <div>
+                                <Label htmlFor="new-role">Nuevo Rol</Label>
+                                <Select value={newRole} onValueChange={setNewRole}>
+                                  <SelectTrigger id="new-role">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {USER_ROLES.map((type) => (
+                                      <SelectItem key={type} value={type}>
+                                        {translateUserRole(type)}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                              <div className="flex gap-2 justify-end">
+                                <Button
+                                  variant="outline"
+                                  onClick={() => setIsRoleChangeOpen(false)}
+                                >
+                                  Cancelar
+                                </Button>
+                                <Button
+                                  onClick={() =>
+                                    handleRoleChangeClick(user.id, newRole)
+                                  }
+                                  disabled={!newRole || newRole === user.role}
+                                >
+                                  Confirmar
+                                </Button>
+                              </div>
+                            </div>
+                          </DialogContent>
+                        </Dialog>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
             {filteredUsers.length > 6 && (
               <div className="flex justify-center mt-4">
                 <Button variant="link" onClick={() => setShowAll(!showAll)}>

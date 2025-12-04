@@ -39,14 +39,14 @@ const EventBoardContent = ({
 
   return (
     <section>
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-semibold">Contenido ({content.length})</h2>
-        <div className="flex gap-2">
-            <Button onClick={onCreateEvent}>
-                <Plus className="mr-2 h-4 w-4" /> Nuevo Evento
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
+        <h2 className="text-base sm:text-lg md:text-xl font-semibold">Contenido ({content.length})</h2>
+        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+            <Button onClick={onCreateEvent} className="text-xs sm:text-sm px-2 sm:px-4 py-2 h-auto sm:h-9">
+                <Plus className="mr-2 h-4 w-4 shrink-0" /> <span className="hidden sm:inline">Nuevo Evento</span><span className="sm:hidden">Evento</span>
             </Button>
-            <Button variant="outline" onClick={onCreatePublication}>
-                <Plus className="mr-2 h-4 w-4" /> Nueva Publicación
+            <Button variant="outline" onClick={onCreatePublication} className="text-xs sm:text-sm px-2 sm:px-4 py-2 h-auto sm:h-9">
+                <Plus className="mr-2 h-4 w-4 shrink-0" /> <span className="hidden sm:inline">Nueva Publicación</span><span className="sm:hidden">Pub.</span>
             </Button>
         </div>
       </div>

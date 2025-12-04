@@ -25,10 +25,10 @@ export const ProfileTemplate = ({
   settings,
   dialogs,
 }: ProfileTemplateProps) => (
-  <div className="min-h-screen bg-gradient-to-br from-[#f7fafd] via-[#eef2f7] to-[#dde3eb]">
+  <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50/50">
     {header}
-    <main className="mx-auto max-w-5xl space-y-8 p-6">
-      <div className="rounded-3xl border-0 bg-white/80 backdrop-blur-md shadow-xl p-6 md:p-8">
+    <main className="mx-auto max-w-5xl space-y-8 p-4 md:p-6">
+      <div className="rounded-3xl border border-white/60 bg-white/80 backdrop-blur-xl shadow-2xl p-4 md:p-8 animate-in fade-in slide-in-from-bottom-8 duration-700">
         <section className="space-y-6">
           {personalInfo}
           <div className="border-t border-gray-200 my-6" />

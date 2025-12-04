@@ -40,8 +40,8 @@ export const UnifiedHeader: React.FC<UnifiedHeaderProps> = ({
     };
 
     return (
-        <div className="bg-[#0a2740] p-4 shadow-sm text-white transition-all duration-300">
-            <div className="max-w-4xl mx-auto flex items-center justify-between gap-4">
+        <div className="bg-[#0a2740] px-4 md:px-6 py-4 shadow-sm text-white transition-all duration-300">
+            <div className="flex items-center justify-between gap-4">
 
                 {/* Left Section: Back Button or Avatar */}
                 <div className="flex items-center gap-4">

@@ -47,11 +47,11 @@ export const UserSearchScreen = () => {
         {isError && <div className="text-center py-8 text-red-500">Error al cargar usuarios</div>}
 
         {!isLoading && !isError && (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 animate-in fade-in slide-in-from-bottom-4 duration-500">
             {filteredUsers.map((user: API.User) => (
               <Card
                 key={user.id}
-                className="cursor-pointer hover:shadow-lg transition-all duration-300 rounded-2xl border-0 shadow-md bg-white group"
+                className="cursor-pointer hover:shadow-xl transition-all duration-300 rounded-2xl border-0 shadow-md bg-white group hover:-translate-y-1"
                 onClick={() => navigate(`/users/${user.id}`)}
               >
                 <CardHeader className="flex flex-row items-center gap-4 pb-2">

@@ -77,16 +77,16 @@ export const CreateEventForm: React.FC<Props> = ({
   }, [publicationData.image]);
 
   return (
-    <div className="max-w-4xl mx-auto p-4 space-y-6">
+    <div className="max-w-4xl mx-auto p-3 sm:p-4 space-y-4 sm:space-y-6">
       {/* Información básica */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Info className="h-5 w-5" />
+      <Card className="shadow-md hover:shadow-lg transition-shadow duration-300">
+        <CardHeader className="px-4 sm:px-6 py-3 sm:py-6">
+          <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+            <Info className="h-5 w-5 shrink-0" />
             Información Básica
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="px-4 sm:px-6 pb-4 sm:pb-6 space-y-4">
           <div>
             <Label htmlFor="name">Nombre del Evento *</Label>
             <Input
@@ -94,7 +94,7 @@ export const CreateEventForm: React.FC<Props> = ({
               value={formData.name}
               onChange={(e) => onInputChange("name", e.target.value)}
               placeholder="Ej: Workshop de Machine Learning"
-              className="mt-1"
+              className="mt-1 focus-visible:ring-blue-500 transition-all"
             />
           </div>
 
@@ -104,7 +104,7 @@ export const CreateEventForm: React.FC<Props> = ({
               value={formData.event_type}
               onValueChange={(value: API.EventType) => onInputChange("event_type", value)}
             >
-              <SelectTrigger id="event_type" className="mt-1">
+              <SelectTrigger id="event_type" className="mt-1 focus:ring-blue-500">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -125,21 +125,21 @@ export const CreateEventForm: React.FC<Props> = ({
               onChange={(e) => onInputChange("description", e.target.value)}
               placeholder="Describe el evento, objetivos, temas a tratar, etc..."
               rows={6}
-              className="mt-1"
+              className="mt-1 focus-visible:ring-blue-500 transition-all"
             />
           </div>
         </CardContent>
       </Card>
 
       {/* Fecha y hora */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Calendar className="h-5 w-5" />
+      <Card className="shadow-md hover:shadow-lg transition-shadow duration-300">
+        <CardHeader className="px-4 sm:px-6 py-3 sm:py-6">
+          <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+            <Calendar className="h-5 w-5 shrink-0" />
             Fecha y Hora
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="px-4 sm:px-6 pb-4 sm:pb-6 space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Label htmlFor="start_date">Fecha de Inicio *</Label>
@@ -148,7 +148,7 @@ export const CreateEventForm: React.FC<Props> = ({
                 type="date"
                 value={formData.start_date}
                 onChange={(e) => onInputChange("start_date", e.target.value)}
-                className="mt-1"
+                className="mt-1 focus-visible:ring-blue-500 transition-all"
               />
             </div>
             <div>
@@ -158,7 +158,7 @@ export const CreateEventForm: React.FC<Props> = ({
                 type="time"
                 value={formData.start_time}
                 onChange={(e) => onInputChange("start_time", e.target.value)}
-                className="mt-1"
+                className="mt-1 focus-visible:ring-blue-500 transition-all"
               />
             </div>
           </div>
@@ -171,7 +171,7 @@ export const CreateEventForm: React.FC<Props> = ({
                 type="date"
                 value={formData.end_date}
                 onChange={(e) => onInputChange("end_date", e.target.value)}
-                className="mt-1"
+                className="mt-1 focus-visible:ring-blue-500 transition-all"
               />
             </div>
             <div>
@@ -181,7 +181,7 @@ export const CreateEventForm: React.FC<Props> = ({
                 type="time"
                 value={formData.end_time}
                 onChange={(e) => onInputChange("end_time", e.target.value)}
-                className="mt-1"
+                className="mt-1 focus-visible:ring-blue-500 transition-all"
               />
             </div>
           </div>
@@ -189,21 +189,21 @@ export const CreateEventForm: React.FC<Props> = ({
       </Card>
 
       {/* Modalidad y ubicación */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <MapPin className="h-5 w-5" />
+      <Card className="shadow-md hover:shadow-lg transition-shadow duration-300">
+        <CardHeader className="px-4 sm:px-6 py-3 sm:py-6">
+          <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+            <MapPin className="h-5 w-5 shrink-0" />
             Modalidad y Ubicación
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="px-4 sm:px-6 pb-4 sm:pb-6 space-y-4">
           <div>
             <Label htmlFor="modality">Modalidad *</Label>
             <Select
               value={formData.modality}
               onValueChange={(value: API.EventModality) => onInputChange("modality", value)}
             >
-              <SelectTrigger id="modality" className="mt-1">
+              <SelectTrigger id="modality" className="mt-1 focus:ring-blue-500">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -229,21 +229,21 @@ export const CreateEventForm: React.FC<Props> = ({
                     ? "Ej: Salón 201 + Enlace virtual"
                     : "Ej: Auditorio Principal, Edificio de Ingeniería"
               }
-              className="mt-1"
+              className="mt-1 focus-visible:ring-blue-500 transition-all"
             />
           </div>
         </CardContent>
       </Card>
 
       {/* Capacidad y estado */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Users className="h-5 w-5" />
+      <Card className="shadow-md hover:shadow-lg transition-shadow duration-300">
+        <CardHeader className="px-4 sm:px-6 py-3 sm:py-6">
+          <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+            <Users className="h-5 w-5 shrink-0" />
             Capacidad y Estado
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="px-4 sm:px-6 pb-4 sm:pb-6 space-y-4">
           <div>
             <Label htmlFor="capacity">Capacidad Máxima (opcional)</Label>
             <Input
@@ -253,14 +253,14 @@ export const CreateEventForm: React.FC<Props> = ({
               value={formData.capacity}
               onChange={(e) => onInputChange("capacity", e.target.value)}
               placeholder="Ej: 50"
-              className="mt-1"
+              className="mt-1 focus-visible:ring-blue-500 transition-all"
             />
           </div>
 
           <div>
             <Label htmlFor="status">Estado del Evento</Label>
             <Select value={formData.status} onValueChange={(value: API.EventStatus) => onInputChange("status", value)}>
-              <SelectTrigger id="status" className="mt-1">
+              <SelectTrigger id="status" className="mt-1 focus:ring-blue-500">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -276,22 +276,22 @@ export const CreateEventForm: React.FC<Props> = ({
       </Card>
 
       {/* Publicación */}
-      <Card className="border-blue-200 dark:border-blue-800">
-        <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2 text-blue-700 dark:text-blue-400">
-              <FileText className="h-5 w-5" />
+      <Card className="border-blue-200 dark:border-blue-800 shadow-md hover:shadow-lg transition-shadow duration-300">
+        <CardHeader className="pb-3 px-4 sm:px-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <CardTitle className="flex items-center gap-2 text-blue-700 dark:text-blue-400 text-base sm:text-lg">
+              <FileText className="h-5 w-5 shrink-0" />
               Publicación
             </CardTitle>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 whitespace-nowrap">
               <input
                 type="checkbox"
                 id="publishImmediately"
                 checked={publishImmediately}
                 onChange={(e) => onPublishImmediatelyChange(e.target.checked)}
-                className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 shrink-0"
               />
-              <label htmlFor="publishImmediately" className="text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer">
+              <label htmlFor="publishImmediately" className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer">
                 Publicar inmediatamente
               </label>
             </div>
@@ -299,7 +299,7 @@ export const CreateEventForm: React.FC<Props> = ({
         </CardHeader>
 
         {publishImmediately && (
-          <CardContent className="space-y-6 pt-0 animate-in fade-in slide-in-from-top-4 duration-300">
+          <CardContent className="px-4 sm:px-6 pb-4 sm:pb-6 space-y-6 pt-0 animate-in fade-in slide-in-from-top-4 duration-300">
             <div className="grid grid-cols-1 gap-6 py-4">
               {/* Imagen */}
               <div className="space-y-2">
@@ -320,7 +320,7 @@ export const CreateEventForm: React.FC<Props> = ({
                 ) : (
                   <label
                     htmlFor="image-upload"
-                    className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-muted hover:bg-muted/80"
+                    className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-muted hover:bg-muted/80 transition-colors"
                   >
                     <div className="flex flex-col items-center justify-center pt-5 pb-6">
                       <ImagePlus className="w-8 h-8 text-muted-foreground mb-2" />
@@ -346,7 +346,7 @@ export const CreateEventForm: React.FC<Props> = ({
                     placeholder="Un breve resumen del contenido..."
                     value={publicationData.summary}
                     onChange={(e) => onPublicationChange("summary", e.target.value)}
-                    className="min-h-[80px]"
+                    className="min-h-[80px] focus-visible:ring-blue-500 transition-all"
                   />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -376,7 +376,7 @@ export const CreateEventForm: React.FC<Props> = ({
                       value={publicationData.visibility}
                       onValueChange={(v: API.PublicationVisibility) => onPublicationChange("visibility", v)}
                     >
-                      <SelectTrigger id="visibility">
+                      <SelectTrigger id="visibility" className="focus:ring-blue-500">
                         <SelectValue placeholder="Visibilidad" />
                       </SelectTrigger>
                       <SelectContent>
@@ -396,12 +396,12 @@ export const CreateEventForm: React.FC<Props> = ({
       </Card>
 
       {/* Botones de acción */}
-      <div className="flex gap-3 justify-end">
-        <Button variant="outline" onClick={onCancel}>
+      <div className="flex flex-col-reverse sm:flex-row gap-3 justify-end px-0">
+        <Button variant="outline" onClick={onCancel} className="w-full sm:w-auto text-xs sm:text-sm py-2 sm:py-auto h-auto sm:h-9">
           Cancelar
         </Button>
-        <Button onClick={onPublish} disabled={loading}>
-          <Send className="h-4 w-4 mr-2" />
+        <Button onClick={onPublish} disabled={loading} className="w-full sm:w-auto text-xs sm:text-sm py-2 sm:py-auto h-auto sm:h-9">
+          <Send className="h-4 w-4 mr-2 shrink-0" />
           {publishImmediately ? "Crear y Publicar" : "Crear Evento"}
         </Button>
       </div>

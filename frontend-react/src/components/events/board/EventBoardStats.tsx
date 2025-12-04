@@ -17,8 +17,8 @@ export function EventBoardStats({
   const statValue = (value: number) => (loading ? "..." : value);
 
   return (
-    <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <Card className="rounded-2xl shadow-md border-0 hover:shadow-lg transition-shadow duration-300">
+    <section className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-in fade-in slide-in-from-top-4 duration-500">
+      <Card className="rounded-2xl shadow-md border-0 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
         <CardContent className="p-6 text-center">
           <div className="p-3 bg-blue-50 rounded-xl w-fit mx-auto mb-3">
             <Calendar className="h-8 w-8 text-blue-600" />
@@ -28,7 +28,7 @@ export function EventBoardStats({
         </CardContent>
       </Card>
 
-      <Card className="rounded-2xl shadow-md border-0 hover:shadow-lg transition-shadow duration-300">
+      <Card className="rounded-2xl shadow-md border-0 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
         <CardContent className="p-6 text-center">
           <div className="p-3 bg-green-50 rounded-xl w-fit mx-auto mb-3">
             <Users className="h-8 w-8 text-green-600" />
@@ -38,7 +38,7 @@ export function EventBoardStats({
         </CardContent>
       </Card>
 
-      <Card className="rounded-2xl shadow-md border-0 hover:shadow-lg transition-shadow duration-300">
+      <Card className="rounded-2xl shadow-md border-0 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
         <CardContent className="p-6 text-center">
           <div className="p-3 bg-orange-50 rounded-xl w-fit mx-auto mb-3">
             <Pin className="h-8 w-8 text-purple-600" />

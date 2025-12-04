@@ -58,12 +58,12 @@ const PublicationCard: React.FC<PublicationCardProps> = ({ publication }) => {
 
   return (
     <Link to={`/publications/${publication.id.replace('pub-', '')}`}>
-      <div className="bg-white rounded-3xl shadow-md overflow-hidden transition-all duration-300 ease-in-out cursor-pointer flex flex-col h-full hover:-translate-y-1 hover:shadow-xl group border-0">
+      <div className="bg-white rounded-3xl shadow-md overflow-hidden transition-all duration-500 ease-out cursor-pointer flex flex-col h-full hover:-translate-y-2 hover:shadow-2xl group border border-transparent hover:border-blue-100 animate-in fade-in zoom-in-95">
         <div className="relative">
           {imageSrc ? (
             <>
               <img
-                className="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-105"
+                className="w-full h-auto object-cover transition-transform duration-700 group-hover:scale-110"
                 src={imageSrc}
                 alt={publication.title}
                 onError={(e) => {

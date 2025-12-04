@@ -46,16 +46,16 @@ export const PersonalInfoCard = ({
 
   return (
     <Card className="rounded-2xl shadow-[0_4px_12px_rgba(0,0,0,0.06),0_1px_3px_rgba(0,0,0,0.04)] transition-all hover:shadow-lg">
-      <CardContent className="p-6">
-        <div className="mb-6 flex items-center gap-6">
-          <Avatar className="h-[100px] w-[100px] rounded-full ring-2 ring-sky-600 shadow-md">
+      <CardContent className="p-4 md:p-6">
+        <div className="mb-6 flex flex-col sm:flex-row items-center sm:items-start gap-4 md:gap-6">
+          <Avatar className="h-20 w-20 sm:h-[100px] sm:w-[100px] rounded-full ring-2 ring-sky-600 shadow-md shrink-0">
             <AvatarImage src={user.avatar || undefined} />
-            <AvatarFallback className="text-2xl">{user.name.charAt(0).toUpperCase()}</AvatarFallback>
+            <AvatarFallback className="text-lg sm:text-2xl">{user.name.charAt(0).toUpperCase()}</AvatarFallback>
           </Avatar>
-          <div className="flex-1">
-            <h2 className="tracking-tight">{user.name}</h2>
-            <p className="text-muted-foreground">{user.email}</p>
-            <Badge className="mt-2">{getRoleLabel(role)}</Badge>
+          <div className="flex-1 text-center sm:text-left min-w-0">
+            <h2 className="tracking-tight line-clamp-2">{user.name}</h2>
+            <p className="text-muted-foreground break-words text-xs sm:text-sm truncate">{user.email}</p>
+            <Badge className="mt-2 inline-block">{getRoleLabel(role)}</Badge>
           </div>
         </div>
 
