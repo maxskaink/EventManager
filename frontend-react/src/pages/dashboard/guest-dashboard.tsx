@@ -33,11 +33,11 @@ export function GuestDashboard() {
   }, []);
 
   return (
-    <div className="min-h-screen pb-20">
+    <div className="min-h-screen pb-20 bg-gray-50/50">
       {/* Header */}
       {/* Header */}
-      <UnifiedHeader 
-        title="Bienvenido" 
+      <UnifiedHeader
+        title="Bienvenido"
         subtitle="Explora nuestros eventos y actividades"
       />
       <div className="max-w-4xl mx-auto p-4 space-y-6">
@@ -47,7 +47,8 @@ export function GuestDashboard() {
             <h2>Eventos Recomendados</h2>
             <Button
               variant="outline"
-              onClick={() => navigate("/events")}
+              onClick={() => navigate("/publications")}
+              className="rounded-md h-9 px-4 py-2 text-sm font-medium"
             >
               Ver todos
             </Button>
@@ -74,26 +75,26 @@ export function GuestDashboard() {
             {!loading && upcomingEvents.map((event) => (
               <Card
                 key={event.id}
-                className="hover:shadow-md transition-shadow"
+                className="bg-card text-card-foreground flex flex-col gap-6 rounded-xl border hover:shadow-md transition-shadow overflow-hidden"
               >
                 <div className="aspect-video relative overflow-hidden rounded-t-lg">
                   {/* Placeholder en ausencia de imagen en API.Event */}
                   <div className="w-full h-full bg-gradient-to-br from-blue-100 to-blue-200" />
-                  <Badge className="absolute top-2 right-2">
+                  <Badge className="absolute top-2 right-2 inline-flex items-center justify-center rounded-md border px-2 py-0.5 text-xs font-medium w-fit whitespace-nowrap shrink-0 gap-1 overflow-hidden border-transparent bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm">
                     {event.event_type}
                   </Badge>
                 </div>
 
-                <CardHeader className="pb-2">
-                  <h3 className="line-clamp-2">{event.name}</h3>
+                <CardHeader className="grid auto-rows-min grid-rows-[auto_auto] items-start gap-1.5 px-6 pt-6 pb-2">
+                  <h3 className="line-clamp-2 font-semibold text-lg">{event.name}</h3>
                 </CardHeader>
 
-                <CardContent className="space-y-3">
-                  <p className="text-muted-foreground text-sm line-clamp-2">
+                <CardContent className="px-6 pb-6 space-y-3 flex-1 flex flex-col">
+                  <p className="text-muted-foreground text-sm line-clamp-2 flex-1">
                     {event.description}
                   </p>
 
-                  <div className="space-y-2 text-sm">
+                  <div className="space-y-2 text-sm mt-auto">
                     <div className="flex items-center gap-2 text-muted-foreground">
                       <Calendar className="h-4 w-4" />
                       <span>{new Date(event.start_date).toLocaleDateString("es-ES")}</span>
@@ -113,9 +114,9 @@ export function GuestDashboard() {
                   </div>
 
                   <Button
-                    className="w-full"
+                    className="w-full mt-4 rounded-md h-9 px-4 py-2 text-sm font-medium shadow-sm"
                     onClick={() =>
-                      navigate(`/events/${event.id}`)
+                      navigate(`/publications/${event.id}`)
                     }
                   >
                     Ver detalle
