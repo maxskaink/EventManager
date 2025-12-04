@@ -45,30 +45,10 @@ export function EventBoardHeader({ userRole, onNavigate, onCreatePublication }: 
         </div>
         <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
           <Button
-            variant="secondary"
-            onClick={() => onNavigate("/create-event")}
-            className="gap-2 text-xs sm:text-sm px-2 sm:px-4 py-2 h-auto sm:h-9"
-          >
-            <Plus className="h-4 w-4 shrink-0" />
-            <span className="hidden sm:inline">Nuevo Evento</span>
-            <span className="sm:hidden">Evento</span>
-          </Button>
-          {onCreatePublication && (
-            <Button
-              variant="secondary"
-              onClick={onCreatePublication}
-              className="gap-2 text-xs sm:text-sm px-2 sm:px-4 py-2 h-auto sm:h-9"
-            >
-              <FileText className="h-4 w-4 shrink-0" />
-              <span className="hidden sm:inline">Crear Publicación</span>
-              <span className="sm:hidden">Pub.</span>
-            </Button>
-          )}
-          <Button
             variant="ghost"
             size="icon"
             onClick={handleLogoutClick}
-            className="text-white/80 hover:bg-red-500/20 hover:text-red-200 h-9 w-9"
+            className="text-white/80 hover:bg-red-500/20 hover:text-red-200 h-9 w-9 ml-auto sm:ml-0"
             title="Cerrar sesión"
           >
             <LogOut className="h-5 w-5" />

@@ -1,15 +1,16 @@
 import { Card, CardContent } from "../../../ui/card";
 import { Button } from "../../../ui/button";
 import { Badge } from "../../../ui/badge";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../../../ui/dropdown-menu";
 
-import { Edit, Trash2, Eye, Pin, Share, Settings, Users } from "lucide-react";
+import { Trash2, Eye, Pin, Share, Users, MoreVertical, Calendar, MapPin, Users2 } from "lucide-react";
 import {
   getTypeColor,
   getStatusColor,
   getStatusLabel,
   getOccupancyLevel,
   isEventType,
-} from "../../../../features/events/event-board.helpers"; // Importar helpers
+} from "../../../../features/events/event-board.helpers";
 import type { ContentItem, ItemToDelete } from "../../../../features/events";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../../../ui/tooltip";
 
@@ -30,64 +31,81 @@ const EventListItem = ({
   onAttendance: (item: ContentItem) => void;
 }) => {
   const isEvent = isEventType(item.type);
-
   const occupancy = isEvent && item.capacity && item.enrolled ? getOccupancyLevel(item.enrolled, item.capacity) : null;
-  
-  // Check if event has ended
   const hasEnded = isEvent && new Date(item.date) < new Date();
 
   return (
-    <Card className={isPinned ? "border-blue-500 border-l-4" : ""}>
-      <CardContent className="p-4">
-        <div className="flex items-center gap-4">
-          <div className="flex-1">
-            <div className="flex items-center gap-2 mb-2 flex-wrap">
-              {isPinned && <Pin className="h-4 w-4 text-blue-500" />}
-              <h4 className="line-clamp-1">{item.title}</h4>
-              <Badge className={`text-xs ${getTypeColor(item.type)}`}>{item.type}</Badge>
-              <Badge className={`text-xs ${getStatusColor(item.status)}`}>{getStatusLabel(item.status)}</Badge>
+    <Card className={`transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 overflow-hidden group ${isPinned ? "border-l-4 border-l-blue-500 border border-slate-200" : "border border-slate-200"}`}>
+      {/* Background gradient on hover */}
+      <div className="absolute inset-0 bg-gradient-to-r from-blue-50/0 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+      
+      <CardContent className="p-4 relative z-10">
+        <div className="flex items-start gap-4 flex-col sm:flex-row">
+          {/* Content Section */}
+          <div className="flex-1 min-w-0">
+            {/* Header with badges */}
+            <div className="flex items-start gap-2 mb-3 flex-wrap">
+              {isPinned && (
+                <Pin className="h-4 w-4 text-blue-500 flex-shrink-0 mt-0.5" />
+              )}
+              <div className="flex gap-2 flex-wrap">
+                <Badge className={`text-xs font-medium ${getTypeColor(item.type)}`}>{item.type}</Badge>
+                <Badge className={`text-xs font-medium ${getStatusColor(item.status)}`}>{getStatusLabel(item.status)}</Badge>
+              </div>
             </div>
-            <div>{occupancy?.label}</div>
-            {/* ... (Descripción y detalles en línea) ... */}
+
+            {/* Title and Description */}
+            <div className="mb-3">
+              <h4 className="line-clamp-1 font-semibold text-[#0a2740] group-hover:text-blue-700 transition-colors text-sm sm:text-base">{item.title}</h4>
+              <p className="text-xs sm:text-sm text-slate-600 line-clamp-1 mt-1 group-hover:text-slate-700 transition-colors">{item.description}</p>
+            </div>
+
+            {/* Meta Info */}
+            <div className="flex flex-wrap gap-3 text-xs text-slate-500 mb-3">
+              {occupancy && (
+                <div className="flex items-center gap-1.5">
+                  <Users2 className="h-3.5 w-3.5 text-blue-600 flex-shrink-0" />
+                  <span className="font-medium truncate">{occupancy.label}</span>
+                </div>
+              )}
+              {isEvent && item.date && (
+                <div className="flex items-center gap-1.5">
+                  <Calendar className="h-3.5 w-3.5 text-emerald-600 flex-shrink-0" />
+                  <span>{new Date(item.date).toLocaleDateString('es-ES')}</span>
+                </div>
+              )}
+              {isEvent && item.location && (
+                <div className="flex items-center gap-1.5">
+                  <MapPin className="h-3.5 w-3.5 text-orange-600 flex-shrink-0" />
+                  <span className="truncate">{item.location}</span>
+                </div>
+              )}
+            </div>
           </div>
-          <div className="flex gap-1">
+
+          {/* Action Buttons Section */}
+          <div className="flex gap-2 w-full sm:w-auto sm:flex-col lg:flex-row ml-0 sm:ml-2 pt-3 sm:pt-0 border-t sm:border-t-0 sm:border-l border-slate-100">
+            <Button 
+              size="sm" 
+              variant="outline" 
+              className="flex-1 sm:flex-auto text-xs sm:text-sm h-8 px-2 transition-all hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700"
+              onClick={() => onViewDetails(item)}
+            >
+              <Eye className="h-3.5 w-3.5 shrink-0" />
+              <span className="hidden sm:inline ml-1">Ver</span>
+            </Button>
+
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button size="sm" variant="ghost" onClick={() => onAttendance(item)}>
-                    <Users className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent sideOffset={5}>
-                  <p>Ver participantes</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-            {hasEnded && (
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button size="sm" variant="ghost" onClick={() => onAttendance(item)}>
-                      <Users className="h-4 w-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent sideOffset={5}>
-                    <p>Asistencia</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            )}
-            <Button size="sm" variant="ghost" onClick={() => onViewDetails(item)}>
-              <Eye className="h-4 w-4" />
-            </Button>
-            <Button size="sm" variant="ghost" disabled>
-              <Edit className="h-4 w-4" />
-            </Button>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button size="sm" variant="outline" onClick={() => onPublish(item)}>
-                    <Share className="h-4 w-4" />
+                  <Button 
+                    size="sm" 
+                    variant="outline"
+                    className="flex-1 sm:flex-auto text-xs sm:text-sm h-8 px-2 transition-all hover:bg-emerald-50 hover:border-emerald-300 hover:text-emerald-700"
+                    onClick={() => onPublish(item)}
+                  >
+                    <Share className="h-3.5 w-3.5 shrink-0" />
+                    <span className="hidden sm:inline ml-1">Publicar</span>
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent sideOffset={5}>
@@ -95,23 +113,39 @@ const EventListItem = ({
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
-            <Button size="sm" variant="ghost" disabled>
-              <Settings className="h-4 w-4" />
-            </Button>
-            <Button
-              size="sm"
-              variant="ghost"
-              className="text-destructive"
-              onClick={() =>
-                onDeleteClick({
-                  id: item.id,
-                  type: item.type,
-                  title: item.title,
-                })
-              }
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button size="sm" variant="ghost" className="h-8 w-8 p-0 opacity-0 sm:opacity-100 group-hover:opacity-100 transition-opacity">
+                  <MoreVertical className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => onAttendance(item)} className="cursor-pointer">
+                  <Users className="h-4 w-4 mr-2" />
+                  Ver participantes
+                </DropdownMenuItem>
+                {hasEnded && (
+                  <DropdownMenuItem onClick={() => onAttendance(item)} className="cursor-pointer">
+                    <Users className="h-4 w-4 mr-2" />
+                    Asistencia
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuItem
+                  onClick={() =>
+                    onDeleteClick({
+                      id: item.id,
+                      type: item.type,
+                      title: item.title,
+                    })
+                  }
+                  className="cursor-pointer text-destructive focus:text-destructive"
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Eliminar
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </CardContent>
