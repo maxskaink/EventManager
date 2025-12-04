@@ -137,7 +137,7 @@ export function MentorDashboardPage() {
     }
   };
 
-  // Handlers para lógica de submissions (mock)
+  // Handlers para lógica de submissions
   const handleApproveSubmission = (submissionId: string) => {
     setSubmissions(submissions.map(sub =>
       sub.id === submissionId
@@ -145,6 +145,8 @@ export function MentorDashboardPage() {
         : sub
     ));
     toast.success("✅ Contenido aprobado exitosamente");
+    // Recargar contenido después de aprobar
+    setTimeout(() => loadContentForReview(), 500);
   };
 
   const handleRejectSubmission = (submissionId: string) => {
@@ -154,6 +156,8 @@ export function MentorDashboardPage() {
         : sub
     ));
     toast.error("❌ Contenido rechazado");
+    // Recargar contenido después de rechazar
+    setTimeout(() => loadContentForReview(), 500);
   };
 
   // Handlers para abrir modales

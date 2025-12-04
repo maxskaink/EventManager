@@ -49,7 +49,7 @@ export const UserManagementTab: React.FC<UserManagementTabProps> = ({
   // Estado para modales internos
   const [isRoleChangeOpen, setIsRoleChangeOpen] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
-  const [showAll, setShowAll] = useState(false);
+  const [showAll, setShowAll] = useState(true);
 
   const handleRoleChangeClick = async (userId: number, role: string) => {
     const success = await onChangeRole(userId, role as API.UserRole);

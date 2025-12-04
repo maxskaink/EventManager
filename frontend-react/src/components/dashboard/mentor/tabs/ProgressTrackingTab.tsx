@@ -18,7 +18,7 @@ export const ProgressTrackingTab: React.FC<ProgressTrackingTabProps> = ({
   onViewProfile,
   onGenerateReport,
 }) => {
-  const memberUsers = users.filter((user) => user.role === "active-member" || user.role === "seed");
+  const memberUsers = users.filter((user) => user.role === "active-member" || user.role === "seed" || user.role === "interested");
 
   return (
     <Card>
@@ -33,9 +33,9 @@ export const ProgressTrackingTab: React.FC<ProgressTrackingTabProps> = ({
         ) : (
           <div className="space-y-6">
             {memberUsers.map((user) => {
-              // Datos mock para métricas (como en el original)
-              const eventsAttended = Math.floor(Math.random() * 10) + 1;
-              const certificatesEarned = Math.floor(Math.random() * 5);
+              // Valores iniciales - estos se pueden actualizar después con datos de la API
+              const eventsAttended = 0;
+              const certificatesEarned = 0;
               const memberData = {
                 ...user,
                 joinDate: user.email_verified_at
@@ -112,3 +112,5 @@ export const ProgressTrackingTab: React.FC<ProgressTrackingTabProps> = ({
     </Card>
   );
 };
+
+export default ProgressTrackingTab;
