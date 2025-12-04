@@ -15,6 +15,8 @@ import { certificateQueries, eventQueries } from "@/services/react-query/queries
 import { useQuery } from "@tanstack/react-query";
 import { isEventUpcoming } from "@/features/events";
 import { useAuthStore } from "@/stores/auth.store";
+import { EventAPI } from "@/services/api";
+import { toast } from "sonner";
 
 export function MemberDashboard() {
   const user = useAuthStore((state) => state.user);
@@ -45,6 +47,17 @@ export function MemberDashboard() {
     .filter((event) => isEventUpcoming(event));
 
   const recentCertificates = certificates.slice(0, 2);
+
+  const handleRegister = async (eventId: number) => {
+    try {
+      await EventAPI.enroll(eventId);
+      toast.success("¡Te has inscrito exitosamente al evento!");
+    } catch (error: any) {
+      console.error(error);
+      const errorMessage = error.response?.data?.message || "Error al inscribirse al evento.";
+      toast.error(errorMessage);
+    }
+  };
 
   return (
     <div className="space-y-8 bg-gray-50/50 min-h-screen pb-10">
@@ -111,7 +124,7 @@ export function MemberDashboard() {
                         <Button
                           className="w-full rounded-xl font-semibold shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all"
                           size="lg"
-                          onClick={() => navigate(`/events/${event.id}`)}
+                          onClick={() => handleRegister(event.id)}
                         >
                           Inscribirme
                         </Button>

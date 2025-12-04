@@ -17,7 +17,7 @@ export const MentorQuickActions: React.FC<MentorQuickActionsProps> = ({
 
   return (
     <div>
-      <Card className="rounded-3xl shadow-md border-0 bg-white">
+      <Card>
         <CardHeader>
           <CardTitle>Acciones Rápidas</CardTitle>
         </CardHeader>

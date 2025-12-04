@@ -76,7 +76,7 @@ export const UserManagementTab: React.FC<UserManagementTabProps> = ({
   const visibleUsers = showAll ? filteredUsers : filteredUsers.slice(0, 6);
 
   return (
-    <Card className="rounded-3xl shadow-md border-0 bg-white">
+    <Card>
       <CardHeader>
         <div className="flex flex-col sm:flex-row gap-4 justify-between">
           <CardTitle>Gestión de Usuarios</CardTitle>

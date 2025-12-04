@@ -5,6 +5,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '../../ui/avatar';
 import { LogOut } from 'lucide-react';
 import brainImage from '../../../assets/brain.png';
 import { NotificationPopover } from '@/components/notifications/NotificationPopover';
+import { LogoutConfirmDialog } from '../../auth/LogoutConfirmDialog';
+import { useState } from 'react';
 
 interface MentorHeaderProps {
   user: API.User;
@@ -15,6 +17,17 @@ export const MentorHeader: React.FC<MentorHeaderProps> = ({
   user,
   onLogout
 }) => {
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+
+  const handleLogoutClick = () => {
+    setShowLogoutConfirm(true);
+  };
+
+  const handleConfirmLogout = () => {
+    onLogout();
+    setShowLogoutConfirm(false);
+  };
+
   return (
     <header className="bg-[#0a2740] text-white shadow-sm">
       <div className="container mx-auto px-4 py-4">
@@ -51,12 +64,17 @@ export const MentorHeader: React.FC<MentorHeaderProps> = ({
             </div>
 
             <NotificationPopover />
-            <Button variant="ghost-destructive" size="icon" onClick={onLogout} title="Cerrar sesión" aria-label="Cerrar sesión">
+            <Button variant="ghost-destructive" size="icon" onClick={handleLogoutClick} title="Cerrar sesión" aria-label="Cerrar sesión">
               <LogOut className="h-5 w-5" />
             </Button>
           </div>
         </div>
       </div>
+      <LogoutConfirmDialog
+        open={showLogoutConfirm}
+        onOpenChange={setShowLogoutConfirm}
+        onConfirm={handleConfirmLogout}
+      />
     </header>
   );
 };

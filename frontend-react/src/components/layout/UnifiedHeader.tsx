@@ -4,6 +4,8 @@ import { Button } from "../ui/button";
 import { LogOut, ArrowLeft, Loader2 } from "lucide-react";
 import { useAuthStore } from "../../stores/auth.store";
 import { NotificationPopover } from "../notifications/NotificationPopover";
+import { LogoutConfirmDialog } from "../auth/LogoutConfirmDialog";
+import { useState } from "react";
 
 interface UnifiedHeaderProps {
     title?: string;
@@ -12,6 +14,7 @@ interface UnifiedHeaderProps {
     actions?: React.ReactNode;
     user?: API.User | null;
     loading?: boolean;
+    showAvatar?: boolean;
 }
 
 export const UnifiedHeader: React.FC<UnifiedHeaderProps> = ({
@@ -21,9 +24,20 @@ export const UnifiedHeader: React.FC<UnifiedHeaderProps> = ({
     actions,
     user: propUser,
     loading = false,
+    showAvatar = true,
 }) => {
     const { user: authUser, logout } = useAuthStore();
     const user = propUser || authUser;
+    const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+
+    const handleLogoutClick = () => {
+        setShowLogoutConfirm(true);
+    };
+
+    const handleConfirmLogout = () => {
+        logout();
+        setShowLogoutConfirm(false);
+    };
 
     return (
         <div className="bg-[#0a2740] p-4 shadow-sm text-white transition-all duration-300">
@@ -40,14 +54,14 @@ export const UnifiedHeader: React.FC<UnifiedHeaderProps> = ({
                         >
                             <ArrowLeft className="h-5 w-5" />
                         </Button>
-                    ) : (
+                    ) : showAvatar ? (
                         <Avatar className="h-10 w-10 border-2 border-white/20">
                             <AvatarImage src={user?.avatar ?? undefined} />
                             <AvatarFallback className="bg-blue-800 text-white">
                                 {user?.name?.charAt(0).toUpperCase()}
                             </AvatarFallback>
                         </Avatar>
-                    )}
+                    ) : null}
 
                     <div className="flex flex-col">
                         <h1 className="text-lg font-semibold leading-none">
@@ -64,25 +78,29 @@ export const UnifiedHeader: React.FC<UnifiedHeaderProps> = ({
                     {loading && <Loader2 className="h-5 w-5 animate-spin text-white/50 mr-2" />}
 
                     {actions}
-                    
+
                     {/* Notifications */}
                     {user && (
                         <NotificationPopover />
                     )}
 
-                    {!onGoBack && (
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={logout}
-                            className="text-white/80 hover:bg-red-500/20 hover:text-red-200"
-                            title="Cerrar sesión"
-                        >
-                            <LogOut className="h-5 w-5" />
-                        </Button>
-                    )}
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={handleLogoutClick}
+                        className="text-white/80 hover:bg-red-500/20 hover:text-red-200"
+                        title="Cerrar sesión"
+                    >
+                        <LogOut className="h-5 w-5" />
+                    </Button>
                 </div>
             </div>
-        </div>
+
+            <LogoutConfirmDialog
+                open={showLogoutConfirm}
+                onOpenChange={setShowLogoutConfirm}
+                onConfirm={handleConfirmLogout}
+            />
+        </div >
     );
 };

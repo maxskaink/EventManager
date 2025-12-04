@@ -148,26 +148,32 @@ export default function CreateEventPage() {
 
   // Renderizar el formulario de creación
   return (
-    <div className="space-y-6 bg-gray-50/50 min-h-screen pb-10">
-      <UnifiedHeader
-        title="Crear Nuevo Evento"
-        subtitle="Completa la información para registrar un evento"
-        onGoBack={() => navigate(getDashboardRouteFromRole(user?.role || ""))}
-        loading={loading}
-      />
-      <CreateEventForm
-        formData={formData}
-        onInputChange={handleInputChange}
+    <div className="space-y-6">
+      <div className="bg-white border-b sticky top-0 z-10 shadow-sm">
+        <UnifiedHeader
+          title="Crear Nuevo Evento"
+          subtitle="Completa la información para registrar un evento"
+          onGoBack={() => navigate(getDashboardRouteFromRole(user?.role || ""))}
+          loading={loading}
+        />
+      </div>
+      <div className="max-w-4xl mx-auto p-6 space-y-8">
+        <div className="bg-white rounded-3xl shadow-lg border-0 p-8">
+          <CreateEventForm
+            formData={formData}
+            onInputChange={handleInputChange}
 
-        publishImmediately={publishImmediately}
-        onPublishImmediatelyChange={setPublishImmediately}
-        publicationData={publicationData}
-        onPublicationChange={handlePublicationChange}
+            publishImmediately={publishImmediately}
+            onPublishImmediatelyChange={setPublishImmediately}
+            publicationData={publicationData}
+            onPublicationChange={handlePublicationChange}
 
-        onCancel={() => navigate(getDashboardRouteFromRole(user?.role || ""))}
-        onPublish={() => handleSubmit()}
-        loading={loading}
-      />
+            onCancel={() => navigate(getDashboardRouteFromRole(user?.role || ""))}
+            onPublish={() => handleSubmit()}
+            loading={loading}
+          />
+        </div>
+      </div>
     </div>
   );
 }

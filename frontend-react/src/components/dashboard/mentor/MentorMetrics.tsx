@@ -16,7 +16,7 @@ export const MentorMetrics: React.FC<MentorMetricsProps> = ({ users, loading }) 
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-6">
-      <Card className="rounded-3xl shadow-sm border-0 transition-all hover:shadow-md bg-white">
+      <Card>
         <CardContent className="p-6">
           <div className="flex items-center gap-4">
             <Users className="h-8 w-8 text-primary" />
@@ -28,7 +28,7 @@ export const MentorMetrics: React.FC<MentorMetricsProps> = ({ users, loading }) 
         </CardContent>
       </Card>
 
-      <Card className="rounded-3xl shadow-sm border-0 transition-all hover:shadow-md bg-white">
+      <Card>
         <CardContent className="p-6">
           <div className="flex items-center gap-4">
             <Shield className="h-8 w-8 text-primary" />
@@ -40,7 +40,7 @@ export const MentorMetrics: React.FC<MentorMetricsProps> = ({ users, loading }) 
         </CardContent>
       </Card>
 
-      <Card className="rounded-3xl shadow-sm border-0 transition-all hover:shadow-md bg-white">
+      <Card>
         <CardContent className="p-6">
           <div className="flex items-center gap-4">
             <Settings className="h-8 w-8 text-primary" />
@@ -52,7 +52,7 @@ export const MentorMetrics: React.FC<MentorMetricsProps> = ({ users, loading }) 
         </CardContent>
       </Card>
 
-      <Card className="rounded-3xl shadow-sm border-0 transition-all hover:shadow-md bg-white">
+      <Card>
         <CardContent className="p-6">
           <div className="flex items-center gap-4">
             <Award className="h-8 w-8 text-primary" />
@@ -64,7 +64,7 @@ export const MentorMetrics: React.FC<MentorMetricsProps> = ({ users, loading }) 
         </CardContent>
       </Card>
 
-      <Card className="rounded-3xl shadow-sm border-0 transition-all hover:shadow-md bg-white">
+      <Card>
         <CardContent className="p-6">
           <div className="flex items-center gap-4">
             <Sprout className="h-8 w-8 text-primary" />
@@ -76,7 +76,7 @@ export const MentorMetrics: React.FC<MentorMetricsProps> = ({ users, loading }) 
         </CardContent>
       </Card>
 
-      <Card className="rounded-3xl shadow-sm border-0 transition-all hover:shadow-md bg-white">
+      <Card>
         <CardContent className="p-6">
           <div className="flex items-center gap-4">
             <UserIcon className="h-8 w-8 text-primary" />

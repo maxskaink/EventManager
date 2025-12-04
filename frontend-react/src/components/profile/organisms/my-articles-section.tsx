@@ -44,7 +44,7 @@ export const MyArticlesSection = ({ articles, onAddArticle, onEditArticle, onDel
           {articles.map((article) => (
             <Card
               key={article.id}
-              className="rounded-3xl shadow-sm border-0 transition-all hover:shadow-lg bg-white overflow-hidden"
+              className="rounded-2xl shadow-[0_4px_12px_rgba(0,0,0,0.06),0_1px_3px_rgba(0,0,0,0.04)] transition-all hover:shadow-lg"
             >
               <CardContent className="p-4">
                 <div className="flex items-start justify-between gap-3">

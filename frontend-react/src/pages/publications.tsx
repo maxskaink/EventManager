@@ -8,7 +8,7 @@ import BottomNavbarWrapper from "../components/nav/BottomNavbarWrapper";
 import { PublicationList, PublicationLoading, PublicationEmpty } from "../components/publications";
 import { PublicationsCategoryTabs } from "../components/publications/wall/PublicationsCategoryTabs";
 import { PublicationsSearchBar } from "../components/publications/wall/PublicationsSearchBar";
-import { publicationQueries} from "@/services/react-query/queries";
+import { publicationQueries } from "@/services/react-query/queries";
 import type { ContentItem } from "@/features/events/types";
 import { UnifiedHeader } from "@/components/layout/UnifiedHeader";
 
@@ -115,11 +115,13 @@ export function PublicationsScreen() {
 
   return (
     <div className="min-h-screen pb-20 bg-gray-50/50">
-      <UnifiedHeader
-        title="Publicaciones"
-        onGoBack={() => navigate(dashboardRoute)}
-      />
-      <div className="max-w-4xl mx-auto p-4 space-y-6">
+      <div className="bg-white border-b sticky top-0 z-10 shadow-sm">
+        <UnifiedHeader
+          title="Publicaciones"
+          onGoBack={() => navigate(dashboardRoute)}
+        />
+      </div>
+      <div className="max-w-5xl mx-auto p-6 space-y-8">
         <PublicationsSearchBar searchTerm={searchTerm} onSearchChange={setSearchTerm} />
 
         <PublicationsCategoryTabs selectedCategory={selectedCategory} onCategoryChange={setSelectedCategory}>

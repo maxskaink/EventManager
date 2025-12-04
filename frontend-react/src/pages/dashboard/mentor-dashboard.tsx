@@ -172,13 +172,13 @@ export function MentorDashboardPage() {
   if (!user) return null; // O un spinner de carga
 
   return (
-    <div className="space-y-6 bg-gray-50/50 min-h-screen pb-10">
+    <div className="space-y-8 bg-gray-50/50 min-h-screen pb-10">
       <MentorHeader
         user={user}
         onLogout={logout}
       />
 
-      <div className="container mx-auto px-4 py-6 space-y-6">
+      <div className="container mx-auto px-6 py-8 space-y-8 max-w-7xl">
         {/* Acciones Rápidas */}
         <MentorQuickActions
           onOpenGeneralReport={() => setIsGeneralReportOpen(true)}

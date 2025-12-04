@@ -26,6 +26,7 @@ import { EditExternalEventDialog } from "@/components/profile/dialogs/edit-exter
 import { AddCertificateDialog } from "@/components/profile/dialogs/add-certificate-dialog";
 import { EditCertificateDialog } from "@/components/profile/dialogs/edit-certificate-dialog";
 import { ConfirmDeleteDialog } from "@/components/profile/dialogs/confirm-delete-dialog";
+import { LogoutConfirmDialog } from "@/components/auth/LogoutConfirmDialog";
 
 const formatDate = (dateString: string): string =>
   new Date(dateString).toLocaleDateString("es-ES", {
@@ -66,6 +67,7 @@ export function ProfileScreen() {
   const [isAddCertificateOpen, setAddCertificateOpen] = useState(false);
   const [certificateToEdit, setCertificateToEdit] = useState<number | null>(null);
   const [certificateToDelete, setCertificateToDelete] = useState<number | null>(null);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   // const [isAddEventOpen, setAddEventOpen] = useState(false);
   // const [participationToDelete, setParticipationToDelete] = useState<string | null>(null);
 
@@ -225,7 +227,11 @@ export function ProfileScreen() {
   });
 
   // Lógica de logout
-  const handleLogout = () => logout().then((success) => success && goToDashboard());
+  const handleLogoutClick = () => {
+    setShowLogoutConfirm(true);
+  };
+
+  const handleConfirmLogout = () => logout().then((success) => success && goToDashboard());
 
   const userInterests = useMemo(() => {
     return userProfileInterests
@@ -275,210 +281,217 @@ export function ProfileScreen() {
   };
 
   return (
-    <ProfileTemplate
-      header={
-        <UnifiedHeader
-          title="Mi Perfil"
-          onGoBack={() => goToDashboard()}
-        />
-      }
-      personalInfo={
-        <PersonalInfoCard
-          user={personalInfoUser}
-          role={role}
-          getRoleLabel={getRoleLabel}
-          allInterests={allInterests}
-          onAddInterest={(id) => addInterestMutation.mutate(id)}
-          onDeleteInterest={(id) => deleteInterestMutation.mutate(id)}
-        />
-      }
-      contactInfo={
-        <ContactInfoCard
-          isLoading={isLoadingProfile || updateProfileMutation.isPending}
-          contactInfo={profile}
-          email={user.email}
-          onEdit={() => setEditContactOpen(true)}
-        />
-      }
-      participationStats={
-        <ParticipationStats
-          eventsCount={externalEvents.length}
-          certificatesCount={certificates.length}
-          articlesCount={articles.length}
-        />
-      }
-      myExternalEvents={
-        <MyExternalEventsSection
-          events={externalEvents}
-          onAddEvent={() => setAddExternalEventOpen(true)}
-          onEditEvent={(id) => setExternalEventToEdit(id)}
-          onDeleteEvent={(id) => setExternalEventToDelete(id)}
-          formatDate={formatDate}
-          isLoading={isLoadingExternalEvents}
-        />
-      }
-      myArticles={
-        <MyArticlesSection
-          articles={articles.map((article) => ({
-            id: String(article.id),
-            title: article.title,
-            description: article.description ?? "",
-            authors: article.authors,
-            publicationDate: article.publication_date,
-            publicationUrl: article.publication_url ?? "",
-          }))}
-          onAddArticle={() => setAddArticleOpen(true)}
-          onEditArticle={(id) => setArticleToEdit(id)}
-          onDeleteArticle={(id) => setArticleToDelete(id)}
-          formatDate={formatDate}
-        />
-      }
-      myCertificates={
-        <MyCertificatesSection
-          certificates={certificates}
-          onAddCertificate={() => setAddCertificateOpen(true)}
-          onEditCertificate={(id) => setCertificateToEdit(id)}
-          onDeleteCertificate={(id) => setCertificateToDelete(id)}
-          formatDate={formatDate}
-          isLoading={isLoadingCertificates}
-        />
-      }
-      recentCertificates={<RecentCertificatesSection certificates={certificates.slice(0, 3).map((cert: API.Certificate) => ({
-        id: String(cert.id),
-        title: cert.name,
-        topic: cert.issuing_organization,
-        uploadDate: cert.issue_date,
-      }))} formatDate={formatDate} />}
-      settings={<SettingsSection onLogout={handleLogout} />}
-      dialogs={
-        <>
-          <EditContactDialog
-            open={isEditContactOpen}
-            onOpenChange={setEditContactOpen}
-            initialData={profile}
-            onSave={(data) => updateProfileMutation.mutate(data)}
+    <>
+      <ProfileTemplate
+        header={
+          <UnifiedHeader
+            title="Mi Perfil"
+            onGoBack={() => goToDashboard()}
           />
-          <AddArticleDialog
-            open={isAddArticleOpen}
-            onOpenChange={setAddArticleOpen}
-            onAddArticle={(data) => addArticleMutation.mutate({
-              user_id: user.id,
-              title: data.title,
-              description: data.description,
-              authors: data.authors,
-              publication_date: data.publicationDate,
-              publication_url: data.publicationUrl,
-            })}
-            isPending={addArticleMutation.isPending}
+        }
+        personalInfo={
+          <PersonalInfoCard
+            user={personalInfoUser}
+            role={role}
+            getRoleLabel={getRoleLabel}
+            allInterests={allInterests}
+            onAddInterest={(id) => addInterestMutation.mutate(id)}
+            onDeleteInterest={(id) => deleteInterestMutation.mutate(id)}
           />
-          <ConfirmDeleteDialog
-            open={!!articleToDelete}
-            onOpenChange={(open) => {
-              if (!open) {
-                setArticleToDelete(null);
-              }
-            }}
-            onConfirm={handleConfirmDeleteArticle}
-            title="¿Eliminar artículo?"
-            description="Esta acción no se puede deshacer. El artículo será eliminado permanentemente."
+        }
+        contactInfo={
+          <ContactInfoCard
+            isLoading={isLoadingProfile || updateProfileMutation.isPending}
+            contactInfo={profile}
+            email={user.email}
+            onEdit={() => setEditContactOpen(true)}
           />
-
-          <EditArticleDialog
-            open={articleToEdit !== null}
-            onOpenChange={(open) => !open && setArticleToEdit(null)}
-            article={articleToEdit ? articles.find(a => String(a.id) === articleToEdit) ? {
-              id: String(articles.find(a => String(a.id) === articleToEdit)!.id),
-              title: articles.find(a => String(a.id) === articleToEdit)!.title,
-              description: articles.find(a => String(a.id) === articleToEdit)!.description ?? "",
-              authors: articles.find(a => String(a.id) === articleToEdit)!.authors,
-              publicationDate: articles.find(a => String(a.id) === articleToEdit)!.publication_date,
-              publicationUrl: articles.find(a => String(a.id) === articleToEdit)!.publication_url ?? "",
-            } : null : null}
-            onEditArticle={(data) => updateArticleMutation.mutate({
-              id: Number(articleToEdit),
-              data: {
+        }
+        participationStats={
+          <ParticipationStats
+            eventsCount={externalEvents.length}
+            certificatesCount={certificates.length}
+            articlesCount={articles.length}
+          />
+        }
+        myExternalEvents={
+          <MyExternalEventsSection
+            events={externalEvents}
+            onAddEvent={() => setAddExternalEventOpen(true)}
+            onEditEvent={(id) => setExternalEventToEdit(id)}
+            onDeleteEvent={(id) => setExternalEventToDelete(id)}
+            formatDate={formatDate}
+            isLoading={isLoadingExternalEvents}
+          />
+        }
+        myArticles={
+          <MyArticlesSection
+            articles={articles.map((article) => ({
+              id: String(article.id),
+              title: article.title,
+              description: article.description ?? "",
+              authors: article.authors,
+              publicationDate: article.publication_date,
+              publicationUrl: article.publication_url ?? "",
+            }))}
+            onAddArticle={() => setAddArticleOpen(true)}
+            onEditArticle={(id) => setArticleToEdit(id)}
+            onDeleteArticle={(id) => setArticleToDelete(id)}
+            formatDate={formatDate}
+          />
+        }
+        myCertificates={
+          <MyCertificatesSection
+            certificates={certificates}
+            onAddCertificate={() => setAddCertificateOpen(true)}
+            onEditCertificate={(id) => setCertificateToEdit(id)}
+            onDeleteCertificate={(id) => setCertificateToDelete(id)}
+            formatDate={formatDate}
+            isLoading={isLoadingCertificates}
+          />
+        }
+        recentCertificates={<RecentCertificatesSection certificates={certificates.slice(0, 3).map((cert: API.Certificate) => ({
+          id: String(cert.id),
+          title: cert.name,
+          topic: cert.issuing_organization,
+          uploadDate: cert.issue_date,
+        }))} formatDate={formatDate} />}
+        settings={<SettingsSection onLogout={handleLogoutClick} />}
+        dialogs={
+          <>
+            <EditContactDialog
+              open={isEditContactOpen}
+              onOpenChange={setEditContactOpen}
+              initialData={profile}
+              onSave={(data) => updateProfileMutation.mutate(data)}
+            />
+            <AddArticleDialog
+              open={isAddArticleOpen}
+              onOpenChange={setAddArticleOpen}
+              onAddArticle={(data) => addArticleMutation.mutate({
+                user_id: user.id,
                 title: data.title,
                 description: data.description,
                 authors: data.authors,
                 publication_date: data.publicationDate,
                 publication_url: data.publicationUrl,
-              }
-            })}
-            isPending={updateArticleMutation.isPending}
-          />
+              })}
+              isPending={addArticleMutation.isPending}
+            />
+            <ConfirmDeleteDialog
+              open={!!articleToDelete}
+              onOpenChange={(open) => {
+                if (!open) {
+                  setArticleToDelete(null);
+                }
+              }}
+              onConfirm={handleConfirmDeleteArticle}
+              title="¿Eliminar artículo?"
+              description="Esta acción no se puede deshacer. El artículo será eliminado permanentemente."
+            />
 
-          <AddExternalEventDialog
-            open={isAddExternalEventOpen}
-            onOpenChange={setAddExternalEventOpen}
-            onAddEvent={(data) => addExternalEventMutation.mutate({
-              ...data,
-              user_id: user.id,
-            })}
-            isPending={addExternalEventMutation.isPending}
-          />
+            <EditArticleDialog
+              open={articleToEdit !== null}
+              onOpenChange={(open) => !open && setArticleToEdit(null)}
+              article={articleToEdit ? articles.find(a => String(a.id) === articleToEdit) ? {
+                id: String(articles.find(a => String(a.id) === articleToEdit)!.id),
+                title: articles.find(a => String(a.id) === articleToEdit)!.title,
+                description: articles.find(a => String(a.id) === articleToEdit)!.description ?? "",
+                authors: articles.find(a => String(a.id) === articleToEdit)!.authors,
+                publicationDate: articles.find(a => String(a.id) === articleToEdit)!.publication_date,
+                publicationUrl: articles.find(a => String(a.id) === articleToEdit)!.publication_url ?? "",
+              } : null : null}
+              onEditArticle={(data) => updateArticleMutation.mutate({
+                id: Number(articleToEdit),
+                data: {
+                  title: data.title,
+                  description: data.description,
+                  authors: data.authors,
+                  publication_date: data.publicationDate,
+                  publication_url: data.publicationUrl,
+                }
+              })}
+              isPending={updateArticleMutation.isPending}
+            />
 
-          <ConfirmDeleteDialog
-            open={externalEventToDelete !== null}
-            onOpenChange={(open) => !open && setExternalEventToDelete(null)}
-            onConfirm={() => deleteExternalEventMutation.mutate(externalEventToDelete!)}
-            title="¿Eliminar evento externo?"
-            description="Esta acción no se puede deshacer. El evento será eliminado permanentemente."
-          />
+            <AddExternalEventDialog
+              open={isAddExternalEventOpen}
+              onOpenChange={setAddExternalEventOpen}
+              onAddEvent={(data) => addExternalEventMutation.mutate({
+                ...data,
+                user_id: user.id,
+              })}
+              isPending={addExternalEventMutation.isPending}
+            />
 
-          <EditExternalEventDialog
-            open={externalEventToEdit !== null}
-            onOpenChange={(open) => !open && setExternalEventToEdit(null)}
-            event={externalEventToEdit ? externalEvents.find(e => e.id === externalEventToEdit) ?? null : null}
-            onEditEvent={(data) => updateExternalEventMutation.mutate({
-              id: externalEventToEdit!,
-              data: data
-            })}
-            isPending={updateExternalEventMutation.isPending}
-          />
+            <ConfirmDeleteDialog
+              open={externalEventToDelete !== null}
+              onOpenChange={(open) => !open && setExternalEventToDelete(null)}
+              onConfirm={() => deleteExternalEventMutation.mutate(externalEventToDelete!)}
+              title="¿Eliminar evento externo?"
+              description="Esta acción no se puede deshacer. El evento será eliminado permanentemente."
+            />
 
-          <AddCertificateDialog
-            open={isAddCertificateOpen}
-            onOpenChange={setAddCertificateOpen}
-            onAddCertificate={(data) => addCertificateMutation.mutate({
-              ...data,
-              user_id: user.id,
-              expiration_date: data.expiration_date || null,
-              credential_id: data.credential_id || null,
-              credential_url: data.credential_url || null,
-              does_not_expire: data.does_not_expire || false,
-            })}
-            isPending={addCertificateMutation.isPending}
-          />
+            <EditExternalEventDialog
+              open={externalEventToEdit !== null}
+              onOpenChange={(open) => !open && setExternalEventToEdit(null)}
+              event={externalEventToEdit ? externalEvents.find(e => e.id === externalEventToEdit) ?? null : null}
+              onEditEvent={(data) => updateExternalEventMutation.mutate({
+                id: externalEventToEdit!,
+                data: data
+              })}
+              isPending={updateExternalEventMutation.isPending}
+            />
 
-          <ConfirmDeleteDialog
-            open={certificateToDelete !== null}
-            onOpenChange={(open) => !open && setCertificateToDelete(null)}
-            onConfirm={() => deleteCertificateMutation.mutate(certificateToDelete!)}
-            title="¿Eliminar certificado?"
-            description="Esta acción no se puede deshacer. El certificado será eliminado permanentemente."
-          />
-
-          <EditCertificateDialog
-            open={certificateToEdit !== null}
-            onOpenChange={(open) => !open && setCertificateToEdit(null)}
-            certificate={certificateToEdit ? certificates.find(c => c.id === certificateToEdit) ?? null : null}
-            onEditCertificate={(data) => updateCertificateMutation.mutate({
-              id: certificateToEdit!,
-              data: {
-                name: data.name,
-                issuing_organization: data.issuing_organization,
-                issue_date: data.issue_date,
+            <AddCertificateDialog
+              open={isAddCertificateOpen}
+              onOpenChange={setAddCertificateOpen}
+              onAddCertificate={(data) => addCertificateMutation.mutate({
+                ...data,
+                user_id: user.id,
                 expiration_date: data.expiration_date || null,
-                does_not_expire: data.does_not_expire || false,
                 credential_id: data.credential_id || null,
                 credential_url: data.credential_url || null,
-              }
-            })}
-            isPending={updateCertificateMutation.isPending}
-          />
-        </>
-      }
-      
-    />
+                does_not_expire: data.does_not_expire || false,
+              })}
+              isPending={addCertificateMutation.isPending}
+            />
+
+            <ConfirmDeleteDialog
+              open={certificateToDelete !== null}
+              onOpenChange={(open) => !open && setCertificateToDelete(null)}
+              onConfirm={() => deleteCertificateMutation.mutate(certificateToDelete!)}
+              title="¿Eliminar certificado?"
+              description="Esta acción no se puede deshacer. El certificado será eliminado permanentemente."
+            />
+
+            <EditCertificateDialog
+              open={certificateToEdit !== null}
+              onOpenChange={(open) => !open && setCertificateToEdit(null)}
+              certificate={certificateToEdit ? certificates.find(c => c.id === certificateToEdit) ?? null : null}
+              onEditCertificate={(data) => updateCertificateMutation.mutate({
+                id: certificateToEdit!,
+                data: {
+                  name: data.name,
+                  issuing_organization: data.issuing_organization,
+                  issue_date: data.issue_date,
+                  expiration_date: data.expiration_date || null,
+                  does_not_expire: data.does_not_expire || false,
+                  credential_id: data.credential_id || null,
+                  credential_url: data.credential_url || null,
+                }
+              })}
+              isPending={updateCertificateMutation.isPending}
+            />
+          </>
+        }
+
+      />
+      <LogoutConfirmDialog
+        open={showLogoutConfirm}
+        onOpenChange={setShowLogoutConfirm}
+        onConfirm={handleConfirmLogout}
+      />
+    </>
   );
 }

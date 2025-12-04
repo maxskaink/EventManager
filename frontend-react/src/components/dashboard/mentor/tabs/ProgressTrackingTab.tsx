@@ -21,7 +21,7 @@ export const ProgressTrackingTab: React.FC<ProgressTrackingTabProps> = ({
   const memberUsers = users.filter((user) => user.role === "active-member" || user.role === "seed");
 
   return (
-    <Card className="rounded-3xl shadow-md border-0 bg-white">
+    <Card>
       <CardHeader>
         <CardTitle>Seguimiento de Progreso de Integrantes</CardTitle>
       </CardHeader>
@@ -46,7 +46,7 @@ export const ProgressTrackingTab: React.FC<ProgressTrackingTabProps> = ({
               } as MemberProgressData;
 
               return (
-                <div key={user.id} className="rounded-2xl shadow-sm border-0 bg-gray-50 p-6 hover:shadow-md transition-all">
+                <div key={user.id} className="border rounded-lg p-4">
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-3">
                       <Avatar className="h-10 w-10">

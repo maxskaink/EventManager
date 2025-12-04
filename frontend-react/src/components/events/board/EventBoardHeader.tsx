@@ -2,6 +2,10 @@ import { Button } from "../../ui/button";
 import { ArrowLeft, Plus, FileText } from "lucide-react";
 import { getDashboardRouteFromRole } from "../../../services/navigation/redirects";
 import type { NavigateFunction } from "react-router";
+import { LogoutConfirmDialog } from "../../auth/LogoutConfirmDialog";
+import { useAuthStore } from "../../../stores/auth.store";
+import { useState } from "react";
+import { LogOut } from "lucide-react";
 
 type Props = {
   userRole: string;
@@ -10,6 +14,18 @@ type Props = {
 };
 
 export function EventBoardHeader({ userRole, onNavigate, onCreatePublication }: Props) {
+  const { logout } = useAuthStore();
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+
+  const handleLogoutClick = () => {
+    setShowLogoutConfirm(true);
+  };
+
+  const handleConfirmLogout = () => {
+    logout();
+    setShowLogoutConfirm(false);
+  };
+
   return (
     <div className="bg-[#0a2740] p-4 shadow-sm text-white">
       <div className="max-w-6xl mx-auto flex items-center gap-4">
@@ -45,8 +61,22 @@ export function EventBoardHeader({ userRole, onNavigate, onCreatePublication }: 
               Crear Publicación
             </Button>
           )}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleLogoutClick}
+            className="text-white/80 hover:bg-red-500/20 hover:text-red-200"
+            title="Cerrar sesión"
+          >
+            <LogOut className="h-5 w-5" />
+          </Button>
         </div>
       </div>
+      <LogoutConfirmDialog
+        open={showLogoutConfirm}
+        onOpenChange={setShowLogoutConfirm}
+        onConfirm={handleConfirmLogout}
+      />
     </div>
   );
 }
