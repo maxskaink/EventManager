@@ -178,7 +178,7 @@ export function EventBoardScreen() {
   };
 
   return (
-    <div className="min-h-screen pb-20">
+    <div className="min-h-screen pb-20 bg-gray-50/50">
       <EventBoardHeader
         userRole={user?.role || ""}
         onNavigate={navigate}

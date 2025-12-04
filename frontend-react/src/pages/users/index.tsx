@@ -28,55 +28,50 @@ export const UserSearchScreen = () => {
   });
 
   return (
-    <div className="min-h-screen bg-background pb-20">
-      <UnifiedHeader title="Buscar Usuarios" />
-      
-      <div className="p-4 max-w-4xl mx-auto space-y-4">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-          <Input
-            placeholder="Buscar por nombre o email..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-9"
-          />
-        </div>
-
-        {isLoading && <div className="text-center py-8">Cargando usuarios...</div>}
-        
-        {isError && <div className="text-center py-8 text-red-500">Error al cargar usuarios</div>}
-
-        {!isLoading && !isError && (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {filteredUsers.map((user: API.User) => (
-              <Card 
-                key={user.id} 
-                className="cursor-pointer hover:shadow-md transition-shadow"
-                onClick={() => navigate(`/users/${user.id}`)}
-              >
-                <CardHeader className="flex flex-row items-center gap-4 pb-2">
-                  <Avatar>
-                    <AvatarImage src={user.avatar || undefined} alt={user.name} />
-                    <AvatarFallback><User /></AvatarFallback>
-                  </Avatar>
-                  <div className="flex flex-col">
-                    <CardTitle className="text-base">{user.name}</CardTitle>
-                    <span className="text-xs text-muted-foreground">{user.role}</span>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground">{user.email}</p>
-                </CardContent>
-              </Card>
-            ))}
-            
-            {filteredUsers.length === 0 && (
-              <div className="col-span-full text-center py-8 text-muted-foreground">
-                No se encontraron usuarios.
-              </div>
-            )}
-          </div>
-        )}
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      <UnifiedHeader />
+      <div className="container mx-auto px-4 py-8">
+        <Card className="rounded-3xl shadow-lg">
+          <CardHeader>
+            <CardTitle className="text-2xl font-bold">Search Users</CardTitle>
+            <div className="relative mt-4">
+              <Search className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+              <Input
+                type="text"
+                placeholder="Search by name or email..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 rounded-2xl"
+              />
+            </div>
+          </CardHeader>
+          <CardContent>
+            {isLoading && <p>Loading users...</p>}
+            {isError && <p className="text-red-500">Error loading users</p>}
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {filteredUsers.map((user: API.User) => (
+                <Card
+                  key={user.id}
+                  className="cursor-pointer hover:shadow-md transition-shadow rounded-2xl"
+                  onClick={() => navigate(`/profile/${user.id}`)}
+                >
+                  <CardContent className="flex items-center gap-4 p-4">
+                    <Avatar>
+                      <AvatarImage src={user.avatar || undefined} />
+                      <AvatarFallback>
+                        <User className="h-6 w-6" />
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold truncate">{user.name}</p>
+                      <p className="text-sm text-gray-500 truncate">{user.email}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

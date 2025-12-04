@@ -148,7 +148,7 @@ export default function CreateEventPage() {
 
   // Renderizar el formulario de creación
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 bg-gray-50/50 min-h-screen pb-10">
       <UnifiedHeader
         title="Crear Nuevo Evento"
         subtitle="Completa la información para registrar un evento"

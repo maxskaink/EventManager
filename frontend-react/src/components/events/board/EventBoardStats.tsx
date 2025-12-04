@@ -18,7 +18,7 @@ export function EventBoardStats({
 
   return (
     <section className="grid grid-cols-2 md:grid-cols-3 gap-4">
-      <Card>
+      <Card className="rounded-3xl shadow-sm border-0 bg-white">
         <CardContent className="p-4 text-center">
           <div className="p-2 bg-blue-100 rounded-lg w-fit mx-auto mb-2">
             <Calendar className="h-6 w-6 text-blue-600" />
@@ -28,7 +28,7 @@ export function EventBoardStats({
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="rounded-3xl shadow-sm border-0 bg-white">
         <CardContent className="p-4 text-center">
           <div className="p-2 bg-green-100 rounded-lg w-fit mx-auto mb-2">
             <Users className="h-6 w-6 text-green-600" />
@@ -37,7 +37,7 @@ export function EventBoardStats({
           <p className="text-sm text-muted-foreground">Eventos</p>
         </CardContent>
       </Card>
-      <Card>
+      <Card className="rounded-3xl shadow-sm border-0 bg-white">
         <CardContent className="p-4 text-center">
           <div className="p-2 bg-orange-100 rounded-lg w-fit mx-auto mb-2">
             <Pin className="h-6 w-6 text-purple-600" />

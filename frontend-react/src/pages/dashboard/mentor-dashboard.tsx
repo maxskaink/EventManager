@@ -172,7 +172,7 @@ export function MentorDashboardPage() {
   if (!user) return null; // O un spinner de carga
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 bg-gray-50/50 min-h-screen pb-10">
       <MentorHeader
         user={user}
         onLogout={logout}

@@ -79,7 +79,7 @@ export const CreateEventForm: React.FC<Props> = ({
   return (
     <div className="max-w-4xl mx-auto p-4 space-y-6">
       {/* Información básica */}
-      <Card>
+      <Card className="rounded-3xl shadow-sm border-0 bg-white">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Info className="h-5 w-5" />
@@ -132,7 +132,7 @@ export const CreateEventForm: React.FC<Props> = ({
       </Card>
 
       {/* Fecha y hora */}
-      <Card>
+      <Card className="rounded-3xl shadow-sm border-0 bg-white">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Calendar className="h-5 w-5" />
@@ -189,7 +189,7 @@ export const CreateEventForm: React.FC<Props> = ({
       </Card>
 
       {/* Modalidad y ubicación */}
-      <Card>
+      <Card className="rounded-3xl shadow-sm border-0 bg-white">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <MapPin className="h-5 w-5" />
@@ -236,7 +236,7 @@ export const CreateEventForm: React.FC<Props> = ({
       </Card>
 
       {/* Capacidad y estado */}
-      <Card>
+      <Card className="rounded-3xl shadow-sm border-0 bg-white">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Users className="h-5 w-5" />

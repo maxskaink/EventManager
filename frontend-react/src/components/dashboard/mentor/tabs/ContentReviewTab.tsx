@@ -42,7 +42,7 @@ export const ContentReviewTab: React.FC<ContentReviewTabProps> = ({
   );
 
   return (
-    <Card>
+    <Card className="rounded-3xl shadow-md border-0 bg-white">
       <CardHeader>
         <CardTitle>Revisión de Contenido Pendiente</CardTitle>
       </CardHeader>
@@ -54,7 +54,7 @@ export const ContentReviewTab: React.FC<ContentReviewTabProps> = ({
               : "Sistema";
 
             return (
-              <div key={submission.id} className="border rounded-lg p-4">
+              <div key={submission.id} className="rounded-2xl shadow-sm border-0 bg-gray-50 p-6 hover:shadow-md transition-all">
                 <div className="flex items-start justify-between mb-3">
                   <div>
                     <div className="flex items-center gap-2 mb-2">

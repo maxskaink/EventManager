@@ -58,64 +58,75 @@ const PublicationCard: React.FC<PublicationCardProps> = ({ publication }) => {
 
   return (
     <Link to={`/publications/${publication.id.replace('pub-', '')}`}>
-      <div className="bg-white rounded-xl shadow-md overflow-hidden transition-transform duration-200 ease-in-out cursor-pointer flex flex-col h-full hover:-translate-y-1 hover:shadow-lg group">
-        <div className="relative">
+      <div className="bg-white rounded-3xl shadow-sm overflow-hidden transition-all duration-300 ease-in-out cursor-pointer flex flex-col h-full hover:shadow-xl hover:-translate-y-1 group border border-gray-100/50">
+        <div className="relative overflow-hidden">
           {imageSrc ? (
-            <img
-              className="w-full h-auto object-cover"
-              src={imageSrc}
-              alt={publication.title}
-              onError={(e) => {
-                e.currentTarget.src = "https://images.unsplash.com/photo-1557683316-973673baf926?w=800&q=80"; // Fallback
-              }}
-            />
+            <>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10" />
+              <img
+                className="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-105"
+                src={imageSrc}
+                alt={publication.title}
+                onError={(e) => {
+                  e.currentTarget.src = "https://images.unsplash.com/photo-1557683316-973673baf926?w=800&q=80"; // Fallback
+                }}
+              />
+            </>
           ) : (
-            <div className="h-8" />
+            <div className="h-2 bg-primary/5" />
           )}
-          <div className="absolute top-2 right-2 flex flex-col gap-1 items-end">
-            <Badge className={`${getTypeColor(publication.type)} shadow-sm`}>
+          <div className="absolute top-3 right-3 flex flex-col gap-1 items-end z-20">
+            <Badge className={`${getTypeColor(publication.type)} shadow-sm backdrop-blur-sm border-0`}>
               {publication.subtype || publication.type}
             </Badge>
           </div>
-          <div className="absolute top-2 left-2">
+          <div className="absolute top-3 left-3 z-20">
             {isEvent && timeCategory && <Badge
               className={`${timeCategory === 'Finalizado' ?
-                  'bg-gray-500'
-                  : timeCategory === 'En curso' ?
-                    'bg-green-600'
-                    : 'bg-orange-500'} shadow-sm`}>
+                'bg-gray-500/90'
+                : timeCategory === 'En curso' ?
+                  'bg-green-600/90'
+                  : 'bg-orange-500/90'} shadow-sm backdrop-blur-sm border-0 text-white`}>
               {timeCategory}
             </Badge>}
           </div>
         </div>
 
-        <div className="p-4 flex flex-col flex-grow space-y-3">
-          <h3 className="text-lg font-semibold text-gray-800 leading-tight group-hover:text-primary transition-colors">
+        <div className="p-5 flex flex-col flex-grow space-y-4">
+          <h3 className="text-xl font-bold text-gray-800 leading-tight group-hover:text-primary transition-colors line-clamp-2">
             {publication.title}
           </h3>
 
           {isEvent ? (
-            <div className="space-y-2 text-sm text-muted-foreground">
-              <div className={`flex items-center gap-2 ${timeCategory === '¡Pronto!' ? 'bg-orange-500 text-white p-1 rounded-md' : ''}`}>
-                <Calendar className="h-4 w-4 shrink-0" />
-                <span>{new Date(publication.date).toLocaleDateString('es-ES', { dateStyle: 'long' })}</span>
+            <div className="space-y-2.5 text-sm text-gray-500">
+              <div className={`flex items-center gap-2.5 ${timeCategory === '¡Pronto!' ? 'bg-orange-50 text-orange-700 p-2 rounded-lg' : ''}`}>
+                <div className={`p-1.5 rounded-full ${timeCategory === '¡Pronto!' ? 'bg-orange-100' : 'bg-primary/10'} text-primary`}>
+                  <Calendar className="h-4 w-4 shrink-0" />
+                </div>
+                <span className="font-medium">{new Date(publication.date).toLocaleDateString('es-ES', { dateStyle: 'long' })}</span>
               </div>
               {publication.time && (
-                <div className={`flex items-center gap-2`}>
-                  <Clock className="h-4 w-4 shrink-0" />
-                  <span>{publication.time}</span>
+                <div className={`flex items-center gap-2.5`}>
+                  <div className="p-1.5 rounded-full bg-primary/10 text-primary">
+                    <Clock className="h-4 w-4 shrink-0" />
+                  </div>
+                  <span className="font-medium">{publication.time}</span>
                 </div>
               )}
               {publication.location && (
-                <div className="flex items-center gap-2">
-                  <MapPin className="h-4 w-4 shrink-0" />
-                  <span className="line-clamp-1">{publication.location}</span>
+                <div className="flex items-center gap-2.5">
+                  <div className="p-1.5 rounded-full bg-primary/10 text-primary">
+                    <MapPin className="h-4 w-4 shrink-0" />
+                  </div>
+                  <span className="line-clamp-1 font-medium">{publication.location}</span>
                 </div>
               )}
               {publication.capacity !== undefined && (
-                <div className="flex items-center gap-2">
-                  <Users className="h-4 w-4 shrink-0" />
-                  <span>Cupos: {publication.capacity}</span>
+                <div className="flex items-center gap-2.5">
+                  <div className="p-1.5 rounded-full bg-primary/10 text-primary">
+                    <Users className="h-4 w-4 shrink-0" />
+                  </div>
+                  <span className="font-medium">Cupos: {publication.capacity}</span>
                 </div>
               )}
             </div>
@@ -125,8 +136,10 @@ const PublicationCard: React.FC<PublicationCardProps> = ({ publication }) => {
             </p>
           )}
 
-          <div className="pt-2 mt-auto flex items-center text-primary font-medium text-sm group-hover:underline">
-            Ver más <ArrowRight className="ml-1 h-4 w-4" />
+          <div className="pt-2 mt-auto flex items-center justify-end">
+            <span className="text-primary font-semibold text-sm group-hover:underline decoration-2 underline-offset-4 flex items-center gap-1">
+              Ver detalles <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+            </span>
           </div>
         </div>
       </div>
