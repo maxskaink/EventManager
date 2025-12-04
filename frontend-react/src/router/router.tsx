@@ -12,6 +12,7 @@ import { EventBoardScreen } from "../pages/admin/event-board";
 import { ReportsScreen } from "../components/reports/ReportsScreen";
 
 import { PublicationsScreen } from "../pages/publications";
+import CertificatesPage from "../pages/certificates";
 import PublicationDetailPage from "../pages/publications/[publicationId]";
 import { CreateArticleScreen } from "../components/publications/CreatePublicationScreen";
 import { ProfileScreen } from "../pages/profile";
@@ -73,6 +74,7 @@ export const router = createBrowserRouter([
               { path: "publications", element: <PublicationsScreen /> },
               { path: "create-article", element: <CreateArticleScreen /> },
               { path: "profile", element: <ProfileScreen /> },
+              { path: "certificates", element: <CertificatesPage /> },
               { path: "notifications", element: <NotificationsPage /> },
               { path: "users", element: <UserSearchScreen /> },
               { path: "users/:userId", element: <UserDetailScreen /> },

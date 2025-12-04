@@ -1,6 +1,13 @@
 import { Button } from "../../components/ui/button";
 import { Card, CardContent, CardHeader } from "../../components/ui/card";
 import { Badge } from "../../components/ui/badge";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "../../components/ui/carousel";
 import { UnifiedHeader } from "../../components/layout/UnifiedHeader";
 import { Calendar, Users, Award } from "lucide-react";
 import { useNavigate } from "react-router";
@@ -35,7 +42,7 @@ export function MemberDashboard() {
       
     )
       */
-    .slice(0, 2);
+    .filter((event) => isEventUpcoming(event));
 
   const recentCertificates = certificates.slice(0, 2);
 
@@ -52,45 +59,61 @@ export function MemberDashboard() {
         <section>
           <div className="flex items-center justify-between mb-4">
             <h2>Eventos para ti</h2>
-            <Button variant="outline" onClick={() => navigate("/events")}>
+            <Button variant="outline" onClick={() => navigate("/publications")}>
               Ver todos
             </Button>
           </div>
 
           {recommendedEvents.length > 0 ? (
-            <div className="grid gap-4 md:grid-cols-2">
-              {recommendedEvents.map((event) => (
-                <Card key={event.id} className="hover:shadow-md transition-shadow">
-                  <div className="aspect-video relative overflow-hidden rounded-t-lg bg-gray-100">
-                    <Badge className="absolute top-2 right-2">Recomendado</Badge>
-                  </div>
-
-                  <CardHeader className="pb-2">
-                    <h3 className="line-clamp-2">{event.name}</h3>
-                  </CardHeader>
-
-                  <CardContent className="space-y-3">
-                    <div className="space-y-2 text-sm">
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                        <Calendar className="h-4 w-4" />
-                        <span>{new Date(event.start_date).toLocaleDateString("es-ES")}</span>
+            <Carousel
+              opts={{
+                align: "start",
+              }}
+              className="w-full"
+            >
+              <CarouselContent>
+                {recommendedEvents.map((event) => (
+                  <CarouselItem key={event.id} className="md:basis-1/2">
+                    <Card className="hover:shadow-md transition-shadow h-full">
+                      <div className="aspect-video relative overflow-hidden rounded-t-lg bg-gray-100">
+                        <Badge className="absolute top-2 right-2">Recomendado</Badge>
                       </div>
 
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                        <Users className="h-4 w-4" />
-                        <span>
-                          {event.capacity}/{event.capacity} inscritos
-                        </span>
-                      </div>
-                    </div>
+                      <CardHeader className="pb-2">
+                        <h3 className="line-clamp-2">{event.name}</h3>
+                      </CardHeader>
 
-                    <Button className="w-full" onClick={() => navigate(`/events/${event.id}`)}>
-                      Inscribirme
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                      <CardContent className="space-y-3">
+                        <div className="space-y-2 text-sm">
+                          <div className="flex items-center gap-2 text-muted-foreground">
+                            <Calendar className="h-4 w-4" />
+                            <span>
+                              {new Date(event.start_date).toLocaleDateString("es-ES")}
+                            </span>
+                          </div>
+
+                          <div className="flex items-center gap-2 text-muted-foreground">
+                            <Users className="h-4 w-4" />
+                            <span>
+                              {event.capacity}/{event.capacity} inscritos
+                            </span>
+                          </div>
+                        </div>
+
+                        <Button
+                          className="w-full"
+                          onClick={() => navigate(`/events/${event.id}`)}
+                        >
+                          Inscribirme
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselPrevious />
+              <CarouselNext />
+            </Carousel>
           ) : (
             <Card>
               <CardContent className="p-6 text-center">
@@ -149,12 +172,25 @@ export function MemberDashboard() {
                       {new Date(event.start_date).toLocaleDateString("es-ES")}
                     </p>
                   </div>
-                  <Button size="sm" variant="outline">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => navigate(`/publications/${event.id}`)}
+                  >
                     Ver
                   </Button>
                 </CardContent>
               </Card>
             ))}
+          </div>
+          <div className="mt-4 text-center">
+            <Button
+              variant="link"
+              className="text-primary underline"
+              onClick={() => navigate("/publications")}
+            >
+              Ver más
+            </Button>
           </div>
         </section>
       </div>
