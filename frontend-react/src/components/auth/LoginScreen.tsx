@@ -29,12 +29,13 @@ export function LoginScreen() {
       style={{ '--login-bg-image': `url(${fietImg})` } as React.CSSProperties}
     >
       {/* Capa decorativa de patrón */}
-      <div className="absolute inset-0 -z-20 bg-[radial-gradient(circle_at_25%_25%,rgba(59,130,246,0.35),transparent_60%)]" />
-      <div className="absolute inset-0 -z-10 bg-gradient-to-br from-background via-background/75 to-background/40" />
-      <div className="absolute inset-0 pointer-events-none select-none mix-blend-overlay opacity-30 animate-noise" />
+      {/* Capa decorativa de patrón */}
+      <div className="absolute inset-0 -z-20 bg-[radial-gradient(circle_at_50%_50%,rgba(59,130,246,0.2),transparent_70%)]" />
+      <div className="absolute inset-0 -z-10 bg-gradient-to-br from-blue-50/80 via-white/50 to-blue-100/50 backdrop-blur-[2px]" />
+      <div className="absolute inset-0 pointer-events-none select-none opacity-20 animate-noise mix-blend-soft-light" />
 
-      <div className="w-full max-w-sm relative">
-        <Card className="login-panel w-full overflow-hidden transition-shadow pt-6 pb-6">
+      <div className="w-full max-w-sm relative animate-in fade-in zoom-in-95 duration-500">
+        <Card className="login-panel w-full overflow-hidden transition-all duration-300 pt-8 pb-8 border-white/40 bg-white/70 backdrop-blur-md shadow-2xl hover:shadow-blue-500/10 hover:border-white/60">
           <Button
             variant="ghost"
             size="icon"
@@ -48,7 +49,7 @@ export function LoginScreen() {
             <img
               src={logoImg}
               alt="Logo Semillero Ciencia de Datos"
-              className="w-full max-w-none h-auto mx-auto drop-shadow-[0_6px_14px_rgba(0,0,0,0.40)] animate-logoFloat select-none px-2"
+              className="w-full max-w-none h-auto mx-auto drop-shadow-xl animate-logoFloat select-none px-2 hover:scale-105 transition-transform duration-500"
               decoding="async"
               fetchPriority="high"
               draggable={false}
@@ -68,7 +69,7 @@ export function LoginScreen() {
 
             <Button
               onClick={handleLogin}
-              className="group relative w-full h-12 font-medium rounded-lg bg-gradient-to-r from-blue-600 via-blue-500 to-blue-400 text-white shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 transition-all duration-300 focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 overflow-hidden"
+              className="group relative w-full h-14 font-semibold text-lg rounded-xl bg-gradient-to-r from-blue-600 via-blue-500 to-blue-400 text-white shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 overflow-hidden"
             >
               <span className="relative z-10 flex items-center justify-center gap-2">
                 <span className="inline-block transition-transform group-hover:scale-105">Iniciar sesión con Google</span>
