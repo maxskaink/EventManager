@@ -108,7 +108,7 @@ export const AddCertificateDialog = ({ open, onOpenChange, onAddCertificate, isP
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
+            <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto p-4 sm:p-6">
                 <DialogHeader>
                     <DialogTitle>Agregar Certificado</DialogTitle>
                     <DialogDescription>Registra un certificado o credencial que hayas obtenido.</DialogDescription>
@@ -140,7 +140,7 @@ export const AddCertificateDialog = ({ open, onOpenChange, onAddCertificate, isP
                         )}
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <Label htmlFor="cert-issue-date">Fecha de emisión *</Label>
                             <Input
@@ -213,16 +213,17 @@ export const AddCertificateDialog = ({ open, onOpenChange, onAddCertificate, isP
                         )}
                     </div>
 
-                    <div className="flex gap-2 justify-end pt-4">
+                    <div className="flex flex-col-reverse sm:flex-row gap-2 justify-end pt-4">
                         <Button
                             type="button"
                             variant="outline"
                             onClick={() => onOpenChange(false)}
                             disabled={isPending}
+                            className="w-full sm:w-auto"
                         >
                             Cancelar
                         </Button>
-                        <Button type="submit" disabled={isPending}>
+                        <Button type="submit" disabled={isPending} className="w-full sm:w-auto">
                             {isPending ? (
                                 <>
                                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -231,7 +232,8 @@ export const AddCertificateDialog = ({ open, onOpenChange, onAddCertificate, isP
                             ) : (
                                 <>
                                     <CheckCircle2 className="h-4 w-4 mr-2" />
-                                    Agregar Certificado
+                                    <span className="hidden xs:inline">Agregar Certificado</span>
+                                    <span className="xs:hidden">Agregar</span>
                                 </>
                             )}
                         </Button>

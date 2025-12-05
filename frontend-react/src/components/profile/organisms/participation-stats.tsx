@@ -10,7 +10,7 @@ interface ParticipationStatsProps {
 export const ParticipationStats = ({ eventsCount, certificatesCount, articlesCount }: ParticipationStatsProps) => (
   <section>
     <h2 className="mb-4 tracking-tight text-[#0a2740] font-semibold text-base sm:text-lg">Mi Participación</h2>
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4 md:grid-cols-3">
+    <div className="grid grid-cols-2 sm:grid-cols-2 gap-3 md:gap-4 md:grid-cols-3">
       <StatisticCard
         icon={<Calendar className="w-6 h-6 text-sky-800" />}
         value={eventsCount}

@@ -24,13 +24,13 @@ const InfoItem = ({
   subValue?: string;
 }) => (
   <div className="group flex items-center gap-3">
-    <div className="rounded-lg bg-gradient-to-br from-primary/10 to-primary/5 p-2 transition-transform group-hover:scale-105">
+    <div className="rounded-lg bg-linear-to-br from-primary/10 to-primary/5 p-2 transition-transform group-hover:scale-105 shrink-0">
       {icon}
     </div>
-    <div>
+    <div className="min-w-0 flex-1">
       <p className="text-sm text-muted-foreground">{label}</p>
-      <p>{value}</p>
-      {subValue && <p className="text-sm text-muted-foreground">{subValue}</p>}
+      <p className="overflow-hidden text-ellipsis whitespace-nowrap">{value}</p>
+      {subValue && <p className="text-sm text-muted-foreground overflow-hidden text-ellipsis whitespace-nowrap">{subValue}</p>}
     </div>
   </div>
 );

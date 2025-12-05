@@ -125,7 +125,7 @@ export const EditExternalEventDialog = ({ open, onOpenChange, onEditEvent, isPen
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
+            <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto p-4 sm:p-6">
                 <DialogHeader>
                     <DialogTitle>Editar Evento Externo</DialogTitle>
                     <DialogDescription>Actualiza la información del evento externo.</DialogDescription>
@@ -157,7 +157,7 @@ export const EditExternalEventDialog = ({ open, onOpenChange, onEditEvent, isPen
                         )}
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <Label htmlFor="edit-event-start-date">Fecha de inicio *</Label>
                             <Input
@@ -276,16 +276,17 @@ export const EditExternalEventDialog = ({ open, onOpenChange, onEditEvent, isPen
                         )}
                     </div>
 
-                    <div className="flex gap-2 justify-end pt-4">
+                    <div className="flex flex-col-reverse sm:flex-row gap-2 justify-end pt-4">
                         <Button
                             type="button"
                             variant="outline"
                             onClick={() => onOpenChange(false)}
                             disabled={isPending}
+                            className="w-full sm:w-auto"
                         >
                             Cancelar
                         </Button>
-                        <Button type="submit" disabled={isPending}>
+                        <Button type="submit" disabled={isPending} className="w-full sm:w-auto">
                             {isPending ? (
                                 <>
                                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -294,7 +295,8 @@ export const EditExternalEventDialog = ({ open, onOpenChange, onEditEvent, isPen
                             ) : (
                                 <>
                                     <CheckCircle2 className="h-4 w-4 mr-2" />
-                                    Guardar Cambios
+                                    <span className="hidden xs:inline">Guardar Cambios</span>
+                                    <span className="xs:hidden">Guardar</span>
                                 </>
                             )}
                         </Button>

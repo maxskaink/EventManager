@@ -54,7 +54,7 @@ export const PersonalInfoCard = ({
           </Avatar>
           <div className="flex-1 text-center sm:text-left min-w-0">
             <h2 className="tracking-tight line-clamp-2">{user.name}</h2>
-            <p className="text-muted-foreground break-words text-xs sm:text-sm truncate">{user.email}</p>
+            <p className="text-muted-foreground text-xs sm:text-sm overflow-hidden text-ellipsis whitespace-nowrap">{user.email}</p>
             <Badge className="mt-2 inline-block">{getRoleLabel(role)}</Badge>
           </div>
         </div>

@@ -12,6 +12,10 @@ import { publicationQueries } from "@/services/react-query/queries";
 import type { ContentItem } from "@/features/events/types";
 import { UnifiedHeader } from "@/components/layout/UnifiedHeader";
 
+/**
+ * This publications screen lists all the PUBLIC publciations
+ * please don't list any events here, it will break the application
+ */
 export function PublicationsScreen() {
   const user = useAuthStore((s) => s.user);
   const role = user?.role ?? "";

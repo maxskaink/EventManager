@@ -30,7 +30,7 @@ export const MyCertificatesSection = ({
           className="rounded-full shadow-sm hover:shadow-md transition-all duration-200 hover:-translate-y-1 active:scale-95"
         >
           <Plus className="h-4 w-4 mr-2" />
-          Agregar Certificado
+          Agregar
         </Button>
       </div>
 

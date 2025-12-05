@@ -90,7 +90,7 @@ export const AddArticleDialog = ({ open, onOpenChange, onAddArticle, isPending =
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
+            <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto p-4 sm:p-6">
                 <DialogHeader>
                     <DialogTitle>Agregar Nuevo Artículo</DialogTitle>
                     <DialogDescription>Registra una publicación en la que hayas participado.</DialogDescription>
@@ -163,16 +163,17 @@ export const AddArticleDialog = ({ open, onOpenChange, onAddArticle, isPending =
                         )}
                     </div>
 
-                    <div className="flex gap-2 justify-end pt-4">
+                    <div className="flex flex-col-reverse sm:flex-row gap-2 justify-end pt-4">
                         <Button
                             type="button"
                             variant="outline"
                             onClick={() => onOpenChange(false)}
                             disabled={isPending}
+                            className="w-full sm:w-auto"
                         >
                             Cancelar
                         </Button>
-                        <Button type="submit" disabled={isPending}>
+                        <Button type="submit" disabled={isPending} className="w-full sm:w-auto">
                             {isPending ? (
                                 <>
                                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -181,7 +182,8 @@ export const AddArticleDialog = ({ open, onOpenChange, onAddArticle, isPending =
                             ) : (
                                 <>
                                     <CheckCircle2 className="h-4 w-4 mr-2" />
-                                    Agregar Artículo
+                                    <span className="hidden xs:inline">Agregar Artículo</span>
+                                    <span className="xs:hidden">Agregar</span>
                                 </>
                             )}
                         </Button>

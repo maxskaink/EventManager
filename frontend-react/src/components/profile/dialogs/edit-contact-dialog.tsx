@@ -36,7 +36,7 @@ export const EditContactDialog = ({ open, onOpenChange, initialData, onSave }: E
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md pt-10">
         <DialogHeader>
           <DialogTitle>Editar Información de Perfil</DialogTitle>
           <DialogDescription>Actualiza tu información de contacto personal.</DialogDescription>

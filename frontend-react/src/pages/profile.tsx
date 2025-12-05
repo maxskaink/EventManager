@@ -16,7 +16,7 @@ import { ParticipationStats } from "@/components/profile/organisms/participation
 import { MyExternalEventsSection } from "@/components/profile/organisms/my-external-events-section";
 import { MyCertificatesSection } from "@/components/profile/organisms/my-certificates-section";
 import { MyArticlesSection } from "@/components/profile/organisms/my-articles-section";
-import { RecentCertificatesSection } from "@/components/profile/organisms/recent-certificates-section";
+// import { RecentCertificatesSection } from "@/components/profile/organisms/recent-certificates-section";
 import { SettingsSection } from "@/components/profile/organisms/settings-section";
 import { EditContactDialog } from "@/components/profile/dialogs/edit-contact-dialog";
 import { AddArticleDialog } from "@/components/profile/dialogs/add-article-dialog";
@@ -27,6 +27,7 @@ import { AddCertificateDialog } from "@/components/profile/dialogs/add-certifica
 import { EditCertificateDialog } from "@/components/profile/dialogs/edit-certificate-dialog";
 import { ConfirmDeleteDialog } from "@/components/profile/dialogs/confirm-delete-dialog";
 import { LogoutConfirmDialog } from "@/components/auth/LogoutConfirmDialog";
+import { translateUserRole } from "@/features/users/users.helpers";
 
 const formatDate = (dateString: string): string =>
   new Date(dateString).toLocaleDateString("es-ES", {
@@ -83,7 +84,7 @@ export function ProfileScreen() {
     queryFn: InterestsAPI.listInterests,
   });
 
-  const allInterests = interestsData?.interests ?? [];
+  const allInterests = useMemo(() => interestsData?.interests ?? [], [interestsData]);
 
   const { data: userProfileInterests = [] } = useQuery({
     queryKey: ["user-interests", user?.id],
@@ -99,22 +100,22 @@ export function ProfileScreen() {
 
   const externalEvents = externalEventsData?.external_events ?? [];
 
+  // -- API QUERIES --
   const { data: certificatesData, isLoading: isLoadingCertificates } = useQuery({
     queryKey: ["certificates", "my"],
     queryFn: CertificateAPI.listMyCertificates,
+    select: (data) => data.certificates,
     enabled: !!user,
   });
-
-  const certificates = certificatesData?.certificates ?? [];
-  console.log(certificatesData);
+  const certificates = certificatesData ?? [];
 
   const { data: articlesData } = useQuery({
     queryKey: ["articles", "my"],
     queryFn: ArticleAPI.listMyArticles,
     enabled: !!user,
   });
-
   const articles = articlesData ?? [];
+
   // --- API MUTATIONS ---
   const updateProfileMutation = useMutation<API.Profile, unknown, APIPayloads.UpdateProfile>({
     mutationFn: ProfileAPI.updateProfile,
@@ -239,11 +240,6 @@ export function ProfileScreen() {
       .filter((i): i is API.Interest => i !== undefined);
   }, [userProfileInterests, allInterests]);
 
-  // const dashboardRoute = useMemo(
-  //   () => getDashboardRouteFromRole(normalizedRole),
-  //   [normalizedRole]
-  // );
-
   if (!user) return null; // o un loader/redirect
 
   const personalInfoUser: API.User & { interests: API.Interest[] } = {
@@ -262,22 +258,7 @@ export function ProfileScreen() {
   };
 
   const getRoleLabel = (role: string) => {
-    const normalized = (role || "")
-      .toLowerCase()
-      .replace(/\s+/g, "-")
-      .replace(/_/g, "-");
-
-    const map: Record<string, string> = {
-      mentor: "Mentor",
-      interested: "Interesado",
-      coordinator: "Coordinador",
-      member: "Miembro",
-      "active-member": "Miembro Activo",
-      "member-active": "Miembro Activo",
-      "active_member": "Miembro Activo",
-    };
-
-    return map[normalized] ?? "Rol no definido";
+    return translateUserRole(role as "mentor") ?? "Rol no definido";
   };
 
   return (
@@ -350,12 +331,14 @@ export function ProfileScreen() {
             isLoading={isLoadingCertificates}
           />
         }
+        /*
         recentCertificates={<RecentCertificatesSection certificates={certificates.slice(0, 3).map((cert: API.Certificate) => ({
           id: String(cert.id),
           title: cert.name,
           topic: cert.issuing_organization,
           uploadDate: cert.issue_date,
         }))} formatDate={formatDate} />}
+         */
         settings={<SettingsSection onLogout={handleLogoutClick} />}
         dialogs={
           <>
