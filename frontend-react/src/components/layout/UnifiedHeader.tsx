@@ -44,7 +44,7 @@ export const UnifiedHeader: React.FC<UnifiedHeaderProps> = ({
             <div className="flex items-center justify-between gap-4">
 
                 {/* Left Section: Back Button or Avatar */}
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-4 min-w-0">
                     {onGoBack ? (
                         <Button
                             variant="ghost"
@@ -63,12 +63,14 @@ export const UnifiedHeader: React.FC<UnifiedHeaderProps> = ({
                         </Avatar>
                     ) : null}
 
-                    <div className="flex flex-col">
-                        <h1 className="text-lg font-semibold leading-none">
+                    <div className="flex flex-col min-w-0">
+                        <h1 className="text-lg font-semibold leading-none overflow-hidden text-ellipsis whitespace-nowrap">
                             {title || `Hola, ${user?.name?.split(" ")[0]}`}
                         </h1>
                         {subtitle && (
-                            <p className="text-xs text-white/70 mt-1 font-light">{subtitle}</p>
+                            <p className="text-xs text-white/70 mt-1 font-light whitespace-nowrap overflow-hidden text-ellipsis">
+                                {subtitle}
+                            </p>
                         )}
                     </div>
                 </div>

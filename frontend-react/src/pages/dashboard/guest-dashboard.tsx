@@ -1,40 +1,32 @@
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
+import { useNavigate } from "react-router";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "../../components/ui/button";
 import { Card, CardContent, CardHeader } from "../../components/ui/card";
 import { UnifiedHeader } from "../../components/layout/UnifiedHeader";
 import { Badge } from "../../components/ui/badge";
 import { Calendar, Clock, MapPin } from "lucide-react";
-import { useNavigate } from "react-router";
 import { BNavBarInterested } from "../../components/ui/b-navbar-interested";
-import { EventAPI } from "../../services/api";
+import { publicationQueries } from "@/services/react-query/queries";
+import { getErrorMessageForToast } from "@/features/errors/error.helpers";
+import { RecentPublicationsSection } from "@/components/dashboard/guest/RecentPublicationsSection";
 
 export function GuestDashboard() {
   const navigate = useNavigate()
 
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [upcomingEvents, setUpcomingEvents] = useState<API.Event[]>([]);
+  const { data: publications, isLoading: publicationsLoading, error: publicationsError } = useQuery(publicationQueries.published())
 
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const events = await EventAPI.listUpcomingEvents();
-        if (cancelled) return;
-        setUpcomingEvents(events.slice(0, 3));
-      } catch {
-        if (cancelled) return;
-        setError("No fue posible cargar los eventos");
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
-    return () => { cancelled = true };
-  }, []);
+  const loading = publicationsLoading
+  const error = publicationsError
+
+  const upcomingEvents = useMemo(() => publications?.filter(publication => Boolean(publication.event)).slice(0, 3) || [], [publications])
+  const recentPosts = useMemo(() => publications?.filter(publication => !publication.event).slice(0, 3) || [], [publications])
+
+
+  console.log(publications)
 
   return (
     <div className="min-h-screen pb-20 bg-gray-50/50">
-      {/* Header */}
       {/* Header */}
       <UnifiedHeader
         title="Bienvenido"
@@ -55,9 +47,9 @@ export function GuestDashboard() {
           </div>
 
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {error && !loading && (
+            {Boolean(error) && !loading && (
               <div className="col-span-full text-destructive">
-                {error}
+                {getErrorMessageForToast(error)}
               </div>
             )}
             {loading && (
@@ -72,43 +64,43 @@ export function GuestDashboard() {
                 No hay eventos activos por ahora.
               </div>
             )}
-            {!loading && upcomingEvents.map((event) => (
+            {!loading && upcomingEvents.map((publication) => (
               <Card
-                key={event.id}
+                key={publication.id}
                 className="bg-card text-card-foreground flex flex-col gap-6 rounded-xl border hover:shadow-md transition-shadow overflow-hidden"
               >
                 <div className="aspect-video relative overflow-hidden rounded-t-lg">
                   {/* Placeholder en ausencia de imagen en API.Event */}
-                  <div className="w-full h-full bg-gradient-to-br from-blue-100 to-blue-200" />
+                  <div className="w-full h-full bg-linear-to-br from-blue-100 to-blue-200" />
                   <Badge className="absolute top-2 right-2 inline-flex items-center justify-center rounded-md border px-2 py-0.5 text-xs font-medium w-fit whitespace-nowrap shrink-0 gap-1 overflow-hidden border-transparent bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm">
-                    {event.event_type}
+                    {publication.type}
                   </Badge>
                 </div>
 
                 <CardHeader className="grid auto-rows-min grid-rows-[auto_auto] items-start gap-1.5 px-6 pt-6 pb-2">
-                  <h3 className="line-clamp-2 font-semibold text-lg">{event.name}</h3>
+                  <h3 className="line-clamp-2 font-semibold text-lg">{publication.title}</h3>
                 </CardHeader>
 
                 <CardContent className="px-6 pb-6 space-y-3 flex-1 flex flex-col">
                   <p className="text-muted-foreground text-sm line-clamp-2 flex-1">
-                    {event.description}
+                    {publication.summary}
                   </p>
 
                   <div className="space-y-2 text-sm mt-auto">
                     <div className="flex items-center gap-2 text-muted-foreground">
                       <Calendar className="h-4 w-4" />
-                      <span>{new Date(event.start_date).toLocaleDateString("es-ES")}</span>
+                      <span>{new Date(publication.event?.start_date ?? "").toLocaleDateString("es-ES")}</span>
                     </div>
 
                     <div className="flex items-center gap-2 text-muted-foreground">
                       <Clock className="h-4 w-4" />
-                      <span>{new Date(event.start_date).toLocaleTimeString("es-ES", { hour: '2-digit', minute: '2-digit' })}</span>
+                      <span>{new Date(publication.event?.start_date ?? "").toLocaleTimeString("es-ES", { hour: '2-digit', minute: '2-digit' })}</span>
                     </div>
 
                     <div className="flex items-center gap-2 text-muted-foreground">
                       <MapPin className="h-4 w-4" />
                       <span className="capitalize">
-                        {event.modality}
+                        {publication.event?.modality}
                       </span>
                     </div>
                   </div>
@@ -116,7 +108,7 @@ export function GuestDashboard() {
                   <Button
                     className="w-full mt-4 rounded-md h-9 px-4 py-2 text-sm font-medium shadow-sm"
                     onClick={() =>
-                      navigate(`/publications/${event.id}`)
+                      navigate(`/publications/${publication.id}`)
                     }
                   >
                     Ver detalle
@@ -127,6 +119,11 @@ export function GuestDashboard() {
           </div>
         </section>
 
+        <RecentPublicationsSection
+          publications={recentPosts}
+          isLoading={loading}
+          error={error}
+        />
         {/* Se elimina el bloque de registro para interesados */}
       </div>
       {/* Navigation Bar */}

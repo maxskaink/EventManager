@@ -70,13 +70,13 @@ const PublicationCard: React.FC<PublicationCardProps> = ({ publication }) => {
                   e.currentTarget.src = "https://images.unsplash.com/photo-1557683316-973673baf926?w=800&q=80"; // Fallback
                 }}
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             </>
           ) : (
             <div className="h-8" />
           )}
           <div className="absolute top-2 right-2 flex flex-col gap-1 items-end">
-            <Badge className={`${getTypeColor(publication.type)} shadow-sm backdrop-blur-md bg-opacity-90`}>
+            <Badge className={`${getTypeColor(publication.type)} shadow-sm backdrop-blur-md opacity-90`}>
               {publication.subtype || publication.type}
             </Badge>
           </div>
@@ -92,7 +92,7 @@ const PublicationCard: React.FC<PublicationCardProps> = ({ publication }) => {
           </div>
         </div>
 
-        <div className="p-5 flex flex-col flex-grow space-y-4">
+        <div className="p-5 flex flex-col grow space-y-4">
           <h3 className="text-xl font-bold text-gray-800 leading-tight group-hover:text-primary transition-colors line-clamp-2">
             {publication.title}
           </h3>
