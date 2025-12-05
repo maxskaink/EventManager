@@ -8,7 +8,7 @@ import BottomNavbarWrapper from "../components/nav/BottomNavbarWrapper";
 import { PublicationList, PublicationLoading, PublicationEmpty } from "../components/publications";
 import { PublicationsCategoryTabs } from "../components/publications/wall/PublicationsCategoryTabs";
 import { PublicationsSearchBar } from "../components/publications/wall/PublicationsSearchBar";
-import { publicationQueries, eventQueries } from "@/services/react-query/queries";
+import { publicationQueries } from "@/services/react-query/queries";
 import type { ContentItem } from "@/features/events/types";
 import { UnifiedHeader } from "@/components/layout/UnifiedHeader";
 
@@ -28,12 +28,7 @@ export function PublicationsScreen() {
       publicationQueries.all() : publicationQueries.published()
   );
 
-  // 2. Fetch Events
-  const { data: events = [], isLoading: isLoadingEvents } = useQuery(
-    eventQueries.all()
-  );
-
-  const isLoading = isLoadingPubs || isLoadingEvents;
+  const isLoading = isLoadingPubs;
   const isError = isErrorPubs;
 
   const normalizedRole = useMemo(() => {
@@ -47,64 +42,34 @@ export function PublicationsScreen() {
 
   // Data Transformation & Enrichment
   const contentItems: ContentItem[] = useMemo(() => {
-    const items: ContentItem[] = [];
+    return publications?.map(pub => {
+      const associatedEvent = pub.event;
 
-    // Add publications
-    if (publications && Array.isArray(publications)) {
-      publications.forEach(pub => {
-        const associatedEvent = pub.event;
+      // Base item
+      const item: ContentItem = {
+        id: `pub-${pub.id}`,
+        type: pub.type,
+        title: pub.title,
+        description: pub.summary || pub.content || "",
+        date: pub.published_at ? pub.published_at.split("T")[0] : pub.created_at.split("T")[0],
+        status: pub.status,
+        kind: 'publication',
+        original: pub,
+      };
 
-        // Base item
-        const item: ContentItem = {
-          id: `pub-${pub.id}`,
-          type: pub.type,
-          title: pub.title,
-          description: pub.summary || pub.content || "",
-          date: pub.published_at ? pub.published_at.split("T")[0] : pub.created_at.split("T")[0],
-          status: pub.status,
-          kind: 'publication',
-          original: pub,
-        };
-
-        // Enrichment if event exists
-        if (associatedEvent) {
-          item.subtype = associatedEvent.event_type;
-          item.date = associatedEvent.start_date.split("T")[0];
-          item.time = associatedEvent.start_date.split("T")[1]?.substring(0, 5);
-          item.location = associatedEvent.location || associatedEvent.modality;
-          item.capacity = associatedEvent.capacity || 0;
-          item.eventId = associatedEvent.id.toString();
-          item.original = { ...pub, ...associatedEvent, image_url: pub.image_url };
-        }
-
-        items.push(item);
-      });
-    }
-
-    // Add all events
-    if (events && Array.isArray(events)) {
-      events.forEach(event => {
-        const item: ContentItem = {
-          id: `event-${event.id}`,
-          type: event.event_type || 'event',
-          title: event.name,
-          description: event.description || "",
-          date: event.start_date.split("T")[0],
-          time: event.start_date.split("T")[1]?.substring(0, 5),
-          status: event.status,
-          kind: 'event',
-          location: event.location || event.modality,
-          capacity: event.capacity || 0,
-          eventId: event.id.toString(),
-          original: event,
-        };
-
-        items.push(item);
-      });
-    }
-
-    return items;
-  }, [publications, events]);
+      // Enrichment if event exists
+      if (associatedEvent) {
+        item.subtype = associatedEvent.event_type;
+        item.date = associatedEvent.start_date.split("T")[0];
+        item.time = associatedEvent.start_date.split("T")[1]?.substring(0, 5);
+        item.location = associatedEvent.location || associatedEvent.modality;
+        item.capacity = associatedEvent.capacity || 0;
+        item.eventId = associatedEvent.id.toString();
+        item.original = { ...pub, ...associatedEvent, image_url: pub.image_url };
+      }
+      return item;
+    }) ?? [];
+  }, [publications]);
 
   // Filtering
   const filteredItems = useMemo(() => {
