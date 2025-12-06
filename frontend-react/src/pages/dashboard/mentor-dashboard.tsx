@@ -17,6 +17,7 @@ import {
 } from "../../components/dashboard/mentor";
 import { getErrorMessageForToast } from "../../features/errors/error.helpers";
 import { useAuthStore } from "../../stores/auth.store";
+import { HideOnScrollWrapper } from "@/components/layout/HideOnScrollWrapper";
 
 // Submissions se construirán dinámicamente a partir de eventos y publicaciones reales
 
@@ -177,10 +178,12 @@ export function MentorDashboardPage() {
 
   return (
     <div className="space-y-8 bg-gray-50/50 min-h-screen pb-10">
-      <MentorHeader
-        user={user}
-        onLogout={logout}
-      />
+      <HideOnScrollWrapper>
+        <MentorHeader
+          user={user}
+          onLogout={logout}
+        />
+      </HideOnScrollWrapper>
 
       <div className="container mx-auto px-4 md:px-6 py-8 space-y-8 max-w-7xl">
         {/* Acciones Rápidas */}

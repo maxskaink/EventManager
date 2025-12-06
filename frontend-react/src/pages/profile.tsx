@@ -28,6 +28,7 @@ import { EditCertificateDialog } from "@/components/profile/dialogs/edit-certifi
 import { ConfirmDeleteDialog } from "@/components/profile/dialogs/confirm-delete-dialog";
 import { LogoutConfirmDialog } from "@/components/auth/LogoutConfirmDialog";
 import { translateUserRole } from "@/features/users/users.helpers";
+import { HideOnScrollWrapper } from "@/components/layout/HideOnScrollWrapper";
 
 const formatDate = (dateString: string): string =>
   new Date(dateString).toLocaleDateString("es-ES", {
@@ -50,6 +51,9 @@ const extractErrorMessage = (error: unknown, fallback: string): string => {
   return fallback;
 };
 
+/**
+ * Profile screen
+ */
 export function ProfileScreen() {
   const queryClient = useQueryClient();
   const user = useAuthStore((s) => s.user);
@@ -265,10 +269,12 @@ export function ProfileScreen() {
     <>
       <ProfileTemplate
         header={
-          <UnifiedHeader
-            title="Mi Perfil"
-            onGoBack={() => goToDashboard()}
-          />
+          <HideOnScrollWrapper>
+            <UnifiedHeader
+              title="Mi Perfil"
+              onGoBack={goToDashboard}
+            />
+          </HideOnScrollWrapper>
         }
         personalInfo={
           <PersonalInfoCard

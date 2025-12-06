@@ -12,9 +12,10 @@ import { publicationQueries } from "@/services/react-query/queries";
 import type { ContentItem } from "@/features/events/types";
 import { UnifiedHeader } from "@/components/layout/UnifiedHeader";
 import { publicationToContentItem } from "@/features/events";
+import { HideOnScrollWrapper } from "@/components/layout/HideOnScrollWrapper";
 
 /**
- * This publications screen lists all the PUBLIC publciations
+ * This publications screen lists all the PUBLIC publications
  * please don't list any events here, it will break the application
  */
 export function PublicationsScreen() {
@@ -84,12 +85,12 @@ export function PublicationsScreen() {
 
   return (
     <div className="min-h-screen pb-20 bg-gray-50/50">
-      <div className="bg-white border-b sticky top-0 z-10 shadow-sm">
+      <HideOnScrollWrapper>
         <UnifiedHeader
           title="Publicaciones"
           onGoBack={() => navigate(dashboardRoute)}
         />
-      </div>
+      </HideOnScrollWrapper>
       <div className="max-w-5xl mx-auto p-6 space-y-8">
         <PublicationsSearchBar searchTerm={searchTerm} onSearchChange={setSearchTerm} />
 

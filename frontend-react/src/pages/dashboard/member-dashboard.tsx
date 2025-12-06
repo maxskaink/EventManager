@@ -17,6 +17,8 @@ import { isEventUpcoming } from "@/features/events";
 import { useAuthStore } from "@/stores/auth.store";
 import { EventAPI } from "@/services/api";
 import { toast } from "sonner";
+import { HideOnScrollWrapper } from "@/components/layout/HideOnScrollWrapper";
+import { getErrorMessageForToast } from "@/features/errors/error.helpers";
 
 export function MemberDashboard() {
   const user = useAuthStore((state) => state.user);
@@ -52,22 +54,20 @@ export function MemberDashboard() {
     try {
       await EventAPI.enroll(eventId);
       toast.success("¡Te has inscrito exitosamente al evento!");
-    } catch (error: any) {
-      console.error(error);
-      const errorMessage = error.response?.data?.message || "Error al inscribirse al evento.";
-      toast.error(errorMessage);
+    } catch (error) {
+      toast.error(getErrorMessageForToast(error));
     }
   };
 
   return (
     <div className="space-y-8 bg-gray-50/50 min-h-screen pb-10">
       {/* Header */}
-      <div className="bg-white border-b sticky top-0 z-10 shadow-sm">
+      <HideOnScrollWrapper>
         <UnifiedHeader
           title={`Hola, ${user?.name}`}
           subtitle="Integrante del semillero"
         />
-      </div>
+      </HideOnScrollWrapper>
 
       <div className="max-w-5xl mx-auto p-6 space-y-10">
         {/* Eventos según intereses */}
@@ -92,7 +92,7 @@ export function MemberDashboard() {
                   <CarouselItem key={event.id} className="pl-4 md:basis-1/2 lg:basis-1/2">
                     <Card className="hover:shadow-lg transition-all duration-300 h-full border-0 shadow-md rounded-3xl overflow-hidden group bg-white">
                       <div className="aspect-video relative overflow-hidden bg-gray-100">
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10" />
+                        <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10" />
                         <Badge className="absolute top-3 right-3 z-20 bg-white/90 text-primary hover:bg-white border-0 shadow-sm backdrop-blur-sm">Recomendado</Badge>
                       </div>
 
@@ -161,7 +161,7 @@ export function MemberDashboard() {
             {recentCertificates.map((cert) => (
               <Card key={cert.id} className="border-0 shadow-md hover:shadow-lg transition-all duration-300 rounded-2xl overflow-hidden group">
                 <CardContent className="p-5 flex items-center gap-5">
-                  <div className="p-3 bg-gradient-to-br from-primary/20 to-primary/5 rounded-2xl group-hover:scale-110 transition-transform duration-300">
+                  <div className="p-3 bg-linear-to-br from-primary/20 to-primary/5 rounded-2xl group-hover:scale-110 transition-transform duration-300">
                     <Award className="h-8 w-8 text-primary" />
                   </div>
                   <div className="flex-1 min-w-0">
@@ -188,7 +188,7 @@ export function MemberDashboard() {
                 <CardContent className="p-4 flex items-center gap-5">
                   <div className="w-16 h-16 rounded-xl overflow-hidden bg-gray-100 shrink-0">
                     {/* Placeholder image or event image */}
-                    <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200" />
+                    <div className="w-full h-full bg-linear-to-br from-gray-100 to-gray-200" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <h4 className="font-bold text-gray-900 line-clamp-1 text-lg">{event.name}</h4>

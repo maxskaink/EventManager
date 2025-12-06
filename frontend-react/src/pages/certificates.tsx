@@ -14,6 +14,11 @@ const formatDate = (dateString: string): string =>
     day: "numeric",
   });
 
+/**
+ * Page to see the cerficiates
+ * @deprecated I think this page is not used
+ * @returns 
+ */
 export default function CertificatesPage() {
   const goToDashboard = useGoToDashboard();
 

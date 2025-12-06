@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "../../components/ui/avatar"
 import { Search, User } from "lucide-react";
 import { UnifiedHeader } from "../../components/layout/UnifiedHeader";
 import userAPI from "../../services/api/endpoints/user";
+import { HideOnScrollWrapper } from "../../components/layout/HideOnScrollWrapper";
 
 export const UserSearchScreen = () => {
   const navigate = useNavigate();
@@ -29,7 +30,9 @@ export const UserSearchScreen = () => {
 
   return (
     <div className="min-h-screen bg-gray-50/50 pb-20">
-      <UnifiedHeader title="Buscar Usuarios" showAvatar={false} />
+      <HideOnScrollWrapper>
+        <UnifiedHeader title="Buscar Usuarios" showAvatar={false} />
+      </HideOnScrollWrapper>
 
       <div className="p-6 max-w-5xl mx-auto space-y-6">
         <div className="relative">

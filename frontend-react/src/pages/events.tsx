@@ -67,7 +67,9 @@ const transformApiEvents = (apiEvents: API.Event[]): TransformedEvent[] => {
   });
 };
 
-/** @deprecated */
+/** 
+ * @deprecated This page is not being used
+ */
 export function EventsScreen() {
   const user = useAuthStore((s) => s.user);
   const role = user?.role ?? "";

@@ -1,16 +1,18 @@
-import { useParams, useNavigate } from 'react-router-dom';
-import { useEffect, useState } from 'react';
-import { Calendar, Clock, MapPin, Users, Share2 } from 'lucide-react';
-import { PublicationAPI, EventAPI } from '../../services/api';
-import { toast } from 'sonner';
-import PublicationDetailSkeleton from '../../components/publications/PublicationDetailSkeleton';
-import BottomNavbarWrapper from '../../components/nav/BottomNavbarWrapper';
-import { useAuthStore } from '../../stores/auth.store';
+import { useParams, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Calendar, Clock, MapPin, Users, Share2 } from "lucide-react";
+import { PublicationAPI, EventAPI } from "../../services/api";
+import { toast } from "sonner";
+import PublicationDetailSkeleton from "../../components/publications/PublicationDetailSkeleton";
+import BottomNavbarWrapper from "../../components/nav/BottomNavbarWrapper";
+import { useAuthStore } from "../../stores/auth.store";
 import { Button } from "../../components/ui/button";
 import { Card, CardContent, CardHeader } from "../../components/ui/card";
 import { Badge } from "../../components/ui/badge";
 import { resolveImageUrl } from "../../features/api";
-import { UnifiedHeader } from '@/components/layout/UnifiedHeader';
+import { UnifiedHeader } from "@/components/layout/UnifiedHeader";
+import { getErrorMessageForToast } from "@/features/errors/error.helpers";
+import { HideOnScrollWrapper } from "@/components/layout/HideOnScrollWrapper";
 
 const PublicationDetailPage = () => {
   const { publicationId } = useParams<{ publicationId: string }>();
@@ -21,7 +23,7 @@ const PublicationDetailPage = () => {
   const { user } = useAuthStore();
   const [registering, setRegistering] = useState(false);
 
-  const role = user?.role || 'guest';
+  const role = user?.role || "guest";
   const [isImageOpen, setIsImageOpen] = useState(false);
 
   const [isEnrolled, setIsEnrolled] = useState(false);
@@ -35,7 +37,7 @@ const PublicationDetailPage = () => {
           const pub = await PublicationAPI.getPublicationById(Number(publicationId));
           setPublication(pub);
 
-          if (pub.type === 'evento' && pub.event_id) {
+          if (pub.type === "evento" && pub.event_id) {
             const eventData = await EventAPI.getEventById(pub.event_id);
             setEvent(eventData);
 
@@ -43,7 +45,7 @@ const PublicationDetailPage = () => {
             if (user) {
               try {
                 const enrollments = await EventAPI.listEnrollmentsByUser(user.id);
-                const enrolled = enrollments.some(e => e.event_id === pub.event_id && e.status === 'active');
+                const enrolled = enrollments.some((e) => e.event_id === pub.event_id && e.status === "active");
                 setIsEnrolled(enrolled);
               } catch (err) {
                 console.error("Failed to fetch enrollments", err);
@@ -52,7 +54,7 @@ const PublicationDetailPage = () => {
           }
         } catch (error) {
           console.error(error);
-          toast.error('Error al cargar la publicación.');
+          toast.error("Error al cargar la publicación.");
         } finally {
           setLoading(false);
         }
@@ -63,7 +65,7 @@ const PublicationDetailPage = () => {
   }, [publicationId, user]);
 
   const handleBack = () => {
-    navigate('/publications');
+    navigate("/publications");
   };
 
   const handleRegister = async () => {
@@ -77,10 +79,8 @@ const PublicationDetailPage = () => {
         description: `Ahora eres parte de: ${event.name}`,
         duration: 4000,
       });
-    } catch (error: any) {
-      console.error(error);
-      const errorMessage = error.response?.data?.message || "Error al inscribirse al evento.";
-      toast.error(errorMessage);
+    } catch (error) {
+      toast.error(getErrorMessageForToast(error));
     } finally {
       setRegistering(false);
     }
@@ -94,9 +94,8 @@ const PublicationDetailPage = () => {
       await EventAPI.cancelEnrollment(event.id);
       setIsEnrolled(false);
       toast.success("Inscripción cancelada exitosamente.");
-    } catch (error: any) {
-      console.error(error);
-      toast.error("Error al cancelar la inscripción.");
+    } catch (error) {
+      toast.error(getErrorMessageForToast(error));
     } finally {
       setCanceling(false);
     }
@@ -108,7 +107,7 @@ const PublicationDetailPage = () => {
 
   if (!publication) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4">
+      <div className="flex min-h-screen items-center justify-center p-4">
         <Card>
           <CardContent className="p-8 text-center">
             <p className="text-muted-foreground mb-4">Publicación no encontrada</p>
@@ -125,44 +124,45 @@ const PublicationDetailPage = () => {
     imageSrc = resolveImageUrl(publication.image_url);
   }
 
-
-  const isEventFull = event && event.capacity ? (event.capacity <= 0) : false; // Placeholder logic for full event
+  const isEventFull = event && event.capacity ? event.capacity <= 0 : false; // Placeholder logic for full event
 
   const handleShare = async () => {
     if (navigator.share) {
       try {
         await navigator.share({
           title: publication.title,
-          text: publication.summary || 'Mira esta publicación',
+          text: publication.summary || "Mira esta publicación",
           url: window.location.href,
         });
       } catch (error) {
-        console.error('Error sharing:', error);
+        console.error("Error sharing:", error);
       }
     } else {
       navigator.clipboard.writeText(window.location.href);
-      toast.success('Enlace copiado al portapapeles');
+      toast.success("Enlace copiado al portapapeles");
     }
   };
 
   return (
-    <div className="min-h-screen pb-20 bg-gray-50/50">
+    <div className="min-h-screen bg-gray-50/50 pb-20">
       {/* Header */}
-      <UnifiedHeader
-        title={publication.title}
-        onGoBack={handleBack}
-        actions={
-          <Button variant="ghost" size="icon" onClick={handleShare} className="text-white hover:bg-white/10">
-            <Share2 className="h-5 w-5" />
-          </Button>
-        }
-      />
+      <HideOnScrollWrapper>
+        <UnifiedHeader
+          title={publication.title}
+          onGoBack={handleBack}
+          actions={
+            <Button variant="ghost" size="icon" onClick={handleShare} className="text-white hover:bg-white/10">
+              <Share2 className="h-5 w-5" />
+            </Button>
+          }
+        />
+      </HideOnScrollWrapper>
 
-      <div className="max-w-5xl mx-auto px-6 py-8 space-y-8">
+      <div className="mx-auto max-w-5xl space-y-8 px-6 py-8">
         {/* Hero Image */}
         {imageSrc && (
           <div
-            className="relative w-full h-[400px] md:h-[500px] bg-gray-900 rounded-3xl overflow-hidden group cursor-zoom-in shadow-xl mx-auto"
+            className="group relative mx-auto h-[400px] w-full cursor-zoom-in overflow-hidden rounded-3xl bg-gray-900 shadow-xl md:h-[500px]"
             onClick={() => setIsImageOpen(true)}
           >
             {/* Foreground Image Layer */}
@@ -170,16 +170,16 @@ const PublicationDetailPage = () => {
               <img
                 src={imageSrc}
                 alt={publication.title}
-                className="max-w-full max-h-full object-contain shadow-2xl rounded-lg transition-transform duration-300 group-hover:scale-[1.02]"
+                className="max-h-full max-w-full rounded-lg object-contain shadow-2xl transition-transform duration-300 group-hover:scale-[1.02]"
                 onError={(e) => {
-                  e.currentTarget.style.display = 'none'; // Hide if fails
+                  e.currentTarget.style.display = "none"; // Hide if fails
                 }}
               />
             </div>
 
             <Badge
-              className="absolute top-4 right-4 capitalize shadow-sm z-10"
-              variant={publication.type === 'evento' ? 'default' : 'secondary'}
+              className="absolute top-4 right-4 z-10 capitalize shadow-sm"
+              variant={publication.type === "evento" ? "default" : "secondary"}
             >
               {publication.type}
             </Badge>
@@ -196,7 +196,7 @@ const PublicationDetailPage = () => {
                   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
                   if (diffDays < 0) return <Badge className="bg-gray-500 shadow-sm">Finalizado</Badge>;
-                  if (diffDays === 0) return <Badge className="bg-green-600 animate-pulse shadow-sm">En curso</Badge>;
+                  if (diffDays === 0) return <Badge className="animate-pulse bg-green-600 shadow-sm">En curso</Badge>;
                   if (diffDays <= 5) return <Badge className="bg-orange-500 shadow-sm">¡Pronto!</Badge>;
                   return <Badge className="bg-blue-500 shadow-sm">Próximo</Badge>;
                 })()}
@@ -208,33 +208,40 @@ const PublicationDetailPage = () => {
         <div className="space-y-8">
           {/* Title & Summary */}
           <section>
-            <div className="flex flex-col gap-2 mb-4">
+            <div className="mb-4 flex flex-col gap-2">
               {!imageSrc && (
-                <div className="flex gap-2 mb-2">
-                  <Badge className="capitalize shadow-sm" variant={publication.type === 'evento' ? 'default' : 'secondary'}>
+                <div className="mb-2 flex gap-2">
+                  <Badge
+                    className="capitalize shadow-sm"
+                    variant={publication.type === "evento" ? "default" : "secondary"}
+                  >
                     {publication.type}
                   </Badge>
-                  {event && (() => {
-                    const eventDate = new Date(event.start_date);
-                    const today = new Date();
-                    today.setHours(0, 0, 0, 0);
-                    const eventDateOnly = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
-                    const diffTime = eventDateOnly.getTime() - today.getTime();
-                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                  {event &&
+                    (() => {
+                      const eventDate = new Date(event.start_date);
+                      const today = new Date();
+                      today.setHours(0, 0, 0, 0);
+                      const eventDateOnly = new Date(
+                        eventDate.getFullYear(),
+                        eventDate.getMonth(),
+                        eventDate.getDate(),
+                      );
+                      const diffTime = eventDateOnly.getTime() - today.getTime();
+                      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-                    if (diffDays < 0) return <Badge className="bg-gray-500 shadow-sm">Finalizado</Badge>;
-                    if (diffDays === 0) return <Badge className="bg-green-600 animate-pulse shadow-sm">En curso</Badge>;
-                    if (diffDays <= 5) return <Badge className="bg-orange-500 shadow-sm">¡Pronto!</Badge>;
-                    return <Badge className="bg-blue-500 shadow-sm">Próximo</Badge>;
-                  })()}
+                      if (diffDays < 0) return <Badge className="bg-gray-500 shadow-sm">Finalizado</Badge>;
+                      if (diffDays === 0)
+                        return <Badge className="animate-pulse bg-green-600 shadow-sm">En curso</Badge>;
+                      if (diffDays <= 5) return <Badge className="bg-orange-500 shadow-sm">¡Pronto!</Badge>;
+                      return <Badge className="bg-blue-500 shadow-sm">Próximo</Badge>;
+                    })()}
                 </div>
               )}
-              <h1 className="text-3xl font-bold text-gray-900 leading-tight">{publication.title}</h1>
+              <h1 className="text-3xl leading-tight font-bold text-gray-900">{publication.title}</h1>
             </div>
             {publication.summary && (
-              <p className="text-muted-foreground text-lg leading-relaxed">
-                {publication.summary}
-              </p>
+              <p className="text-muted-foreground text-lg leading-relaxed">{publication.summary}</p>
             )}
           </section>
 
@@ -243,16 +250,16 @@ const PublicationDetailPage = () => {
             <section>
               <Card>
                 <CardHeader>
-                  <h3 className="font-semibold text-lg">Información del Evento</h3>
+                  <h3 className="text-lg font-semibold">Información del Evento</h3>
                 </CardHeader>
                 <CardContent>
                   <div className="grid gap-4 md:grid-cols-2">
                     <div className="flex items-center gap-3">
-                      <div className="p-2 bg-blue-100 rounded-lg">
+                      <div className="rounded-lg bg-blue-100 p-2">
                         <Calendar className="h-5 w-5 text-blue-600" />
                       </div>
                       <div>
-                        <p className="text-sm text-muted-foreground">Fecha</p>
+                        <p className="text-muted-foreground text-sm">Fecha</p>
                         <p className="font-medium">
                           {new Date(event.start_date).toLocaleDateString("es-ES", {
                             weekday: "long",
@@ -264,34 +271,37 @@ const PublicationDetailPage = () => {
                       </div>
                     </div>
 
-                    {event.start_date.includes('T') && event.start_date.split('T')[1] !== '00:00:00' && (
+                    {event.start_date.includes("T") && event.start_date.split("T")[1] !== "00:00:00" && (
                       <div className="flex items-center gap-3">
-                        <div className="p-2 bg-green-100 rounded-lg">
+                        <div className="rounded-lg bg-green-100 p-2">
                           <Clock className="h-5 w-5 text-green-600" />
                         </div>
                         <div>
-                          <p className="text-sm text-muted-foreground">Hora</p>
-                          <p className="font-medium">
-                            {event.start_date.split('T')[1]?.substring(0, 5)}
-                          </p>
+                          <p className="text-muted-foreground text-sm">Hora</p>
+                          <p className="font-medium">{event.start_date.split("T")[1]?.substring(0, 5)}</p>
                         </div>
                       </div>
                     )}
 
                     <div className="flex items-center gap-3">
-                      <div className="p-2 bg-purple-100 rounded-lg">
+                      <div className="rounded-lg bg-purple-100 p-2">
                         <MapPin className="h-5 w-5 text-purple-600" />
                       </div>
                       <div>
-                        <p className="text-sm text-muted-foreground">Modalidad</p>
-                        <p className="capitalize font-medium">
+                        <p className="text-muted-foreground text-sm">Modalidad</p>
+                        <p className="font-medium capitalize">
                           {event.modality}
-                          {event.location && event.modality === 'presencial' && (
-                            <span className="text-xs ml-2 text-gray-500">• {event.location}</span>
+                          {event.location && event.modality === "presencial" && (
+                            <span className="ml-2 text-xs text-gray-500">• {event.location}</span>
                           )}
                         </p>
                         {event.virtual_url && (
-                          <a href={event.virtual_url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline block truncate max-w-[200px]">
+                          <a
+                            href={event.virtual_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="block max-w-[200px] truncate text-xs text-blue-600 hover:underline"
+                          >
                             {event.virtual_url}
                           </a>
                         )}
@@ -299,14 +309,12 @@ const PublicationDetailPage = () => {
                     </div>
 
                     <div className="flex items-center gap-3">
-                      <div className="p-2 bg-orange-100 rounded-lg">
+                      <div className="rounded-lg bg-orange-100 p-2">
                         <Users className="h-5 w-5 text-orange-600" />
                       </div>
                       <div>
-                        <p className="text-sm text-muted-foreground">Cupos</p>
-                        <p className="font-medium">
-                          {event.capacity ? `${event.capacity} cupos` : 'Ilimitado'}
-                        </p>
+                        <p className="text-muted-foreground text-sm">Cupos</p>
+                        <p className="font-medium">{event.capacity ? `${event.capacity} cupos` : "Ilimitado"}</p>
                       </div>
                     </div>
                   </div>
@@ -333,7 +341,7 @@ const PublicationDetailPage = () => {
                       variant="destructive"
                       onClick={handleCancelEnrollment}
                       disabled={canceling}
-                      className="w-full font-semibold text-lg h-12"
+                      className="h-12 w-full text-lg font-semibold"
                     >
                       {canceling ? "Cancelando..." : "Cancelar inscripción"}
                     </Button>
@@ -342,14 +350,14 @@ const PublicationDetailPage = () => {
                       size="lg"
                       onClick={handleRegister}
                       disabled={isEventFull || registering}
-                      className="w-full font-semibold text-lg h-12"
+                      className="h-12 w-full text-lg font-semibold"
                     >
-                      {registering ? "Inscribiendo..." : (isEventFull ? "Evento lleno" : "Inscribirme al evento")}
+                      {registering ? "Inscribiendo..." : isEventFull ? "Evento lleno" : "Inscribirme al evento"}
                     </Button>
                   )}
 
                   {isEventFull && !isEnrolled && (
-                    <p className="text-center text-sm text-muted-foreground">
+                    <p className="text-muted-foreground text-center text-sm">
                       Este evento ha alcanzado su capacidad máxima
                     </p>
                   )}
@@ -363,7 +371,7 @@ const PublicationDetailPage = () => {
             <Card>
               <CardContent className="p-6">
                 <div
-                  className="prose prose-blue max-w-none prose-headings:font-bold prose-a:text-blue-600"
+                  className="prose prose-blue prose-headings:font-bold prose-a:text-blue-600 max-w-none"
                   dangerouslySetInnerHTML={{ __html: publication.content }}
                 />
               </CardContent>
@@ -377,22 +385,36 @@ const PublicationDetailPage = () => {
       {/* Image Inspection Modal */}
       {isImageOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm p-4 animate-in fade-in duration-200"
+          className="animate-in fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4 backdrop-blur-sm duration-200"
           onClick={() => setIsImageOpen(false)}
         >
-          <div className="relative max-w-full max-h-full">
+          <div className="relative max-h-full max-w-full">
             <img
               src={imageSrc ?? undefined}
               alt={publication.title}
-              className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl"
+              className="max-h-[90vh] max-w-full rounded-lg object-contain shadow-2xl"
               onClick={(e) => e.stopPropagation()} // Prevent closing when clicking the image itself
             />
             <button
-              className="absolute -top-12 right-0 text-white hover:text-gray-300 transition-colors p-2"
+              className="absolute -top-12 right-0 p-2 text-white transition-colors hover:text-gray-300"
               onClick={() => setIsImageOpen(false)}
             >
               <span className="sr-only">Cerrar</span>
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-x"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="lucide lucide-x"
+              >
+                <path d="M18 6 6 18" />
+                <path d="m6 6 12 12" />
+              </svg>
             </button>
           </div>
         </div>
@@ -402,4 +424,3 @@ const PublicationDetailPage = () => {
 };
 
 export default PublicationDetailPage;
-
