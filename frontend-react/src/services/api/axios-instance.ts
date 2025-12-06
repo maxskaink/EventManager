@@ -1,5 +1,6 @@
 import axios, { AxiosError } from "axios";
 import StorageKeys from "../../stores/storage-keys"
+import { logout } from "@/features/auth";
 
 // Create axios instance with base configuration
 const axiosInstance = axios.create({
@@ -46,9 +47,7 @@ axiosInstance.interceptors.response.use(
         // Handle 401 (Unauthenticated)
         if (error.response?.status === 401) {
             // Remove token and redirect to login
-            localStorage.removeItem('token');
-            // You might want to use your router here instead of window.location
-            window.location.href = '/login';
+            logout();
             return Promise.reject(error);
         }
 

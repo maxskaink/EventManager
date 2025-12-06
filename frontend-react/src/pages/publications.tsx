@@ -11,6 +11,7 @@ import { PublicationsSearchBar } from "../components/publications/wall/Publicati
 import { publicationQueries } from "@/services/react-query/queries";
 import type { ContentItem } from "@/features/events/types";
 import { UnifiedHeader } from "@/components/layout/UnifiedHeader";
+import { publicationToContentItem } from "@/features/events";
 
 /**
  * This publications screen lists all the PUBLIC publciations
@@ -46,33 +47,7 @@ export function PublicationsScreen() {
 
   // Data Transformation & Enrichment
   const contentItems: ContentItem[] = useMemo(() => {
-    return publications?.map(pub => {
-      const associatedEvent = pub.event;
-
-      // Base item
-      const item: ContentItem = {
-        id: `pub-${pub.id}`,
-        type: pub.type,
-        title: pub.title,
-        description: pub.summary || pub.content || "",
-        date: pub.published_at ? pub.published_at.split("T")[0] : pub.created_at.split("T")[0],
-        status: pub.status,
-        kind: 'publication',
-        original: pub,
-      };
-
-      // Enrichment if event exists
-      if (associatedEvent) {
-        item.subtype = associatedEvent.event_type;
-        item.date = associatedEvent.start_date.split("T")[0];
-        item.time = associatedEvent.start_date.split("T")[1]?.substring(0, 5);
-        item.location = associatedEvent.location || associatedEvent.modality;
-        item.capacity = associatedEvent.capacity || 0;
-        item.eventId = associatedEvent.id.toString();
-        item.original = { ...pub, ...associatedEvent, image_url: pub.image_url };
-      }
-      return item;
-    }) ?? [];
+    return publications?.map(publicationToContentItem) ?? [];
   }, [publications]);
 
   // Filtering

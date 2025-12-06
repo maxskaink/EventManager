@@ -53,7 +53,11 @@ export const router = createBrowserRouter([
       // If user state is needed to choose a dashboard, use special redirect
       { path: "dashboard", element: <DashboardRedirect /> },
       { path: "auth/google/callback", element: <GoogleCallbackScreen /> },
+      { path: "dashboard-guest", element: <GuestDashboard /> },
 
+      { path: "publications/:publicationId", element: <PublicationDetailPage /> },
+      { path: "publications", element: <PublicationsScreen /> },
+      
       // Autenticated
       {
         middleware: [authMiddleware],
@@ -70,8 +74,7 @@ export const router = createBrowserRouter([
 
               // Others
               { path: "reports", element: <ReportsScreen /> },
-              { path: "publications/:publicationId", element: <PublicationDetailPage /> },
-              { path: "publications", element: <PublicationsScreen /> },
+              
               { path: "create-article", element: <CreateArticleScreen /> },
               { path: "profile", element: <ProfileScreen /> },
               { path: "certificates", element: <CertificatesPage /> },

@@ -35,7 +35,7 @@ export function RecentPublicationsSection({
             </div>
         </>
 
-        return <div className="grid gap-3">
+        return <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
             {publicationsToShow.map((publication) => (
                 <Card
                     key={publication.id}
@@ -43,7 +43,7 @@ export function RecentPublicationsSection({
                     onClick={() => navigate(`/publications/${publication.id}`)}
                 >
                     {/* Imagen/Placeholder */}
-                    <div className="flex flex-row gap-4">
+                    <div className="flex flex-row gap-2">
 
                         {publication.image_url && (
                             <div className="w-16 h-16 mr-4 rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center">
@@ -75,19 +75,6 @@ export function RecentPublicationsSection({
                             </div>
                         </div>
                     </div>
-
-                    {/* Botón (Opcional, puede ir en la tarjeta o al final del contenido) */}
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        className="shrink-0 ml-4 hidden sm:inline-flex" // Ocultar en móviles para clickear toda la tarjeta
-                        onClick={(e) => {
-                            e.stopPropagation(); // Prevenir el doble click de la tarjeta
-                            navigate(`/publications/${publication.id}`);
-                        }}
-                    >
-                        Ver
-                    </Button>
                 </Card>
             ))}
         </div>
@@ -109,3 +96,5 @@ export function RecentPublicationsSection({
         </section >
     );
 }
+
+
