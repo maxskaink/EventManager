@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\Publication\AddPublicationInterestRequest;
 use App\Http\Requests\Publication\AddPublicationRequest;
+use App\Http\Requests\Publication\FilterPublicationRequest;
 use App\Http\Requests\Publication\PublicationAccessRequest;
 use App\Http\Requests\Publication\SetPublicationImageRequest;
 use App\Http\Requests\Publication\UpdatePublicationRequest;
@@ -39,7 +40,7 @@ class PublicationController extends Controller
         return response()->json([
             'message' => 'Publication created successfully.',
             'publication' => $newPublication,
-        ],201);
+        ], 201);
     }
 
     /**
@@ -58,7 +59,7 @@ class PublicationController extends Controller
         return response()->json([
             'message' => 'Event publication created successfully.',
             'publication' => $newPublication,
-        ],201);
+        ], 201);
     }
 
     /**
@@ -70,7 +71,8 @@ class PublicationController extends Controller
     {
         $this->authorize('viewAny', Publication::class);
 
-        $publications = $this->publicationService->listAllPublications();
+        $perPage = request()->input('per_page', 15);
+        $publications = $this->publicationService->listAllPublications($perPage);
 
         return response()->json([
             'publications' => $publications,
@@ -83,9 +85,31 @@ class PublicationController extends Controller
     public function listPublishedPublications(): JsonResponse
     {
         $user = request()->user();
+        $perPage = request()->input('per_page', 15);
         // Public — no policy needed
         return response()->json([
-            'publications' => $this->publicationService->listPublishedPublications($user),
+            'publications' => $this->publicationService->listPublishedPublications($user, $perPage),
+        ]);
+    }
+
+    /**
+     * List publications with filters.
+     */
+    public function listFilteredPublications(FilterPublicationRequest $request): JsonResponse
+    {
+        $user = request()->user();
+        $data = $request->validated();
+        $perPage = $data['per_page'] ?? 15;
+
+        $filters = [
+            'type' => $data['type'] ?? null,
+            'date_from' => $data['date_from'] ?? null,
+            'date_to' => $data['date_to'] ?? null,
+            'search' => $data['search'] ?? null,
+        ];
+
+        return response()->json([
+            'publications' => $this->publicationService->listFilteredPublications($filters, $user, $perPage),
         ]);
     }
 
@@ -98,7 +122,8 @@ class PublicationController extends Controller
     {
         $this->authorize('viewAny', Publication::class);
 
-        $publications = $this->publicationService->listDraftPublications();
+        $perPage = request()->input('per_page', 15);
+        $publications = $this->publicationService->listDraftPublications($perPage);
 
         return response()->json([
             'publications' => $publications,
