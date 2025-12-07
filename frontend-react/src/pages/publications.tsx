@@ -13,6 +13,8 @@ import type { ContentItem } from "@/features/events/types";
 import { UnifiedHeader } from "@/components/layout/UnifiedHeader";
 import { publicationToContentItem } from "@/features/events";
 import { HideOnScrollWrapper } from "@/components/layout/HideOnScrollWrapper";
+import { PublicationsDateFilter } from "@/components/publications/wall/PublicationsDateFilter";
+import type { DateRange } from "react-day-picker";
 
 /**
  * This publications screen lists all the PUBLIC publications
@@ -26,6 +28,7 @@ export function PublicationsScreen() {
   // State
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("todos");
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
 
   // Queries
   // 1. Fetch Publications (Source of Truth)
@@ -51,7 +54,6 @@ export function PublicationsScreen() {
     return publications?.map(publicationToContentItem) ?? [];
   }, [publications]);
 
-  // Filtering
   const filteredItems = useMemo(() => {
     return contentItems.filter(item => {
       // Search
@@ -62,9 +64,28 @@ export function PublicationsScreen() {
       // Category
       const matchesCategory = selectedCategory === "todos" || item.type === selectedCategory;
 
-      return matchesSearch && matchesCategory;
+      // Date Range
+      let matchesDateRange = true;
+      if (dateRange?.from || dateRange?.to) {
+        const itemDate = new Date(item.date);
+        itemDate.setHours(0, 0, 0, 0);
+        
+        if (dateRange.from && dateRange.to) {
+          const fromDate = new Date(dateRange.from);
+          fromDate.setHours(0, 0, 0, 0);
+          const toDate = new Date(dateRange.to);
+          toDate.setHours(23, 59, 59, 999);
+          matchesDateRange = itemDate >= fromDate && itemDate <= toDate;
+        } else if (dateRange.from) {
+          const fromDate = new Date(dateRange.from);
+          fromDate.setHours(0, 0, 0, 0);
+          matchesDateRange = itemDate >= fromDate;
+        }
+      }
+
+      return matchesSearch && matchesCategory && matchesDateRange;
     }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  }, [contentItems, searchTerm, selectedCategory]);
+  }, [contentItems, searchTerm, selectedCategory, dateRange]);
 
 
   const renderContent = () => {
@@ -92,7 +113,12 @@ export function PublicationsScreen() {
         />
       </HideOnScrollWrapper>
       <div className="max-w-5xl mx-auto p-6 space-y-8">
-        <PublicationsSearchBar searchTerm={searchTerm} onSearchChange={setSearchTerm} />
+        <div className="flex flex-col sm:flex-row gap-3">
+          <div className="flex-1">
+            <PublicationsSearchBar searchTerm={searchTerm} onSearchChange={setSearchTerm} />
+          </div>
+          <PublicationsDateFilter dateRange={dateRange} onDateRangeChange={setDateRange} />
+        </div>
 
         <PublicationsCategoryTabs selectedCategory={selectedCategory} onCategoryChange={setSelectedCategory}>
           {renderContent()}
