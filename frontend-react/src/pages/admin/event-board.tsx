@@ -3,7 +3,6 @@ import { useNavigate } from "react-router";
 import { EventAPI, ArticleAPI, PublicationAPI } from "../../services/api";
 import { toast } from "sonner";
 import BottomNavbarWrapper from "../../components/nav/BottomNavbarWrapper";
-import { EventBoardHeader } from "../../components/events/board/EventBoardHeader";
 import { EventBoardFilters } from "../../components/events/board/EventBoardFilters";
 import EventBoardContent from "../../components/events/board/EventBoardContent";
 import { EventBoardStats } from "../../components/events/board/EventBoardStats";
@@ -18,6 +17,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/ta
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { eventQueries, publicationQueries } from "../../services/react-query/queries";
 import { useAuthStore } from "@/stores/auth.store";
+import { UnifiedHeader } from "@/components/layout/UnifiedHeader";
 
 export function EventBoardScreen() {
 
@@ -179,10 +179,12 @@ export function EventBoardScreen() {
 
   return (
     <div className="min-h-screen pb-20 bg-gray-50/50">
-      <EventBoardHeader
-        userRole={user?.role || ""}
-        onNavigate={navigate}
-        onCreatePublication={() => setCreatePublicationOpen(true)}
+      <UnifiedHeader 
+        user={user}
+        onGoBack={() => navigate(-1)}
+        title="Contenido del semillero"
+        subtitle="Administra eventos y publicaciones"
+
       />
 
       <div className="max-w-7xl mx-auto p-4 md:p-6 space-y-8">
