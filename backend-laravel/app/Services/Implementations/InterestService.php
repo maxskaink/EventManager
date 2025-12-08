@@ -13,14 +13,22 @@ class InterestService implements InterestServiceInterface
 {
     public function __construct(
         private readonly InterestRepositoryInterface $interestRepository
-    ) {}
+    ) {
+    }
 
     /**
+     * {@inheritDoc}
+     *
+     * @throws DuplicatedResourceException
+     */
+    /**
+     * {@inheritDoc}
+     *
      * @throws DuplicatedResourceException
      */
     public function addInterest(array $data): Interest
     {
-        // Check duplicate keyword
+        // Check duplicate keyword to ensure uniqueness
         $existing = $this->interestRepository->findByKeyword($data['keyword']);
 
         if ($existing) {
@@ -32,12 +40,17 @@ class InterestService implements InterestServiceInterface
         return $this->interestRepository->create($data);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function getAllInterests(): Collection
     {
         return $this->interestRepository->findAll();
     }
 
     /**
+     * {@inheritDoc}
+     *
      * @throws ModelNotFoundException
      */
     public function deleteInterest(int $interestId): void

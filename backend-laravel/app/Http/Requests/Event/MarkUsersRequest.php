@@ -6,12 +6,22 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class MarkUsersRequest extends FormRequest
 {
+    /**
+     * Determine if the user is authorized to make this request.
+     *
+     * @return bool
+     */
     public function authorize(): bool
     {
         $user = auth()->user();
         return $user && in_array($user->role, ['mentor', 'coordinator']);
     }
 
+    /**
+     * Get the validation rules that apply to the request.
+     *
+     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     */
     public function rules(): array
     {
         return [
@@ -20,6 +30,11 @@ class MarkUsersRequest extends FormRequest
         ];
     }
 
+    /**
+     * Get custom messages for validator errors.
+     *
+     * @return array<string, string>
+     */
     public function messages(): array
     {
         return [

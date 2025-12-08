@@ -12,6 +12,8 @@ class PublicationAccessRequest extends FormRequest
      * Authorize the user to manage publication access.
      *
      * Only mentors or coordinators can grant or revoke special access.
+     *
+     * @return bool
      */
     public function authorize(): bool
     {
@@ -26,7 +28,7 @@ class PublicationAccessRequest extends FormRequest
      *
      * Used by both grant and revoke actions.
      *
-     * @return array<string, ValidationRule|array|string>
+     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {

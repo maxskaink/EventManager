@@ -17,16 +17,22 @@ interface EventServiceInterface
     public function addEvent(array $data): Event;
 
     /**
+     * List all events.
+     *
      * @return Collection<int, Event>
      */
     public function listAllEvents(): Collection;
 
     /**
+     * List upcoming events.
+     *
      * @return Collection<int, Event>
      */
     public function listUpcomingEvents(): Collection;
 
     /**
+     * List past events.
+     *
      * @return Collection<int, Event>
      */
     public function listPastEvents(): Collection;
@@ -108,5 +114,11 @@ interface EventServiceInterface
      */
     public function listAllParticipations(?string $status = null): Collection;
 
+    /**
+     * Delete an event by its ID.
+     *
+     * @param int $id
+     * @return Event The deleted event.
+     */
     public function deleteEvent(int $id): Event;
 }

@@ -60,12 +60,19 @@ class PublicationInterest extends Model
 
     /**
      * Get the publication associated with this interest.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function publication(): BelongsTo
     {
         return $this->belongsTo(Publication::class);
     }
 
+    /**
+     * Get a string representation of the publication interest.
+     *
+     * @return string
+     */
     public function __toString(): string
     {
         return sprintf(

@@ -61,6 +61,8 @@ class ExternalEvent extends Model
 
     /**
      * Get the user that owns the external event.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function user(): BelongsTo
     {
@@ -69,6 +71,8 @@ class ExternalEvent extends Model
 
     /**
      * String representation of the external event.
+     *
+     * @return string
      */
     public function __toString(): string
     {

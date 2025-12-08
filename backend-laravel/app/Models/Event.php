@@ -7,10 +7,31 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 
+/**
+ * @property int $id
+ * @property int $publication_id
+ * @property string $name
+ * @property string $description
+ * @property Carbon $start_date
+ * @property Carbon $end_date
+ * @property string $event_type
+ * @property string $modality
+ * @property string|null $location
+ * @property string|null $virtual_url
+ * @property string $status
+ * @property int|null $capacity
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ */
 class Event extends Model
 {
     use HasFactory;
 
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var list<string>
+     */
     protected $fillable = [
         'publication_id',
         'name',
@@ -25,6 +46,11 @@ class Event extends Model
         'capacity',
     ];
 
+    /**
+     * The attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
     protected function casts(): array
     {
         return [
@@ -38,6 +64,11 @@ class Event extends Model
         ];
     }
 
+    /**
+     * Get a string representation of the event.
+     *
+     * @return string
+     */
     public function __toString(): string
     {
         return sprintf(
@@ -49,6 +80,11 @@ class Event extends Model
         );
     }
 
+    /**
+     * Get the publication associated with the event.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
     public function publication(): BelongsTo
     {
         return $this->belongsTo(Publication::class);

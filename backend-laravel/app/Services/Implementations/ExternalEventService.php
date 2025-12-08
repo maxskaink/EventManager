@@ -30,6 +30,22 @@ class ExternalEventService implements ExternalEventServiceInterface
         $this->trustedOrganizations = config('trusted_events.organizations', []);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @throws InvalidRoleException
+     * @throws ResourceNotFoundException
+     * @throws DuplicatedResourceException
+     * @throws InvalidArgumentException
+     */
+    /**
+     * {@inheritDoc}
+     *
+     * @throws InvalidRoleException
+     * @throws ResourceNotFoundException
+     * @throws DuplicatedResourceException
+     * @throws InvalidArgumentException
+     */
     public function addExternalEvent(array $data): ExternalEvent
     {
         $authUser = Auth::user();
@@ -42,10 +58,12 @@ class ExternalEventService implements ExternalEventServiceInterface
             throw new ResourceNotFoundException('The specified user does not exist.');
         }
 
+        // Authorization: Only mentors can create events for others
         if ($authUser->id !== $user->id && $authUser->role !== 'mentor') {
             throw new InvalidRoleException('You are not allowed to create external events for other users.');
         }
 
+        // Check for duplicate events
         $duplicate = $this->repository->findDuplicate(
             $data['user_id'],
             $data['name'],
@@ -59,6 +77,7 @@ class ExternalEventService implements ExternalEventServiceInterface
             );
         }
 
+        // Validate organization and URL
         $this->validateHostOrganization($data['host_organization']);
 
         if (!empty($data['participation_url'])) {
@@ -70,7 +89,15 @@ class ExternalEventService implements ExternalEventServiceInterface
         return $this->repository->create($data);
     }
 
-    public function updateExternalEvent(int $eventId, array $data) : ExternalEvent
+    /**
+     * {@inheritDoc}
+     *
+     * @throws InvalidRoleException
+     * @throws ResourceNotFoundException
+     * @throws DuplicatedResourceException
+     * @throws InvalidArgumentException
+     */
+    public function updateExternalEvent(int $eventId, array $data): ExternalEvent
     {
         $authUser = Auth::user();
         if (!$authUser) {
@@ -82,10 +109,12 @@ class ExternalEventService implements ExternalEventServiceInterface
             throw new ResourceNotFoundException('The specified external event does not exist.');
         }
 
-        if ($authUser->id!== $event->user_id && $authUser->role !== 'mentor') {
+        // Authorization: Only owner or mentor can update
+        if ($authUser->id !== $event->user_id && $authUser->role !== 'mentor') {
             throw new InvalidRoleException('You are not allowed to update this external event.');
         }
 
+        // If reassigning user, validate permissions
         if (isset($data['user_id'])) {
             $newUser = User::query()->find($data['user_id']);
             if (!$newUser) {
@@ -97,6 +126,7 @@ class ExternalEventService implements ExternalEventServiceInterface
             }
         }
 
+        // Check for duplicates if name is updated
         if (isset($data['name'])) {
             $duplicate = $this->repository->findByNameForUser(
                 $data['user_id'] ?? $event->user_id,
@@ -124,6 +154,12 @@ class ExternalEventService implements ExternalEventServiceInterface
         return $this->repository->update($eventId, $data);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @throws InvalidRoleException
+     * @throws ResourceNotFoundException
+     */
     public function deleteExternalEvent(int $eventId): void
     {
         $authUser = Auth::user();
@@ -136,6 +172,7 @@ class ExternalEventService implements ExternalEventServiceInterface
             throw new ResourceNotFoundException('The specified external event does not exist.');
         }
 
+        // Authorization: Only owner or mentor can delete
         if ($authUser->id !== $event->user_id && $authUser->role !== 'mentor') {
             throw new InvalidRoleException('You are not allowed to delete this external event.');
         }
@@ -143,6 +180,12 @@ class ExternalEventService implements ExternalEventServiceInterface
         $this->repository->delete($eventId);
     }
 
+    /**
+     * Get external events for the currently authenticated user.
+     *
+     * @return Collection<int, ExternalEvent>
+     * @throws InvalidRoleException
+     */
     public function getExternalEventsOfActiveUser(): Collection
     {
         $authUser = Auth::user();
@@ -153,6 +196,13 @@ class ExternalEventService implements ExternalEventServiceInterface
         return $this->repository->findByUserId($authUser->id);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @throws InvalidRoleException
+     * @throws ResourceNotFoundException
+     * @throws AuthorizationException
+     */
     public function getExternalEventsByUser(int $userId): Collection
     {
         $authUser = Auth::user();
@@ -173,6 +223,11 @@ class ExternalEventService implements ExternalEventServiceInterface
         return $this->repository->findByUserId($userId);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @throws AuthorizationException
+     */
     public function getAllExternalEvents(): Collection
     {
         $authUser = Auth::user();
@@ -184,6 +239,12 @@ class ExternalEventService implements ExternalEventServiceInterface
         return $this->repository->findAll();
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @throws AuthorizationException
+     * @throws InvalidArgumentException
+     */
     public function getExternalEventsByDateRange(string $startDate, string $endDate): Collection
     {
         $authUser = Auth::user();
@@ -218,6 +279,7 @@ class ExternalEventService implements ExternalEventServiceInterface
 
     private function validateHostOrganization(string $organization): void
     {
+        // Check if organization matches trusted list (case-insensitive partial match)
         $isTrusted = collect($this->trustedOrganizations)
             ->contains(fn($trusted) => Str::contains(Str::lower($organization), Str::lower($trusted)));
 
@@ -236,6 +298,7 @@ class ExternalEventService implements ExternalEventServiceInterface
             throw new InvalidArgumentException('The provided participation URL is invalid.');
         }
 
+        // Check if domain is in trusted list
         $isTrusted = collect($this->trustedOrganizations)
             ->contains(fn($trusted) => Str::endsWith($domain, $trusted));
 
@@ -245,6 +308,7 @@ class ExternalEventService implements ExternalEventServiceInterface
             );
         }
 
+        // Verify URL accessibility
         try {
             $response = Http::timeout(5)->head($url);
             if ($response->failed()) {

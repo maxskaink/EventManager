@@ -69,12 +69,19 @@ class Profile extends Model
 
     /**
      * Get the user that owns this profile.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
     }
 
+    /**
+     * Get a string representation of the profile.
+     *
+     * @return string
+     */
     public function __toString(): string
     {
         return sprintf(
@@ -85,6 +92,11 @@ class Profile extends Model
         );
     }
 
+    /**
+     * The interests that belong to the profile.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     */
     public function interests(): BelongsToMany
     {
         return $this->belongsToMany(
@@ -94,5 +106,4 @@ class Profile extends Model
             'interest_id'          // este fk en pivot refiere a interests.id
         );
     }
-
 }

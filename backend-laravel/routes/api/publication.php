@@ -22,4 +22,5 @@ Route::middleware('auth:sanctum')->prefix('publication')->group(function () {
     // Access routes
     Route::post('{publicationId}/access/grant', [PublicationController::class, 'grantPublicationAccess']);
     Route::delete('{publicationId}/access/revoke', [PublicationController::class, 'revokePublicationAccess']);
+    Route::get('{publicationId}/access/users', [PublicationController::class, 'getUsersWithAccess']);
 });

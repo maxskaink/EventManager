@@ -19,6 +19,11 @@ class PublicationController extends Controller
 {
     protected PublicationServiceInterface $publicationService;
 
+    /**
+     * Create a new instance of PublicationController.
+     *
+     * @param PublicationServiceInterface $publicationService The service to handle publication logic.
+     */
     public function __construct(PublicationServiceInterface $publicationService)
     {
         $this->publicationService = $publicationService;
@@ -27,12 +32,16 @@ class PublicationController extends Controller
     /**
      * Create a new publication.
      *
-     * @throws AuthorizationException
+     * @param AddPublicationRequest $request The request containing publication data.
+     * @return JsonResponse The created publication and a success message.
+     * @throws AuthorizationException If the user is not authorized.
      */
     public function addPublication(AddPublicationRequest $request): JsonResponse
     {
         $userId = request()->user()->id;
         $data = $request->validated();
+
+        // Authorization: check if the user can create publications
         $this->authorize('create', Publication::class);
 
         $newPublication = $this->publicationService->addPublication($data, $userId);
@@ -46,12 +55,17 @@ class PublicationController extends Controller
     /**
      * Create a new publication related to an event.
      *
-     * @throws AuthorizationException
+     * @param AddPublicationRequest $request The request containing publication data.
+     * @param int $eventId The ID of the event.
+     * @return JsonResponse The created publication and a success message.
+     * @throws AuthorizationException If the user is not authorized.
      */
     public function addEventPublication(AddPublicationRequest $request, int $eventId): JsonResponse
     {
         $userId = request()->user()->id;
         $data = $request->validated();
+
+        // Authorization: check if the user can create publications
         $this->authorize('create', Publication::class);
 
         $newPublication = $this->publicationService->addEventPublication($data, $eventId, $userId);
@@ -65,10 +79,12 @@ class PublicationController extends Controller
     /**
      * List all publications (restricted to mentors/coordinators).
      *
-     * @throws AuthorizationException
+     * @return JsonResponse A list of all publications.
+     * @throws AuthorizationException If the user is not authorized.
      */
     public function listAllPublications(): JsonResponse
     {
+        // Authorization: only mentors/coordinators can view all publications
         $this->authorize('viewAny', Publication::class);
 
         $perPage = request()->input('per_page', 15);
@@ -81,12 +97,15 @@ class PublicationController extends Controller
 
     /**
      * List all published publications.
+     *
+     * @return JsonResponse A list of published publications.
      */
     public function listPublishedPublications(): JsonResponse
     {
         $user = request()->user();
         $perPage = request()->input('per_page', 15);
-        // Public — no policy needed
+
+        // Public endpoint — no policy needed, service handles visibility logic
         return response()->json([
             'publications' => $this->publicationService->listPublishedPublications($user, $perPage),
         ]);
@@ -94,6 +113,9 @@ class PublicationController extends Controller
 
     /**
      * List publications with filters.
+     *
+     * @param FilterPublicationRequest $request The request containing filters.
+     * @return JsonResponse A list of filtered publications.
      */
     public function listFilteredPublications(FilterPublicationRequest $request): JsonResponse
     {
@@ -116,10 +138,12 @@ class PublicationController extends Controller
     /**
      * List all draft publications (restricted to mentors/coordinators).
      *
-     * @throws AuthorizationException
+     * @return JsonResponse A list of draft publications.
+     * @throws AuthorizationException If the user is not authorized.
      */
     public function listDraftPublications(): JsonResponse
     {
+        // Authorization: only mentors/coordinators can view drafts
         $this->authorize('viewAny', Publication::class);
 
         $perPage = request()->input('per_page', 15);
@@ -133,13 +157,19 @@ class PublicationController extends Controller
     /**
      * Update a publication.
      *
-     * @throws AuthorizationException
+     * @param UpdatePublicationRequest $request The request containing updated publication data.
+     * @param int $id The ID of the publication to update.
+     * @return JsonResponse The updated publication and a success message.
+     * @throws \Illuminate\Database\Eloquent\ModelNotFoundException If the publication is not found.
+     * @throws AuthorizationException If the user is not authorized.
      */
     public function updatePublication(UpdatePublicationRequest $request, int $id): JsonResponse
     {
         $data = $request->validated();
 
         $publication = Publication::query()->findOrFail($id);
+
+        // Authorization: check if the user can update this publication
         $this->authorize('update', $publication);
 
         $updatedPublication = $this->publicationService->updatePublication($id, $data);
@@ -153,11 +183,17 @@ class PublicationController extends Controller
     /**
      * Add interests to a publication.
      *
-     * @throws AuthorizationException
+     * @param int $publicationId The ID of the publication.
+     * @param AddPublicationInterestRequest $request The request containing interest IDs.
+     * @return JsonResponse The added interests and a success message.
+     * @throws \Illuminate\Database\Eloquent\ModelNotFoundException If the publication is not found.
+     * @throws AuthorizationException If the user is not authorized.
      */
     public function addPublicationInterests(int $publicationId, AddPublicationInterestRequest $request): JsonResponse
     {
         $publication = Publication::query()->findOrFail($publicationId);
+
+        // Authorization: check if the user can update this publication
         $this->authorize('update', $publication);
 
         $data = $request->validated();
@@ -174,10 +210,14 @@ class PublicationController extends Controller
     /**
      * Grant special access to a private publication.
      *
-     * @throws AuthorizationException
+     * @param int $publicationId The ID of the publication.
+     * @param PublicationAccessRequest $request The request containing user IDs or roles.
+     * @return JsonResponse The granted access details and a success message.
+     * @throws AuthorizationException If the user is not authorized.
      */
     public function grantPublicationAccess(int $publicationId, PublicationAccessRequest $request): JsonResponse
     {
+        // Authorization: check if the user can grant access
         $this->authorize('grantAccess', Publication::class);
 
         $data = $request->validated();
@@ -195,10 +235,14 @@ class PublicationController extends Controller
     /**
      * Revoke access to a publication.
      *
-     * @throws AuthorizationException
+     * @param int $publicationId The ID of the publication.
+     * @param PublicationAccessRequest $request The request containing user IDs or roles.
+     * @return JsonResponse The revoked access details and a success message.
+     * @throws AuthorizationException If the user is not authorized.
      */
     public function revokePublicationAccess(int $publicationId, PublicationAccessRequest $request): JsonResponse
     {
+        // Authorization: check if the user can revoke access
         $this->authorize('grantAccess', Publication::class);
 
         $data = $request->validated();
@@ -216,10 +260,11 @@ class PublicationController extends Controller
     /**
      * Get a specific publication by ID.
      *
+     * @param int $id The ID of the publication.
+     * @return JsonResponse The publication data.
      */
     public function getPublicationById(int $id): JsonResponse
     {
-
         $user = request()->user();
         $publication = $this->publicationService->getPublicationById($id, $user);
 
@@ -228,9 +273,20 @@ class PublicationController extends Controller
         ]);
     }
 
+    /**
+     * Set the image for a publication.
+     *
+     * @param SetPublicationImageRequest $request The request containing the image file.
+     * @param int $id The ID of the publication.
+     * @return JsonResponse The updated publication and a success message.
+     * @throws \Illuminate\Database\Eloquent\ModelNotFoundException If the publication is not found.
+     * @throws AuthorizationException If the user is not authorized.
+     */
     public function setPublicationImage(SetPublicationImageRequest $request, int $id): JsonResponse
     {
         $publication = Publication::query()->findOrFail($id);
+
+        // Authorization: check if the user can update this publication
         $this->authorize('update', $publication);
 
         $image = $request->file('image');
@@ -245,11 +301,17 @@ class PublicationController extends Controller
     /**
      * Remove interests from a publication.
      *
-     * @throws AuthorizationException
+     * @param int $publicationId The ID of the publication.
+     * @param AddPublicationInterestRequest $request The request containing interest IDs.
+     * @return JsonResponse The removed interests and a success message.
+     * @throws \Illuminate\Database\Eloquent\ModelNotFoundException If the publication is not found.
+     * @throws AuthorizationException If the user is not authorized.
      */
     public function removePublicationInterests(int $publicationId, AddPublicationInterestRequest $request): JsonResponse
     {
         $publication = Publication::query()->findOrFail($publicationId);
+
+        // Authorization: check if the user can update this publication
         $this->authorize('update', $publication);
 
         $data = $request->validated();
@@ -260,6 +322,23 @@ class PublicationController extends Controller
         return response()->json([
             'message' => 'Interests removed successfully.',
             'removed interests' => $removedInterests,
+        ]);
+    }
+
+    /**
+     * Get users with access to a publication.
+     *
+     * @param int $publicationId The ID of the publication.
+     * @return JsonResponse A list of users with access.
+     * @throws AuthorizationException If the user is not authorized.
+     */
+    public function getUsersWithAccess(int $publicationId): JsonResponse
+    {
+        // Authorization: check if the user can view access details
+        $this->authorize('viewAccess', Publication::class);
+
+        return response()->json([
+            'users' => $this->publicationService->getUsersWithAccess($publicationId),
         ]);
     }
 

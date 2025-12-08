@@ -8,6 +8,9 @@ use Illuminate\Database\Eloquent\Collection;
 
 class PublicationInterestRepository implements PublicationInterestRepositoryInterface
 {
+    /**
+     * {@inheritDoc}
+     */
     public function exists(int $pubId, int $interestId): bool
     {
         return PublicationInterest::query()
@@ -16,6 +19,9 @@ class PublicationInterestRepository implements PublicationInterestRepositoryInte
             ->exists();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function create(int $pubId, int $interestId): void
     {
         PublicationInterest::query()->create([
@@ -24,6 +30,9 @@ class PublicationInterestRepository implements PublicationInterestRepositoryInte
         ]);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function getByPublication(int $pubId): Collection
     {
         return PublicationInterest::query()
@@ -31,23 +40,31 @@ class PublicationInterestRepository implements PublicationInterestRepositoryInte
             ->get();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function getInterestIds(int $pubId): array
     {
+        // Retrieve just the interest IDs for a publication.
         return PublicationInterest::query()
             ->where('publication_id', $pubId)
             ->pluck('interest_id')
             ->toArray();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function deleteForPublication(int $pubId, array $interestIds): array
     {
-        $deletedIds =  PublicationInterest::query()
+        // Identify which interests from the list are actually associated.
+        $deletedIds = PublicationInterest::query()
             ->where('publication_id', $pubId)
             ->whereIn('interest_id', $interestIds)
             ->pluck('interest_id')
             ->toArray();
 
-
+        // Delete the associations.
         if (!empty($deletedIds)) {
             PublicationInterest::query()
                 ->whereIn('interest_id', $deletedIds)

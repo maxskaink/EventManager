@@ -23,7 +23,7 @@ class AuthService implements AuthServiceInterface
     }
 
     /**
-     * Generate a stateless Google OAuth redirect URL.
+     * {@inheritDoc}
      */
     public function getGoogleAuthUrl(): string
     {
@@ -37,7 +37,14 @@ class AuthService implements AuthServiceInterface
     }
 
     /**
-     * Handle Google OAuth2 callback and authenticate user.
+     * {@inheritDoc}
+     *
+     * @throws ConnectionException|RequestException
+     * @throws AuthenticationException
+     */
+    /**
+     * {@inheritDoc}
+     *
      * @throws ConnectionException|RequestException
      * @throws AuthenticationException
      */
@@ -47,6 +54,7 @@ class AuthService implements AuthServiceInterface
         $googleProvider = Socialite::driver('google');
 
         // Step 1: Exchange authorization code for access token
+        // We manually request the token to handle potential errors more gracefully
         $tokenResponse = Http::asForm()->post('https://oauth2.googleapis.com/token', [
             'code' => $code,
             'client_id' => config('services.google.client_id'),
@@ -70,18 +78,18 @@ class AuthService implements AuthServiceInterface
             throw new AuthenticationException('Failed to obtain access token from Google');
         }
 
-        // Step 2: Retrieve user info from Google
+        // Step 2: Retrieve user info from Google using the access token
         /** @var SocialiteUser $googleUser */
         $googleUser = $googleProvider->stateless()->userFromToken($accessToken);
 
-        // Step 3: Use repository to create or retrieve user
+        // Step 3: Use repository to create or retrieve user based on Google info
         $user = $this->authRepository->findOrCreateUser($googleUser);
 
-        // Step 3.1: Ensure profile and update last login
+        // Step 3.1: Ensure profile exists and update last login timestamp
         $this->authRepository->ensureUserProfile($user);
         $this->authRepository->updateLastLogin($user);
 
-        // Step 4: Create Sanctum token
+        // Step 4: Create Sanctum token for API authentication
         $token = $this->authRepository->createToken($user);
 
         return [
@@ -91,7 +99,7 @@ class AuthService implements AuthServiceInterface
     }
 
     /**
-     * Revoke the user's current Sanctum token.
+     * {@inheritDoc}
      */
     public function logout(?User $user): void
     {

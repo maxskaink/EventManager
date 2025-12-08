@@ -9,6 +9,9 @@ class ArticlePolicy
 {
     /**
      * Determine whether the user can view any articles (mentor only).
+     *
+     * @param User $user
+     * @return bool
      */
     public function viewAny(User $user): bool
     {
@@ -17,18 +20,24 @@ class ArticlePolicy
 
     /**
      * Determine whether the user can view articles of a specific user.
-     * The second argument can be a user id or a User instance.
+     *
+     * @param User $authUser The authenticated user
+     * @param User $targetUser The user whose articles are being viewed
+     * @return bool
      */
-    public function viewByUser(User $authUser,User $targetUser): bool
+    public function viewByUser(User $authUser, User $targetUser): bool
     {
-        $targetUserId =  $targetUser->id;
+        $targetUserId = $targetUser->id;
 
         return $authUser->id === $targetUserId || $authUser->role === 'mentor';
     }
 
     /**
      * Determine whether the user can create an article for the given user id.
-     * The second argument may be the target user's id.
+     *
+     * @param User $authUser The authenticated user
+     * @param User|int|null $targetUser The target user or user ID
+     * @return bool
      */
     public function create(User $authUser, $targetUser = null): bool
     {
@@ -44,6 +53,10 @@ class ArticlePolicy
 
     /**
      * Determine whether the user can update the article.
+     *
+     * @param User $authUser The authenticated user
+     * @param Article $article The article to update
+     * @return bool
      */
     public function update(User $authUser, Article $article): bool
     {
@@ -52,6 +65,10 @@ class ArticlePolicy
 
     /**
      * Determine whether the user can delete the article.
+     *
+     * @param User $authUser The authenticated user
+     * @param Article $article The article to delete
+     * @return bool
      */
     public function delete(User $authUser, Article $article): bool
     {
@@ -60,6 +77,9 @@ class ArticlePolicy
 
     /**
      * Determine whether the user can filter articles by date range (mentor only).
+     *
+     * @param User $authUser The authenticated user
+     * @return bool
      */
     public function filterByDateRange(User $authUser): bool
     {

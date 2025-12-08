@@ -10,7 +10,6 @@ use App\Services\Contracts\ArticleServiceInterface;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
 
@@ -28,10 +27,7 @@ class ArticleService implements ArticleServiceInterface
     }
 
     /**
-     * Create and store a new article for a user.
-     *
-     * @param array $data
-     * @return Article
+     * {@inheritDoc}
      *
      * @throws DuplicatedResourceException
      * @throws ModelNotFoundException
@@ -74,11 +70,7 @@ class ArticleService implements ArticleServiceInterface
     }
 
     /**
-     * Update an existing article.
-     *
-     * @param int $articleId
-     * @param array $data
-     * @return Article
+     * {@inheritDoc}
      *
      * @throws ModelNotFoundException
      * @throws DuplicatedResourceException
@@ -151,13 +143,13 @@ class ArticleService implements ArticleServiceInterface
                 "The publication domain '{$domain}' is not from a trusted source."
             );
         }
+
+        // Note: We could add an HTTP check here similar to other services if required,
+        // but for now we only validate the domain against the trusted list.
     }
 
     /**
-     * Get all articles of a specific user.
-     *
-     * @param int $userId
-     * @return Collection<int, Article>
+     * {@inheritDoc}
      */
     public function getArticlesByUser(int $userId): Collection
     {
@@ -165,9 +157,7 @@ class ArticleService implements ArticleServiceInterface
     }
 
     /**
-     * Get all articles in the system.
-     *
-     * @return Collection<int, Article>
+     * {@inheritDoc}
      */
     public function getAllArticles(): Collection
     {
@@ -175,11 +165,7 @@ class ArticleService implements ArticleServiceInterface
     }
 
     /**
-     * Get all articles published within a specific date range.
-     *
-     * @param string $startDate
-     * @param string $endDate
-     * @return Collection<int, Article>
+     * {@inheritDoc}
      *
      * @throws InvalidArgumentException
      */
@@ -196,9 +182,8 @@ class ArticleService implements ArticleServiceInterface
     }
 
     /**
-     * Delete an existing article.
+     * {@inheritDoc}
      *
-     * @param int $articleId
      * @throws ModelNotFoundException
      */
     public function deleteArticle(int $articleId): void
@@ -212,9 +197,7 @@ class ArticleService implements ArticleServiceInterface
     }
 
     /**
-     * Get all trusted organizations.
-     *
-     * @return array<int, string>
+     * {@inheritDoc}
      */
     public function getAllTrustedOrganizations(): array
     {

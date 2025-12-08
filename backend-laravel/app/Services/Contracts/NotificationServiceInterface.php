@@ -8,16 +8,16 @@ use Illuminate\Database\Eloquent\Collection;
 interface NotificationServiceInterface
 {
     /**
-     * Get articles for a specific user id.
+     * Get notifications for a specific user id.
      *
      * @param int $userId
      * @return Collection<int, Notification>
      */
     public function getNotificationByUser(int $userId): Collection;
 
-
-
     /**
+     * Get all notifications in the system.
+     *
      * @return Collection<int, Notification>
      */
     public function getAllNotifications(): Collection;

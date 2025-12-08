@@ -8,6 +8,8 @@ class AddPublicationInterestRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
+     *
+     * @return bool
      */
     public function authorize(): bool
     {
@@ -19,6 +21,8 @@ class AddPublicationInterestRequest extends FormRequest
      * Get the validation rules that apply to the request.
      *
      * You can allow either a single interest_id or a list of interest_ids.
+     *
+     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
@@ -30,7 +34,9 @@ class AddPublicationInterestRequest extends FormRequest
     }
 
     /**
-     * Custom messages for validation errors.
+     * Get custom messages for validator errors.
+     *
+     * @return array<string, string>
      */
     public function messages(): array
     {
