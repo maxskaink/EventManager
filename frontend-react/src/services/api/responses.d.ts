@@ -128,7 +128,8 @@ namespace PublicationAPI {
     search?: string;
     date_from?: string;
     date_to?: string;
-    type?: API.PublicationType
+    type?: API.PublicationType;
+    status?: string;
     page?: number;
     per_page?: number;
   }

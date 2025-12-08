@@ -17,10 +17,16 @@ export const UserDetailScreen = () => {
   const navigate = useNavigate();
   const id = Number(userId);
 
-  // 1. Fetch User Details (using listActiveUsers as fallback for now)
+  // 1. Fetch User Details (using listUsersByFilters)
   const { data: usersResponse, isLoading: isLoadingUser } = useQuery({
     queryKey: ['activeUsers'],
-    queryFn: userAPI.listActiveUsers,
+    queryFn: async () => {
+      const response = await userAPI.listUsersByFilters({ 
+        status: 'active',
+        per_page: 1000 // Get all active users
+      });
+      return response.data;
+    },
   });
 
   const user = usersResponse?.find((u: API.User) => u.id === id);

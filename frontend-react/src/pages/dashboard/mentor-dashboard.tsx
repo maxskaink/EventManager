@@ -48,8 +48,11 @@ export function MentorDashboardPage() {
   const loadUsers = async () => {
     try {
       setLoading(true);
-      const response = await UserAPI.listActiveUsers();
-      setUsers(response);
+      const response = await UserAPI.listUsersByFilters({ 
+        status: 'active',
+        per_page: 1000 // Get all active users in one request
+      });
+      setUsers(response.data);
     } catch (error) {
       toast.error("Error al cargar usuarios");
       console.error("Error loading users:", error);
@@ -84,17 +87,19 @@ export function MentorDashboardPage() {
 
   const loadContentForReview = async () => {
     try {
-      const [eventsData, publicationsData] = await Promise.all([
+      const [eventsData, publicationsResponse] = await Promise.all([
         EventAPI.listAllEvents().catch((error) => {
           console.error("Error cargando eventos:", error);
           toast.error("No se pudieron cargar los eventos para revisión");
           return [] as API.Event[];
         }),
-        PublicationAPI.listAllPublications().catch((error) => {
+        PublicationAPI.listPublicationsByFilters({ per_page: 1000 }).catch((error) => {
           console.warn("Publicaciones no disponibles:", error);
-          return [] as API.Publication[];
+          return { data: [] as API.Publication[] };
         }),
       ]);
+
+      const publicationsData = publicationsResponse.data || [];
 
       const eventSubs: Submission[] = eventsData.map((event) => ({
         id: String(event.id),

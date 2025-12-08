@@ -1,5 +1,5 @@
-import { queryOptions } from "@tanstack/react-query";
-import { CertificateAPI, EventAPI, ProfileAPI, PublicationAPI } from "../api";
+import { queryOptions, infiniteQueryOptions } from "@tanstack/react-query";
+import { CertificateAPI, EventAPI, ProfileAPI, PublicationAPI, UserAPI } from "../api";
 
 export const eventQueries = {
     all: () =>
@@ -13,31 +13,100 @@ export const eventQueries = {
 };
 
 export const publicationQueries = {
-    all: () =>
+    all: (filters?: PublicationAPI.ListPublicationsFilters) =>
         queryOptions({
-            queryKey: ["publications"],
+            queryKey: ["publications", filters],
             queryFn: async () => {
-                const data = await PublicationAPI.listAllPublications();
-                return Array.isArray(data) ? data : [];
+                const response = await PublicationAPI.listPublicationsByFilters(filters || {});
+                return response.data || [];
             },
         }),
-    published: () => 
+    published: (filters?: PublicationAPI.ListPublicationsFilters) => 
         queryOptions({
-            queryKey: ["publications","published"],
+            queryKey: ["publications", "published", filters],
             queryFn: async () => {
-                const data = await PublicationAPI.listPublishedPublications();
-                return Array.isArray(data) ? data : [];
+                const response = await PublicationAPI.listPublicationsByFilters({ ...filters, status: 'activo' });
+                return response.data || [];
             },
         }),
-    draft: () =>
+    draft: (filters?: PublicationAPI.ListPublicationsFilters) =>
         queryOptions({
-            queryKey: ["publications","draft"],
+            queryKey: ["publications", "draft", filters],
             queryFn: async () => {
-                const data = await PublicationAPI.listDraftPublications();
-                return Array.isArray(data) ? data : [];
+                const response = await PublicationAPI.listPublicationsByFilters({ ...filters, status: 'borrador' });
+                return response.data || [];
             },
-        })
+        }),
+    infinite: (filters?: Omit<PublicationAPI.ListPublicationsFilters, 'page'>) =>
+        infiniteQueryOptions({
+            queryKey: ["publications", "infinite", filters],
+            queryFn: async ({ pageParam = 1 }: { pageParam?: number }) => {
+                const response = await PublicationAPI.listPublicationsByFilters({
+                    ...filters,
+                    page: pageParam,
+                    per_page: 10,
+                });
+                return response;
+            },
+            getNextPageParam: (lastPage: PaginatedResponse<API.Publication>) => {
+                return lastPage.current_page < lastPage.last_page
+                    ? lastPage.current_page + 1
+                    : undefined;
+            },
+        }),
     
+};
+
+export const userQueries = {
+    all: (filters?: UserAPI.ListUsersFilters) =>
+        queryOptions({
+            queryKey: ["users", filters],
+            queryFn: async () => {
+                const response = await UserAPI.listUsersByFilters(filters || {});
+                return response.data || [];
+            },
+        }),
+    active: (filters?: UserAPI.ListUsersFilters) =>
+        queryOptions({
+            queryKey: ["users", "active", filters],
+            queryFn: async () => {
+                const response = await UserAPI.listUsersByFilters({ ...filters, status: 'active' });
+                return response.data || [];
+            },
+        }),
+    inactive: (filters?: UserAPI.ListUsersFilters) =>
+        queryOptions({
+            queryKey: ["users", "inactive", filters],
+            queryFn: async () => {
+                const response = await UserAPI.listUsersByFilters({ ...filters, status: 'inactive' });
+                return response.data || [];
+            },
+        }),
+    byRole: (role: string, filters?: UserAPI.ListUsersFilters) =>
+        queryOptions({
+            queryKey: ["users", "role", role, filters],
+            queryFn: async () => {
+                const response = await UserAPI.listUsersByFilters({ ...filters, role });
+                return response.data || [];
+            },
+        }),
+    infinite: (filters?: Omit<UserAPI.ListUsersFilters, 'page'>) =>
+        infiniteQueryOptions({
+            queryKey: ["users", "infinite", filters],
+            queryFn: async ({ pageParam = 1 }: { pageParam?: number }) => {
+                const response = await UserAPI.listUsersByFilters({
+                    ...filters,
+                    page: pageParam,
+                    per_page: 10,
+                });
+                return response;
+            },
+            getNextPageParam: (lastPage: PaginatedResponse<API.User>) => {
+                return lastPage.current_page < lastPage.last_page
+                    ? lastPage.current_page + 1
+                    : undefined;
+            },
+        }),
 };
 
 export const profileQueries = {

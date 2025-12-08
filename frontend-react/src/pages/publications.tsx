@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { useAuthStore } from "../stores/auth.store";
 import { getDashboardRouteFromRole } from "../services/navigation/redirects";
 import BottomNavbarWrapper from "../components/nav/BottomNavbarWrapper";
@@ -15,6 +15,7 @@ import { publicationToContentItem } from "@/features/events";
 import { HideOnScrollWrapper } from "@/components/layout/HideOnScrollWrapper";
 import { PublicationsDateFilter } from "@/components/publications/wall/PublicationsDateFilter";
 import type { DateRange } from "react-day-picker";
+import { InfiniteScrollTrigger } from "@/components/common/InfiniteScrollTrigger";
 
 /**
  * This publications screen lists all the PUBLIC publications
@@ -30,15 +31,43 @@ export function PublicationsScreen() {
   const [selectedCategory, setSelectedCategory] = useState("todos");
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
 
-  // Queries
-  // 1. Fetch Publications (Source of Truth)
-  const { data: publications = [], isLoading: isLoadingPubs, isError: isErrorPubs } = useQuery(
-    role === "mentor" || role === "coordinator" ?
-      publicationQueries.all() : publicationQueries.published()
-  );
+  // Build filter object for server-side filtering
+  const filters = useMemo(() => {
+    const baseFilters: Partial<PublicationAPI.ListPublicationsFilters> = {};
+    
+    if (searchTerm) {
+      baseFilters.search = searchTerm;
+    }
+    
+    if (selectedCategory !== "todos") {
+      baseFilters.type = selectedCategory as API.PublicationType;
+    }
+    
+    if (dateRange?.from) {
+      baseFilters.date_from = dateRange.from.toISOString().split('T')[0];
+    }
+    
+    if (dateRange?.to) {
+      baseFilters.date_to = dateRange.to.toISOString().split('T')[0];
+    }
+    
+    // Add status filter based on role
+    if (role !== "mentor" && role !== "coordinator") {
+      baseFilters.status = 'activo';
+    }
+    
+    return baseFilters;
+  }, [searchTerm, selectedCategory, dateRange, role]);
 
-  const isLoading = isLoadingPubs;
-  const isError = isErrorPubs;
+  // Infinite Query
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+    isError,
+  } = useInfiniteQuery(publicationQueries.infinite(filters));
 
   const normalizedRole = useMemo(() => {
     if (role === "active-member" || role === "seed") {
@@ -49,44 +78,20 @@ export function PublicationsScreen() {
 
   const dashboardRoute = useMemo(() => getDashboardRouteFromRole(normalizedRole), [normalizedRole]);
 
-  // Data Transformation & Enrichment
+  // Flatten pages into single array
+  const publications = useMemo(() => {
+    return data?.pages.flatMap(page => page.data) ?? [];
+  }, [data]);
+
+  // Transform to content items
   const contentItems: ContentItem[] = useMemo(() => {
-    return publications?.map(publicationToContentItem) ?? [];
+    return publications.map(publicationToContentItem);
   }, [publications]);
 
-  const filteredItems = useMemo(() => {
-    return contentItems.filter(item => {
-      // Search
-      const matchesSearch =
-        item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.description.toLowerCase().includes(searchTerm.toLowerCase());
-
-      // Category
-      const matchesCategory = selectedCategory === "todos" || item.type === selectedCategory;
-
-      // Date Range
-      let matchesDateRange = true;
-      if (dateRange?.from || dateRange?.to) {
-        const itemDate = new Date(item.date);
-        itemDate.setHours(0, 0, 0, 0);
-        
-        if (dateRange.from && dateRange.to) {
-          const fromDate = new Date(dateRange.from);
-          fromDate.setHours(0, 0, 0, 0);
-          const toDate = new Date(dateRange.to);
-          toDate.setHours(23, 59, 59, 999);
-          matchesDateRange = itemDate >= fromDate && itemDate <= toDate;
-        } else if (dateRange.from) {
-          const fromDate = new Date(dateRange.from);
-          fromDate.setHours(0, 0, 0, 0);
-          matchesDateRange = itemDate >= fromDate;
-        }
-      }
-
-      return matchesSearch && matchesCategory && matchesDateRange;
-    }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  }, [contentItems, searchTerm, selectedCategory, dateRange]);
-
+  // Sort by date (server already filters, we just sort)
+  const sortedItems = useMemo(() => {
+    return [...contentItems].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  }, [contentItems]);
 
   const renderContent = () => {
     if (isLoading) {
@@ -97,11 +102,20 @@ export function PublicationsScreen() {
       return <p className="text-center text-destructive">Error al cargar las publicaciones.</p>;
     }
 
-    if (filteredItems.length === 0) {
+    if (sortedItems.length === 0) {
       return <PublicationEmpty />;
     }
 
-    return <PublicationList publications={filteredItems} />;
+    return (
+      <>
+        <PublicationList publications={sortedItems} />
+        <InfiniteScrollTrigger
+          onIntersect={() => fetchNextPage()}
+          hasMore={hasNextPage ?? false}
+          isFetching={isFetchingNextPage}
+        />
+      </>
+    );
   };
 
   return (
