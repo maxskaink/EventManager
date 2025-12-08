@@ -137,7 +137,8 @@ export function EventBoardScreen() {
   });
 
   const updatePublicationMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: number; data: APIPayloads.UpdatePublication }) => {
+    mutationFn: async ({ id, data }: { id: number; data: APIPayloads.UpdatePublication & { image?: File } }) => {
+      // TODO: handle image upload if dirty (laravel does not support uploading files on patch)
       await PublicationAPI.updatePublication(id, data);
     },
     onSuccess: () => {

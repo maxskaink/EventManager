@@ -6,7 +6,7 @@ async function getPublicationById(id: number) {
   return respnose.data.publication;
 }
 
-async function listAllPublications(params: { page: number, per_page: number}) {
+async function listAllPublications(params: { page?: number, per_page?: number}) {
   const response = await axiosInstance.get<PublicationAPI.ListPublicationsRes>('/publication/all', { params });
   return response.data.publications;
 }
@@ -75,6 +75,8 @@ async function revokePublicationAccess(publicationId: number, userIds: number[] 
 
 // MOCK: Get access list (simulated)
 async function getPublicationAccess(publicationId: number) {
+
+
   // Simulate API delay
   await new Promise(resolve => setTimeout(resolve, 500));
   
