@@ -4,6 +4,7 @@ namespace App\Services\Contracts;
 
 use App\Models\Publication;
 use App\Models\User;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\UploadedFile;
 
@@ -14,20 +15,22 @@ interface PublicationServiceInterface
     public function addEventPublication(array $data, int $eventId, int $userId): Publication;
 
     /**
-     * @return Collection<int, Publication>
+     * @return LengthAwarePaginator<int, Publication>
      */
-    public function listAllPublications(): Collection;
+    public function listAllPublications(int $perPage = 15): LengthAwarePaginator;
 
     /**
      * Show All active publications visibile to the user
-     * @return Collection<int, Publication>
+     * @return LengthAwarePaginator<int, Publication>
      */
-    public function listPublishedPublications(User $user): Collection;
+    public function listPublishedPublications(User $user, int $perPage = 15): LengthAwarePaginator;
+
+    public function listFilteredPublications(array $filters, ?User $user, int $perPage = 15): LengthAwarePaginator;
 
     /**
-     * @return Collection<int, Publication>
+     * @return LengthAwarePaginator<int, Publication>
      */
-    public function listDraftPublications(): Collection;
+    public function listDraftPublications(int $perPage = 15): LengthAwarePaginator;
 
     public function updatePublication(int $id, array $data): Publication;
 

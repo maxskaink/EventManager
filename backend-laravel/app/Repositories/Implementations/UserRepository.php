@@ -5,6 +5,7 @@ namespace App\Repositories\Implementations;
 use App\Models\Profile;
 use App\Models\User;
 use App\Repositories\Contracts\UserRepositoryInterface;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 
 class UserRepository implements UserRepositoryInterface
@@ -46,21 +47,27 @@ class UserRepository implements UserRepositoryInterface
         return $user;
     }
 
-    public function listByRole(?string $role = null, bool $onlyActive = true): Collection
+    public function listFiltered(array $filters, int $perPage = 15): LengthAwarePaginator
     {
         $query = User::query();
-        if ($onlyActive) {
-            $query->whereNull('deleted_at');
+
+        if (!empty($filters['role'])) {
+            $query->where('role', $filters['role']);
         }
-        if ($role) {
-            $query->where('role', $role);
+
+        if (!empty($filters['search'])) {
+            $query->where(function ($q) use ($filters) {
+                $q->where('name', 'like', '%' . $filters['search'] . '%')
+                    ->orWhere('email', 'like', '%' . $filters['search'] . '%');
+            });
         }
-        return $query->orderBy('name')->get();
+
+        return $query->orderBy('name')->paginate($perPage);
     }
 
-    public function listInactive(): Collection
+    public function listInactive(int $perPage = 15): LengthAwarePaginator
     {
-        return User::onlyTrashed()->orderBy('deleted_at', 'desc')->get();
+        return User::onlyTrashed()->orderBy('deleted_at', 'desc')->paginate($perPage);
     }
 
 }

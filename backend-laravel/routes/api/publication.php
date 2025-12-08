@@ -12,6 +12,7 @@ Route::middleware('auth:sanctum')->prefix('publication')->group(function () {
     Route::post('/event/{eventId}', [PublicationController::class, 'addEventPublication']);
     Route::get('/all', [PublicationController::class, 'listAllPublications']);
     Route::get('/draft', [PublicationController::class, 'listDraftPublications']);
+    Route::get('/filter', [PublicationController::class, 'listFilteredPublications']); // Added route
     Route::patch('{publicationId}', [PublicationController::class, 'updatePublication']);
     Route::post('{publicationId}/interests', [PublicationController::class, 'addPublicationInterests']);
     Route::delete('{publicationId}/interests', [PublicationController::class, 'removePublicationInterests']);

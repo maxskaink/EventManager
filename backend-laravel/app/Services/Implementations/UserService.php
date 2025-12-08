@@ -6,12 +6,15 @@ use App\Exceptions\InvalidRoleException;
 use App\Models\User;
 use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Services\Contracts\UserServiceInterface;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 use PharIo\Manifest\InvalidEmailException;
 
 class UserService implements UserServiceInterface
 {
-    public function __construct(protected UserRepositoryInterface $userRepo) {}
+    public function __construct(protected UserRepositoryInterface $userRepo)
+    {
+    }
 
     public function toggleRole(int $userID, string $newRole): string
     {
@@ -34,45 +37,20 @@ class UserService implements UserServiceInterface
         return $newRole;
     }
 
-    public function listActiveUsers(): Collection
+    public function listFilteredUsers(array $filters, int $perPage = 15): LengthAwarePaginator
     {
-        return $this->userRepo->listByRole();
+        return $this->userRepo->listFiltered($filters, $perPage);
     }
 
-    public function listActiveInterested(): Collection
+    public function listInactiveUsers(int $perPage = 15): LengthAwarePaginator
     {
-        return $this->userRepo->listByRole('interested');
-    }
-
-    public function listActiveMembers(): Collection
-    {
-        return $this->userRepo->listByRole('active-member');
-    }
-
-    public function listActiveSeeds(): Collection
-    {
-        return $this->userRepo->listByRole('seed');
-    }
-
-    public function listActiveCoordinators(): Collection
-    {
-        return $this->userRepo->listByRole('coordinator');
-    }
-
-    public function listActiveMentors(): Collection
-    {
-        return $this->userRepo->listByRole('mentor');
-    }
-
-    public function listInactiveUsers(): Collection
-    {
-        return $this->userRepo->listInactive();
+        return $this->userRepo->listInactive($perPage);
     }
 
     /**
      * @throws \Exception
      */
-    public function getUserById(int $userId) : User
+    public function getUserById(int $userId): User
     {
         $user = $this->userRepo->findById($userId);
 

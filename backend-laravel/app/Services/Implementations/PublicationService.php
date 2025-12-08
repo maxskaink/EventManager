@@ -13,6 +13,7 @@ use App\Repositories\Contracts\PublicationRepositoryInterface;
 use App\Repositories\Contracts\PublicationInterestRepositoryInterface;
 use App\Repositories\Contracts\PublicationAccessRepositoryInterface;
 use App\Repositories\Contracts\UserRepositoryInterface;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
@@ -30,7 +31,8 @@ class PublicationService implements PublicationServiceInterface
         protected PublicationInterestRepositoryInterface $interestRepo,
         protected PublicationAccessRepositoryInterface $accessRepo,
         protected UserRepositoryInterface $userRepo
-    ) {}
+    ) {
+    }
 
     public function addPublication(array $data, int $userId): Publication
     {
@@ -79,25 +81,28 @@ class PublicationService implements PublicationServiceInterface
         return $publication;
     }
 
-    public function listAllPublications(): Collection
+    public function listAllPublications(int $perPage = 15): LengthAwarePaginator
     {
         return $this->publicationRepo
-            ->listAll()
-            ->load(['event']); // only load event
+            ->listAll($perPage);
     }
 
-    public function listPublishedPublications(?User $user): Collection
+    public function listPublishedPublications(?User $user, int $perPage = 15): LengthAwarePaginator
     {
-        return $this->publicationRepo->listPublishedForUser($user);
+        return $this->publicationRepo->listPublishedForUser($user, $perPage);
+    }
+
+    public function listFilteredPublications(array $filters, ?User $user, int $perPage = 15): LengthAwarePaginator
+    {
+        return $this->publicationRepo->listFiltered($filters, $user, $perPage);
     }
 
 
 
-    public function listDraftPublications(): Collection
+    public function listDraftPublications(int $perPage = 15): LengthAwarePaginator
     {
         return $this->publicationRepo
-            ->listDrafts()
-            ->load(['event']); // only load event
+            ->listDrafts($perPage);
     }
 
     public function getPublicationById(int $id, User $user): Publication
@@ -220,7 +225,8 @@ class PublicationService implements PublicationServiceInterface
 
         // Notify users with matching interests
         $publicationInterestIds = $this->interestRepo->getInterestIds($publicationId);
-        $usersToNotify = $targetUsers->filter(fn(User $u) =>
+        $usersToNotify = $targetUsers->filter(
+            fn(User $u) =>
             count(array_intersect($this->userRepo->getUserInterestIds($u->id), $publicationInterestIds)) > 0
         );
 
@@ -252,7 +258,7 @@ class PublicationService implements PublicationServiceInterface
     {
         return DB::transaction(function () use ($publicationId, $image) {
             $publication = $this->publicationRepo->findById($publicationId);
-            if (! $publication) {
+            if (!$publication) {
                 throw new ResourceNotFoundException("Publication with ID $publicationId not found.");
             }
 
@@ -281,7 +287,7 @@ class PublicationService implements PublicationServiceInterface
         }
 
         $allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp'];
-        if (! in_array($image->getMimeType(), $allowedMimeTypes, true)) {
+        if (!in_array($image->getMimeType(), $allowedMimeTypes, true)) {
             throw new \Exception("Invalid image type. Only JPEG, PNG, or WEBP are allowed.");
         }
 
@@ -302,7 +308,7 @@ class PublicationService implements PublicationServiceInterface
 
             if ($pathFromUrl !== '') {
                 $target = $pathFromUrl;
-                if (! $disk->exists($target)) {
+                if (!$disk->exists($target)) {
                     $basename = pathinfo($target, PATHINFO_BASENAME);
                     $target = "publications/{$basename}";
                 }

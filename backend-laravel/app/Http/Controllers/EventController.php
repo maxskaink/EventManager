@@ -206,8 +206,7 @@ class EventController extends Controller
      */
     public function listParticipationsByUser(int $userId): JsonResponse
     {
-        $authUser = request()->user();
-        $this->authorize('listParticipationsByUser', [Event::class, $userId]);
+        $this->authorize('create', Event::class);
 
         $participations = $this->eventService->listParticipationsByUser($userId);
 
