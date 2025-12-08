@@ -17,7 +17,7 @@ export const DashboardAdminActions: React.FC = () => {
               <BarChart className="h-6 w-6 text-blue-600" />
             </div>
             <div className="flex-1">
-              <h4 className="font-semibold text-slate-900 mb-1">Panel de Administración</h4>
+              <h4 className="font-semibold text-slate-900 mb-1">Panel de Administración y Eventos</h4>
               <p className="text-sm text-slate-600">
                 Ver estadísticas detalladas y gestión
               </p>
@@ -25,7 +25,7 @@ export const DashboardAdminActions: React.FC = () => {
             <Button
               size="sm"
               className="bg-blue-600 hover:bg-blue-700 text-white font-semibold"
-              onClick={() => navigate('/admin')}
+              onClick={() => navigate('/event-board')}
             >
               Abrir
             </Button>

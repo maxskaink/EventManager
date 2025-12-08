@@ -337,14 +337,7 @@ export function ProfileScreen() {
             isLoading={isLoadingCertificates}
           />
         }
-        /*
-        recentCertificates={<RecentCertificatesSection certificates={certificates.slice(0, 3).map((cert: API.Certificate) => ({
-          id: String(cert.id),
-          title: cert.name,
-          topic: cert.issuing_organization,
-          uploadDate: cert.issue_date,
-        }))} formatDate={formatDate} />}
-         */
+        recentCertificates={null}
         settings={<SettingsSection onLogout={handleLogoutClick} />}
         dialogs={
           <>

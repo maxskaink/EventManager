@@ -9,6 +9,7 @@ import { CoordinatorDashboardPage } from "../pages/dashboard/coordinator-dashboa
 import { MentorDashboardPage } from "../pages/dashboard/mentor-dashboard";
 
 import { EventBoardScreen } from "../pages/admin/event-board";
+import { CreatePublicationPage } from "../pages/admin/create-publication";
 import { ReportsScreen } from "../components/reports/ReportsScreen";
 
 import { PublicationsScreen } from "../pages/publications";
@@ -84,6 +85,7 @@ export const router = createBrowserRouter([
               // Create Event usually has its own header but we can wrap it too if we want the bottom nav
               // The user asked to unify headers, so let's wrap it and handle the header inside
               { path: "create-event", element: <CreateEventPage /> },
+              { path: "create-publication", element: <CreatePublicationPage /> },
             ]
           },
         ],

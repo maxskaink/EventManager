@@ -13,7 +13,6 @@ import { EditPublicationDialog } from "../../components/events/board/EditPublica
 import { getErrorMessageForToast } from "../../features/errors/error.helpers";
 import { type ContentItem, type ItemToDelete, isEventType, mapEventsToContentItems, mapPublicationsToContentItems } from "../../features/events";
 import { PublishContentModal } from "../../components/events/board/PublishContentModal";
-import { CreatePublicationDialog } from "../../components/events/board/CreatePublicationDialog";
 import { AttendanceModal } from "../../components/events/board/AttendanceModal";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/tabs";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -40,7 +39,6 @@ export function EventBoardScreen() {
   const [itemToDelete, setItemToDelete] = useState<ItemToDelete | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isPublishModalOpen, setIsPublishModalOpen] = useState(false);
-  const [isCreatePublicationOpen, setCreatePublicationOpen] = useState(false);
   const [isAttendanceModalOpen, setIsAttendanceModalOpen] = useState(false);
   const [selectedEventForAttendance, setSelectedEventForAttendance] = useState<{ id: number; title: string } | null>(null);
   const [pinnedContent] = useState<string[]>([]); // Mock
@@ -89,21 +87,6 @@ export function EventBoardScreen() {
       console.error("Error deleting publication:", error);
       toast.error(getErrorMessageForToast(error, "Error al eliminar publicación"));
     }
-  });
-
-  const createPublicationMutation = useMutation({
-    mutationFn: async (data: APIPayloads.CreatePublication) => {
-      await PublicationAPI.createPublication(data);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['publications'] });
-      toast.success("✅ Publicación creada exitosamente");
-      setCreatePublicationOpen(false);
-    },
-    onError: (error) => {
-      console.error("Error creating publication:", error);
-      toast.error(getErrorMessageForToast(error, "Error al crear publicación"));
-    },
   });
 
   const updateEventMutation = useMutation({
@@ -269,7 +252,6 @@ export function EventBoardScreen() {
         onGoBack={() => navigate(-1)}
         title="Contenido del semillero"
         subtitle="Administra eventos y publicaciones"
-
       />
 
       <div className="max-w-7xl mx-auto p-4 md:p-6 space-y-8">
@@ -311,7 +293,7 @@ export function EventBoardScreen() {
               onEditEvent={handleEditEvent}
               onEditPublication={handleEditPublication}
               onCreateEvent={() => navigate("/create-event")}
-              onCreatePublication={() => setCreatePublicationOpen(true)}
+              onCreatePublication={() => navigate("/create-publication")}
             />
           </TabsContent>
 
@@ -328,7 +310,7 @@ export function EventBoardScreen() {
               onEditEvent={handleEditEvent}
               onEditPublication={handleEditPublication}
               onCreateEvent={() => navigate("/create-event")}
-              onCreatePublication={() => setCreatePublicationOpen(true)}
+              onCreatePublication={() => navigate("/create-publication")}
             />
           </TabsContent>
         </Tabs>
@@ -350,21 +332,6 @@ export function EventBoardScreen() {
         onOpenChange={setIsPublishModalOpen}
         onPublish={() => console.log("Publicado")}
         item={selectedItem}
-      />
-
-      <CreatePublicationDialog
-        open={isCreatePublicationOpen}
-        onOpenChange={setCreatePublicationOpen}
-        onCreatePublication={(data) => createPublicationMutation.mutate({
-          title: data.title,
-          content: data.content,
-          type: data.type,
-          status: data.status,
-          visibility: data.visibility,
-          summary: data.summary || "",
-          image: data.image,
-        })}
-        isPending={createPublicationMutation.isPending}
       />
 
       <AttendanceModal
@@ -405,7 +372,7 @@ export function EventBoardScreen() {
                 status: data.saveAsDraft ? "borrador" : data.status,
                 visibility: data.visibility,
                 summary: data.summary || "",
-                image_url: data.image,
+                image_url: typeof data.image === "string" ? data.image : (data.image instanceof File ? URL.createObjectURL(data.image) : undefined),
               },
             });
           }

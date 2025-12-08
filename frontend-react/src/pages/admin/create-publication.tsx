@@ -1,0 +1,291 @@
+import { useState } from "react";
+import { useNavigate } from "react-router";
+import { PublicationAPI } from "@/services/api";
+import { toast } from "sonner";
+import { UnifiedHeader } from "@/components/layout/UnifiedHeader";
+import { HideOnScrollWrapper } from "@/components/layout/HideOnScrollWrapper";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { ImagePlus, ArrowLeft } from "lucide-react";
+import { getErrorMessageForToast } from "@/features/errors/error.helpers";
+
+export function CreatePublicationPage() {
+  const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    title: "",
+    type: "aviso",
+    content: "",
+    summary: "",
+    visibility: "public",
+    status: "activo",
+    image: null as File | null,
+  });
+
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleSelectChange = (name: string, value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setFormData((prev) => ({
+        ...prev,
+        image: file,
+      }));
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!formData.title.trim() || !formData.content.trim()) {
+      toast.error("Por favor, completa los campos requeridos");
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      await PublicationAPI.createPublication({
+        title: formData.title,
+        content: formData.content,
+        type: formData.type as API.PublicationType,
+        status: formData.status as API.PublicationStatus,
+        visibility: formData.visibility as API.PublicationVisibility,
+        summary: formData.summary || "",
+        image: formData.image || undefined,
+      });
+
+      toast.success("✅ Publicación creada exitosamente");
+      navigate("/publications");
+    } catch (error) {
+      const message = getErrorMessageForToast(error, "Error al crear la publicación");
+      toast.error(message);
+      console.error("Error creating publication:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleCancel = () => {
+    navigate(-1);
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50/50 pb-20">
+      <HideOnScrollWrapper>
+        <UnifiedHeader
+          title="Crear Publicación"
+          subtitle="Crea una publicación simple (aviso, comunicado o material educativo)"
+          onGoBack={handleCancel}
+        />
+      </HideOnScrollWrapper>
+
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <Card className="border border-slate-200 shadow-lg rounded-2xl">
+          <CardContent className="p-6 sm:p-8">
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Título */}
+              <div className="space-y-2">
+                <Label htmlFor="title" className="text-slate-700 font-semibold">
+                  Título <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  id="title"
+                  name="title"
+                  placeholder="Título de la publicación"
+                  value={formData.title}
+                  onChange={handleInputChange}
+                  className="border-slate-200 focus:border-blue-500 focus:ring-blue-500"
+                  disabled={isLoading}
+                />
+              </div>
+
+              {/* Tipo y Visibilidad - 2 columnas */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                {/* Tipo de Publicación */}
+                <div className="space-y-2">
+                  <Label htmlFor="type" className="text-slate-700 font-semibold">
+                    Tipo de Publicación <span className="text-red-500">*</span>
+                  </Label>
+                  <Select
+                    value={formData.type}
+                    onValueChange={(value) => handleSelectChange("type", value)}
+                    disabled={isLoading}
+                  >
+                    <SelectTrigger className="border-slate-200 focus:border-blue-500 focus:ring-blue-500">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="aviso">Aviso</SelectItem>
+                      <SelectItem value="comunicado">Comunicado</SelectItem>
+                      <SelectItem value="material">Material Educativo</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Visibilidad */}
+                <div className="space-y-2">
+                  <Label htmlFor="visibility" className="text-slate-700 font-semibold">
+                    Visibilidad <span className="text-red-500">*</span>
+                  </Label>
+                  <Select
+                    value={formData.visibility}
+                    onValueChange={(value) => handleSelectChange("visibility", value)}
+                    disabled={isLoading}
+                  >
+                    <SelectTrigger className="border-slate-200 focus:border-blue-500 focus:ring-blue-500">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="public">Pública</SelectItem>
+                      <SelectItem value="private">Privada</SelectItem>
+                      <SelectItem value="role_based">Por Rol</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {/* Estado */}
+              <div className="space-y-2">
+                <Label htmlFor="status" className="text-slate-700 font-semibold">
+                  Estado <span className="text-red-500">*</span>
+                </Label>
+                <Select
+                  value={formData.status}
+                  onValueChange={(value) => handleSelectChange("status", value)}
+                  disabled={isLoading}
+                >
+                  <SelectTrigger className="border-slate-200 focus:border-blue-500 focus:ring-blue-500">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="borrador">Borrador</SelectItem>
+                    <SelectItem value="activo">Activo</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Contenido */}
+              <div className="space-y-2">
+                <Label htmlFor="content" className="text-slate-700 font-semibold">
+                  Contenido <span className="text-red-500">*</span>
+                </Label>
+                <Textarea
+                  id="content"
+                  name="content"
+                  placeholder="Escribe el contenido de la publicación..."
+                  value={formData.content}
+                  onChange={handleInputChange}
+                  rows={6}
+                  className="border-slate-200 focus:border-blue-500 focus:ring-blue-500 resize-none"
+                  disabled={isLoading}
+                />
+              </div>
+
+              {/* Resumen */}
+              <div className="space-y-2">
+                <Label htmlFor="summary" className="text-slate-700 font-semibold">
+                  Resumen <span className="text-slate-500 text-sm">(opcional)</span>
+                </Label>
+                <Textarea
+                  id="summary"
+                  name="summary"
+                  placeholder="Breve resumen de la publicación..."
+                  value={formData.summary}
+                  onChange={handleInputChange}
+                  rows={3}
+                  className="border-slate-200 focus:border-blue-500 focus:ring-blue-500 resize-none"
+                  disabled={isLoading}
+                />
+              </div>
+
+              {/* Imagen */}
+              <div className="space-y-2">
+                <Label className="text-slate-700 font-semibold">
+                  Imagen <span className="text-slate-500 text-sm">(opcional)</span>
+                </Label>
+                <div className="mt-2">
+                  <label
+                    htmlFor="image"
+                    className="flex flex-col items-center justify-center w-full px-6 py-12 border-2 border-dashed border-slate-300 rounded-xl cursor-pointer hover:border-blue-400 hover:bg-blue-50/50 transition-all duration-200 group disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <div className="flex flex-col items-center justify-center">
+                      <ImagePlus className="h-10 w-10 text-slate-400 mb-3 group-hover:text-blue-500 transition-colors" />
+                      <span className="text-sm text-slate-600 group-hover:text-slate-700 font-medium">
+                        Click para subir imagen
+                      </span>
+                      <span className="text-xs text-slate-500 mt-1">
+                        PNG, JPG o GIF (máx. 5MB)
+                      </span>
+                    </div>
+                    <input
+                      id="image"
+                      name="image"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageChange}
+                      className="hidden"
+                      disabled={isLoading}
+                    />
+                  </label>
+                  {formData.image && (
+                    <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg flex items-center gap-2">
+                      <div className="text-green-600">✓</div>
+                      <span className="text-sm text-green-700">{formData.image.name}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Botones */}
+              <div className="flex flex-col-reverse sm:flex-row gap-3 pt-6 border-t border-slate-200">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleCancel}
+                  disabled={isLoading}
+                  className="sm:w-auto flex items-center justify-center gap-2 border-slate-200 hover:bg-slate-50"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                  Cancelar
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={isLoading}
+                  className="sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-md hover:shadow-lg transition-all"
+                >
+                  {isLoading ? "Creando..." : "Crear Publicación"}
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
