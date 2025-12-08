@@ -28,13 +28,29 @@ class CertificateService implements CertificateServiceInterface
         $this->trustedOrganizations = config('trusted_certificates.organizations', []);
     }
 
-    public function addCertificate(array $data):Certificate
+    /**
+     * {@inheritDoc}
+     *
+     * @throws ModelNotFoundException
+     * @throws DuplicatedResourceException
+     * @throws InvalidArgumentException
+     */
+    /**
+     * {@inheritDoc}
+     *
+     * @throws ModelNotFoundException
+     * @throws DuplicatedResourceException
+     * @throws InvalidArgumentException
+     */
+    public function addCertificate(array $data): Certificate
     {
+        // Ensure the user exists
         $user = User::query()->find($data['user_id']);
         if (!$user) {
             throw new ModelNotFoundException('The specified user does not exist.');
         }
 
+        // Check for duplicate certificate name for the same user
         $existing = $this->certificateRepository
             ->findByUserId($data['user_id'])
             ->firstWhere('name', $data['name']);
@@ -45,14 +61,17 @@ class CertificateService implements CertificateServiceInterface
             );
         }
 
+        // Validate required fields
         if (empty($data['issuing_organization'])) {
             throw new InvalidArgumentException('The issuing organization field is required.');
         }
 
+        // Validate credential URL if provided
         if (!empty($data['credential_url'])) {
             $this->validateCertificateUrl($data['credential_url']);
         }
 
+        // Validate date logic
         if (!empty($data['expiration_date']) && !empty($data['issue_date'])) {
             $issue = Carbon::parse($data['issue_date']);
             $expire = Carbon::parse($data['expiration_date']);
@@ -64,13 +83,21 @@ class CertificateService implements CertificateServiceInterface
         return $this->certificateRepository->create($data);
     }
 
-    public function updateCertificate(int $certificateId, array $data):Certificate
+    /**
+     * {@inheritDoc}
+     *
+     * @throws ModelNotFoundException
+     * @throws DuplicatedResourceException
+     * @throws InvalidArgumentException
+     */
+    public function updateCertificate(int $certificateId, array $data): Certificate
     {
         $certificate = $this->certificateRepository->findById($certificateId);
         if (!$certificate) {
             throw new ModelNotFoundException('The specified certificate does not exist.');
         }
 
+        // If user_id is being updated, verify the new user exists
         if (isset($data['user_id'])) {
             $newUser = User::query()->find($data['user_id']);
             if (!$newUser) {
@@ -78,6 +105,7 @@ class CertificateService implements CertificateServiceInterface
             }
         }
 
+        // Check for duplicates if name is being updated
         if (isset($data['name'])) {
             $duplicate = $this->certificateRepository
                 ->findByUserId($data['user_id'] ?? $certificate->user_id)
@@ -90,10 +118,12 @@ class CertificateService implements CertificateServiceInterface
             }
         }
 
+        // Validate URL if updated
         if (!empty($data['credential_url'])) {
             $this->validateCertificateUrl($data['credential_url']);
         }
 
+        // Validate dates if updated
         if (!empty($data['expiration_date']) && !empty($data['issue_date'] ?? $certificate->issue_date)) {
             $issue = Carbon::parse($data['issue_date'] ?? $certificate->issue_date);
             $expire = Carbon::parse($data['expiration_date']);
@@ -105,6 +135,12 @@ class CertificateService implements CertificateServiceInterface
         return $this->certificateRepository->update($certificateId, $data);
     }
 
+    /**
+     * Validate the certificate URL.
+     *
+     * @param string $url
+     * @throws InvalidArgumentException
+     */
     private function validateCertificateUrl(string $url): void
     {
         $domain = parse_url($url, PHP_URL_HOST);
@@ -112,6 +148,7 @@ class CertificateService implements CertificateServiceInterface
             throw new InvalidArgumentException('The provided credential URL is invalid.');
         }
 
+        // Check if the domain matches a trusted organization
         $isTrusted = collect($this->trustedOrganizations)
             ->contains(fn($trusted) => Str::endsWith($domain, $trusted));
 
@@ -121,26 +158,38 @@ class CertificateService implements CertificateServiceInterface
             );
         }
 
+        // Verify URL accessibility
         try {
             $response = Http::timeout(5)->head($url);
             if ($response->failed()) {
                 throw new InvalidArgumentException("The credential URL '{$url}' could not be reached or returned an error.");
             }
-        } catch (Throwable ) {
+        } catch (Throwable) {
             throw new InvalidArgumentException("The credential URL '{$url}' is not accessible.");
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function getCertificatesByUser(int $userId): Collection
     {
         return $this->certificateRepository->findByUserId($userId);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function getAllCertificates(): Collection
     {
         return $this->certificateRepository->findAll();
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @throws InvalidArgumentException
+     */
     public function getCertificatesByDateRange(string $startDate, string $endDate): Collection
     {
         $start = Carbon::parse($startDate);
@@ -153,11 +202,17 @@ class CertificateService implements CertificateServiceInterface
         return $this->certificateRepository->findByDateRange($startDate, $endDate);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function deleteCertificate(int $certificateId): void
     {
         $this->certificateRepository->softDelete($certificateId);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function getAllTrustedOrganizations(): array
     {
         return $this->trustedOrganizations;

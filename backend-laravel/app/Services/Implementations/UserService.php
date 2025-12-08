@@ -16,8 +16,23 @@ class UserService implements UserServiceInterface
     {
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @throws InvalidRoleException
+     * @throws InvalidEmailException
+     * @throws \Exception
+     */
+    /**
+     * {@inheritDoc}
+     *
+     * @throws InvalidRoleException
+     * @throws InvalidEmailException
+     * @throws \Exception
+     */
     public function toggleRole(int $userID, string $newRole): string
     {
+        // Validate against allowed roles
         $validRoles = ['interested', 'active-member', 'seed', 'coordinator', 'mentor'];
         if (!in_array($newRole, $validRoles)) {
             throw new InvalidRoleException("Invalid role: {$newRole}");
@@ -28,6 +43,7 @@ class UserService implements UserServiceInterface
             throw new \Exception("User with ID $userID not found.");
         }
 
+        // Enforce email domain restriction for privileged roles
         $requiresUnicaucaEmail = in_array($newRole, ['seed', 'coordinator', 'mentor']);
         if ($requiresUnicaucaEmail && !str_ends_with($user->email, '@unicauca.edu.co')) {
             throw new InvalidEmailException("Only users with a @unicauca.edu.co email can be assigned the role '{$newRole}'.");
@@ -37,17 +53,33 @@ class UserService implements UserServiceInterface
         return $newRole;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function listFilteredUsers(array $filters, int $perPage = 15): LengthAwarePaginator
     {
         return $this->userRepo->listFiltered($filters, $perPage);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function listInactiveUsers(int $perPage = 15): LengthAwarePaginator
     {
         return $this->userRepo->listInactive($perPage);
     }
 
     /**
+     * {@inheritDoc}
+     */
+    public function listActiveUsers(): Collection
+    {
+        return User::query()->get();
+    }
+
+    /**
+     * {@inheritDoc}
+     *
      * @throws \Exception
      */
     public function getUserById(int $userId): User
