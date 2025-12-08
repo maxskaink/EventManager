@@ -66,15 +66,14 @@ export function EventBoardScreen() {
   // We typed this response as any temp because we are changing the API response structure
   // Ideally this should be properly typed with PaginatedResponse
   const publicationQuery = useQuery({
-     ...publicationQueries.all({ page: publicationPage }),
-     placeholderData: (prev) => prev,
+     ...publicationQueries.all({ page: publicationPage })
   });
 
   const { data: publicationsResponse, isLoading: isLoadingPublications } = publicationQuery;
   
   // Safe type handling
   const isPaginated = (data: unknown): data is PaginatedResponse<API.Publication> => {
-    return !!data && typeof data === 'object' && 'data' in data && Array.isArray((data as any).data);
+    return !!data && typeof data === 'object' && 'data' in data && Array.isArray((data as PaginatedResponse<API.Publication>).data);
   };
 
   const publicationsData = isPaginated(publicationsResponse) 
