@@ -9,49 +9,43 @@ use Illuminate\Database\Eloquent\Collection;
 class ArticleRepository implements ArticleRepositoryInterface
 {
     /**
-     * Create a new article.
-     *
-     * @param array $data
-     * @return Article
+     * {@inheritDoc}
      */
     public function create(array $data): Article
     {
+        // Mass assignment using the fillable attributes defined in the Article model.
         return Article::query()->create($data);
     }
 
     /**
-     * Update an existing article.
-     *
-     * @param int $id
-     * @param array $data
-     * @return Article
+     * {@inheritDoc}
      */
     public function update(int $id, array $data): Article
     {
+        // Find the article or throw ModelNotFoundException if not found.
         $article = Article::query()->findOrFail($id);
+
+        // Update attributes and save.
         $article->update($data);
+
         return $article;
     }
 
     /**
-     * Find an article by its ID.
-     *
-     * @param int $id
-     * @return Article|null
+     * {@inheritDoc}
      */
     public function findById(int $id): ?Article
     {
+        // Retrieve article by primary key, return null if not found.
         return Article::query()->find($id);
     }
 
     /**
-     * Get all articles belonging to a specific user.
-     *
-     * @param int $userId
-     * @return Collection<int, Article>
+     * {@inheritDoc}
      */
     public function findByUserId(int $userId): Collection
     {
+        // Filter articles by author ID and order by creation date (newest first).
         return Article::query()
             ->where('user_id', $userId)
             ->orderByDesc('created_at')
@@ -59,26 +53,22 @@ class ArticleRepository implements ArticleRepositoryInterface
     }
 
     /**
-     * Get all articles in the system.
-     *
-     * @return Collection<int, Article>
+     * {@inheritDoc}
      */
     public function findAll(): Collection
     {
+        // Retrieve all articles ordered by creation date (newest first).
         return Article::query()
             ->orderByDesc('created_at')
             ->get();
     }
 
     /**
-     * Get all articles published within a specific date range.
-     *
-     * @param string $startDate
-     * @param string $endDate
-     * @return Collection<int, Article>
+     * {@inheritDoc}
      */
     public function findByDateRange(string $startDate, string $endDate): Collection
     {
+        // Filter articles where publication_date is within the given range (inclusive).
         return Article::query()
             ->whereBetween('publication_date', [$startDate, $endDate])
             ->orderByDesc('publication_date')
@@ -86,23 +76,20 @@ class ArticleRepository implements ArticleRepositoryInterface
     }
 
     /**
-     * Delete an article by its ID.
-     *
-     * @param int $id
-     * @return bool True if deleted, false otherwise.
+     * {@inheritDoc}
      */
     public function delete(int $id): bool
     {
+        // Delete the article and return true if at least one row was affected.
         return Article::query()->where('id', $id)->delete() > 0;
     }
 
     /**
-     * Get all distinct trusted organizations.
-     *
-     * @return array<int, string>
+     * {@inheritDoc}
      */
     public function getAllTrustedOrganizations(): array
     {
+        // Retrieve distinct 'trusted_organization' values from the articles table.
         return Article::query()
             ->select('trusted_organization')
             ->distinct()

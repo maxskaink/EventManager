@@ -9,7 +9,6 @@ use App\Http\Requests\Article\UpdateArticleRequest;
 use App\Services\Contracts\ArticleServiceInterface;
 use App\Models\Article;
 use App\Models\User;
-use App\Services\Implementations\ArticleService;
 use Illuminate\Http\JsonResponse;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 

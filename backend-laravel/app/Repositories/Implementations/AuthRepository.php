@@ -10,8 +10,12 @@ use Laravel\Socialite\Contracts\User as SocialiteUser;
 
 class AuthRepository implements AuthRepositoryInterface
 {
+    /**
+     * {@inheritDoc}
+     */
     public function findOrCreateUser(SocialiteUser $googleUser): User
     {
+        // Find user by email or create a new one with Google data.
         return User::query()->firstOrCreate(
             ['email' => $googleUser->getEmail()],
             [
@@ -19,13 +23,17 @@ class AuthRepository implements AuthRepositoryInterface
                 'name' => $googleUser->getName(),
                 'google_id' => $googleUser->getId(),
                 'avatar' => $googleUser->getAvatar(),
-                'role' => 'interested',
+                'role' => 'interested', // Default role for new users
             ]
         );
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function ensureUserProfile(User $user): void
     {
+        // Create a profile if it doesn't exist.
         if (!$user->profile) {
             Profile::query()->create([
                 'user_id' => $user->id,
@@ -36,19 +44,27 @@ class AuthRepository implements AuthRepositoryInterface
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function updateLastLogin(User $user): void
     {
+        // Update the last_login_at timestamp.
         $user->last_login_at = now();
         $user->save();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function createToken(User $user): string
     {
+        // Create a new Sanctum token for the user.
         return $user->createToken('access_token')->plainTextToken;
     }
 
     /**
-     * @throws AuthenticationException
+     * {@inheritDoc}
      */
     public function revokeToken(?User $user): void
     {
@@ -56,6 +72,7 @@ class AuthRepository implements AuthRepositoryInterface
             throw new AuthenticationException('User not authenticated');
         }
 
+        // Revoke the current access token.
         $token = $user->currentAccessToken();
 
         if ($token && method_exists($token, 'delete')) {
