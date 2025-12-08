@@ -42,7 +42,7 @@ export function MentorDashboardPage() {
 
   useEffect(() => {
     loadUsers();
-    loadContentForReview();
+    // No cargar contenido automáticamente, solo cuando se acceda a la tab
   }, []);
 
   const loadUsers = async () => {
@@ -50,7 +50,7 @@ export function MentorDashboardPage() {
       setLoading(true);
       const response = await UserAPI.listUsersByFilters({ 
         status: 'active',
-        per_page: 1000 // Get all active users in one request
+        per_page: 100 // Reducido a 100 para cargar rápido
       });
       setUsers(response.data);
     } catch (error) {
@@ -87,21 +87,25 @@ export function MentorDashboardPage() {
 
   const loadContentForReview = async () => {
     try {
-      const [eventsData, publicationsResponse] = await Promise.all([
-        EventAPI.listAllEvents().catch((error: unknown) => {
-          console.error("Error cargando eventos:", error);
-          toast.error("No se pudieron cargar los eventos para revisión");
-          return [] as API.Event[];
-        }),
-        PublicationAPI.listAllPublications().then((data) => ({ data })).catch((error: unknown) => {
-          console.warn("Publicaciones no disponibles:", error);
-          return { data: [] as API.Publication[] };
-        }),
-      ]);
+      // Cargar eventos y publicaciones secuencialmente para no sobrecargar
+      const eventsData = await EventAPI.listAllEvents().catch((error: unknown) => {
+        console.error("Error cargando eventos:", error);
+        return [] as API.Event[];
+      });
 
-      const publicationsData = publicationsResponse.data || [];
+      // Pequeño delay entre solicitudes
+      await new Promise(resolve => setTimeout(resolve, 200));
 
-      const eventSubs: Submission[] = eventsData.map((event: API.Event) => ({
+      const publicationsData = await PublicationAPI.listAllPublications().catch((error: unknown) => {
+        console.warn("Publicaciones no disponibles:", error);
+        return [] as API.Publication[];
+      });
+
+      // Asegurar que tenemos arrays válidos
+      const safeEvents = Array.isArray(eventsData) ? eventsData : [];
+      const safePublications = Array.isArray(publicationsData) ? publicationsData : [];
+
+      const eventSubs: Submission[] = safeEvents.map((event: API.Event) => ({
         id: String(event.id),
         type: "event",
         title: event.name,
@@ -111,11 +115,11 @@ export function MentorDashboardPage() {
         description: event.description,
       }));
 
-      const publicationSubs: Submission[] = publicationsData.map((publication: API.Publication) => ({
+      const publicationSubs: Submission[] = safePublications.map((publication: API.Publication) => ({
         id: String(publication.id),
         type: "publication",
         title: publication.title,
-        submittedById: null, // TODO: Add author_id to Publication entity
+        submittedById: null,
         date: publication.published_at,
         status: normalizePublicationStatus(publication.status),
         description: publication.summary ?? publication.content,
@@ -210,6 +214,7 @@ export function MentorDashboardPage() {
           onChangeRole={handleRoleChange}
           onViewProfile={handleViewProfile}
           onGenerateReport={handleGenerateReport}
+          onLoadSubmissions={loadContentForReview}
         />
       </div>
 

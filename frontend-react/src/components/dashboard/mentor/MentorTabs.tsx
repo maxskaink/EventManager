@@ -17,6 +17,7 @@ interface MentorTabsProps {
   onChangeRole: (userId: number, role: API.UserRole) => Promise<boolean>;
   onViewProfile: (member: MemberProgressData) => void;
   onGenerateReport: (member: MemberProgressData) => void;
+  onLoadSubmissions?: () => void; // Callback para cargar submissions
 }
 
 export const MentorTabs: React.FC<MentorTabsProps> = ({
@@ -28,9 +29,15 @@ export const MentorTabs: React.FC<MentorTabsProps> = ({
   onChangeRole,
   onViewProfile,
   onGenerateReport,
+  onLoadSubmissions,
 }) => {
   return (
-    <Tabs defaultValue="users" className="space-y-6 w-full">
+    <Tabs defaultValue="users" className="space-y-6 w-full" onValueChange={(value) => {
+      // Cargar submissions cuando se accede a la tab de revisión
+      if (value === "submissions" && onLoadSubmissions) {
+        onLoadSubmissions();
+      }
+    }}>
       <TabsList className="flex w-full gap-1 p-1 rounded-xl bg-muted overflow-x-auto overflow-y-hidden scrollbar-hide">
         <TabsTrigger value="users" className="text-xs sm:text-sm px-3 sm:px-4 py-2 whitespace-nowrap shrink-0 flex-1 sm:flex-initial">Gestión de Usuarios</TabsTrigger>
         <TabsTrigger value="progress" className="text-xs sm:text-sm px-3 sm:px-4 py-2 whitespace-nowrap shrink-0 flex-1 sm:flex-initial">Seguimiento de Progreso</TabsTrigger>
