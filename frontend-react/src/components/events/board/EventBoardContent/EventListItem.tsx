@@ -3,7 +3,7 @@ import { Button } from "../../../ui/button";
 import { Badge } from "../../../ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../../../ui/dropdown-menu";
 
-import { Trash2, Eye, Pin, Share, Users, MoreVertical, Calendar, MapPin, Users2 } from "lucide-react";
+import { Trash2, Eye, Pin, Share, Users, MoreVertical, Calendar, MapPin, Users2, Edit2 } from "lucide-react";
 import {
   getTypeColor,
   getStatusColor,
@@ -22,6 +22,8 @@ const EventListItem = ({
   onDeleteClick,
   onPublish,
   onAttendance,
+  onEditEvent,
+  onEditPublication,
 }: {
   item: ContentItem;
   isPinned: boolean;
@@ -29,15 +31,21 @@ const EventListItem = ({
   onDeleteClick: (item: ItemToDelete) => void;
   onPublish: (item: ContentItem) => void;
   onAttendance: (item: ContentItem) => void;
+  onEditEvent: (item: ContentItem) => void;
+  onEditPublication: (item: ContentItem) => void;
 }) => {
-  const isEvent = isEventType(item.type);
-  const occupancy = isEvent && item.capacity && item.enrolled ? getOccupancyLevel(item.enrolled, item.capacity) : null;
-  const hasEnded = isEvent && new Date(item.date) < new Date();
+  const isEventT = isEventType(item.type);
+  const occupancy = isEventT && item.capacity && item.enrolled ? getOccupancyLevel(item.enrolled, item.capacity) : null;
+  const hasEnded = isEventT && new Date(item.date) < new Date();
+  
+  // Check if event has publication OR if publication has event
+  const hasPublication = item.original?.publication_id !== null && item.original?.publication_id !== undefined;
+  const hasEvent = item.original?.event !== null && item.original?.event !== undefined;
 
   return (
     <Card className={`transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 overflow-hidden group ${isPinned ? "border-l-4 border-l-blue-500 border border-slate-200" : "border border-slate-200"}`}>
       {/* Background gradient on hover */}
-      <div className="absolute inset-0 bg-gradient-to-r from-blue-50/0 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+      <div className="absolute inset-0 bg-linear-to-r from-blue-50/0 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
       
       <CardContent className="p-4 relative z-10">
         <div className="flex items-start gap-4 flex-col sm:flex-row">
@@ -46,7 +54,7 @@ const EventListItem = ({
             {/* Header with badges */}
             <div className="flex items-start gap-2 mb-3 flex-wrap">
               {isPinned && (
-                <Pin className="h-4 w-4 text-blue-500 flex-shrink-0 mt-0.5" />
+                <Pin className="h-4 w-4 text-blue-500 shrink-0 mt-0.5" />
               )}
               <div className="flex gap-2 flex-wrap">
                 <Badge className={`text-xs font-medium ${getTypeColor(item.type)}`}>{item.type}</Badge>
@@ -64,19 +72,19 @@ const EventListItem = ({
             <div className="flex flex-wrap gap-3 text-xs text-slate-500 mb-3">
               {occupancy && (
                 <div className="flex items-center gap-1.5">
-                  <Users2 className="h-3.5 w-3.5 text-blue-600 flex-shrink-0" />
+                  <Users2 className="h-3.5 w-3.5 text-blue-600 shrink-0" />
                   <span className="font-medium truncate">{occupancy.label}</span>
                 </div>
               )}
-              {isEvent && item.date && (
+              {isEventT && item.date && (
                 <div className="flex items-center gap-1.5">
-                  <Calendar className="h-3.5 w-3.5 text-emerald-600 flex-shrink-0" />
+                  <Calendar className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
                   <span>{new Date(item.date).toLocaleDateString('es-ES')}</span>
                 </div>
               )}
-              {isEvent && item.location && (
+              {isEventT && item.location && (
                 <div className="flex items-center gap-1.5">
-                  <MapPin className="h-3.5 w-3.5 text-orange-600 flex-shrink-0" />
+                  <MapPin className="h-3.5 w-3.5 text-orange-600 shrink-0" />
                   <span className="truncate">{item.location}</span>
                 </div>
               )}
@@ -116,11 +124,15 @@ const EventListItem = ({
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button size="sm" variant="ghost" className="h-8 w-8 p-0 opacity-0 sm:opacity-100 group-hover:opacity-100 transition-opacity">
+                <Button size="sm" variant="ghost" className="h-8 w-8 p-0 transition-opacity">
                   <MoreVertical className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => onViewDetails(item)} className="cursor-pointer">
+                  <Eye className="h-4 w-4 mr-2" />
+                  Ver detalles
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => onAttendance(item)} className="cursor-pointer">
                   <Users className="h-4 w-4 mr-2" />
                   Ver participantes
@@ -129,6 +141,20 @@ const EventListItem = ({
                   <DropdownMenuItem onClick={() => onAttendance(item)} className="cursor-pointer">
                     <Users className="h-4 w-4 mr-2" />
                     Asistencia
+                  </DropdownMenuItem>
+                )}
+                {/* Show event edit if it's an event OR if it's a publication with an event */}
+                {(isEventT || hasEvent) && (
+                  <DropdownMenuItem onClick={() => onEditEvent(item)} className="cursor-pointer">
+                    <Edit2 className="h-4 w-4 mr-2" />
+                    Editar Evento
+                  </DropdownMenuItem>
+                )}
+                {/* Show publication edit if it's a publication OR if it's an event with publication */}
+                {(!isEventT || hasPublication) && (
+                  <DropdownMenuItem onClick={() => onEditPublication(item)} className="cursor-pointer">
+                    <Edit2 className="h-4 w-4 mr-2" />
+                    Editar Publicación
                   </DropdownMenuItem>
                 )}
                 <DropdownMenuItem

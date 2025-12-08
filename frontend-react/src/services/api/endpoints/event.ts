@@ -25,6 +25,11 @@ async function getEventById(eventId: number) {
   return response.data.event;
 }
 
+async function updateEvent(eventId: number, data: Partial<APIPayloads.AddEvent>) {
+  const response = await axiosInstance.patch<{ message: string; event: API.Event }>(`/event/${eventId}`, data);
+  return response.data.event;
+}
+
 // Backend no soporta DELETE /event/{id}; usar PATCH para actualizar estado
 async function deleteEvent(eventId: number) {
   const response = await axiosInstance.patch<{ message: string; event: API.Event }>(`/event/${eventId}`, {
@@ -82,6 +87,7 @@ export default {
   listUpcomingEvents,
   listPastEvents,
   getEventById,
+  updateEvent,
   deleteEvent,
   enroll,
   cancelEnrollment,

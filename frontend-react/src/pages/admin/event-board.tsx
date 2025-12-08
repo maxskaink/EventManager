@@ -8,6 +8,8 @@ import EventBoardContent from "../../components/events/board/EventBoardContent";
 import { EventBoardStats } from "../../components/events/board/EventBoardStats";
 import { EventDetailModal } from "../../components/events/board/EventDetailModal";
 import { EventDeleteDialog } from "../../components/events/board/EventDeleteDialog";
+import { EditEventDialog } from "../../components/events/board/EditEventDialog";
+import { EditPublicationDialog } from "../../components/events/board/EditPublicationDialog";
 import { getErrorMessageForToast } from "../../features/errors/error.helpers";
 import { type ContentItem, type ItemToDelete, isEventType, mapEventsToContentItems, mapPublicationsToContentItems } from "../../features/events";
 import { PublishContentModal } from "../../components/events/board/PublishContentModal";
@@ -42,6 +44,12 @@ export function EventBoardScreen() {
   const [isAttendanceModalOpen, setIsAttendanceModalOpen] = useState(false);
   const [selectedEventForAttendance, setSelectedEventForAttendance] = useState<{ id: number; title: string } | null>(null);
   const [pinnedContent] = useState<string[]>([]); // Mock
+  
+  // Edit state
+  const [isEditEventOpen, setIsEditEventOpen] = useState(false);
+  const [isEditPublicationOpen, setIsEditPublicationOpen] = useState(false);
+  const [selectedEventForEdit, setSelectedEventForEdit] = useState<API.Event | null>(null);
+  const [selectedPublicationForEdit, setSelectedPublicationForEdit] = useState<API.Publication | null>(null);
 
   // Queries
   const { data: events = [], isLoading: isLoadingEvents } = useQuery(eventQueries.all());
@@ -95,6 +103,38 @@ export function EventBoardScreen() {
     onError: (error) => {
       console.error("Error creating publication:", error);
       toast.error(getErrorMessageForToast(error, "Error al crear publicación"));
+    },
+  });
+
+  const updateEventMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: number; data: Partial<API.Event>}) => {
+      await EventAPI.updateEvent(id, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['events'] });
+      toast.success("✅ Evento actualizado exitosamente");
+      setIsEditEventOpen(false);
+      setSelectedEventForEdit(null);
+    },
+    onError: (error) => {
+      console.error("Error updating event:", error);
+      toast.error(getErrorMessageForToast(error, "Error al actualizar evento"));
+    },
+  });
+
+  const updatePublicationMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: number; data: APIPayloads.UpdatePublication }) => {
+      await PublicationAPI.updatePublication(id, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['publications'] });
+      toast.success("✅ Publicación actualizada exitosamente");
+      setIsEditPublicationOpen(false);
+      setSelectedPublicationForEdit(null);
+    },
+    onError: (error) => {
+      console.error("Error updating publication:", error);
+      toast.error(getErrorMessageForToast(error, "Error al actualizar publicación"));
     },
   });
 
@@ -152,6 +192,51 @@ export function EventBoardScreen() {
     if (!isNaN(eventId)) {
       setSelectedEventForAttendance({ id: eventId, title: item.title });
       setIsAttendanceModalOpen(true);
+    }
+  };
+
+  const handleEditEvent = (item: ContentItem) => {
+    // Check if it's an event or a publication with an event
+    if (item.kind === 'event') {
+      // It's an event
+      const eventId = Number(item.id);
+      const event = safeEvents.find(e => e.id === eventId);
+      
+      if (event) {
+        setSelectedEventForEdit(event);
+        setIsEditEventOpen(true);
+      }
+    } else if (item.kind === 'publication' && item.original?.event) {
+      // It's a publication with an associated event
+      const event = item.original.event;
+      setSelectedEventForEdit(event);
+      setIsEditEventOpen(true);
+    }
+  };
+
+  const handleEditPublication = (item: ContentItem) => {
+    // This is called when editing a publication
+    if (item.kind === 'publication') {
+      // It's a direct publication
+      const idMatch = item.id.match(/(\d+)$/);
+      if (idMatch) {
+        const publicationId = Number(idMatch[1]);
+        const publication = safePublications.find(p => p.id === publicationId);
+        
+        if (publication) {
+          setSelectedPublicationForEdit(publication);
+          setIsEditPublicationOpen(true);
+        }
+      }
+    } else if (item.kind === 'event' && item.original?.publication_id) {
+      // It's an event with a publication
+      const publicationId = item.original.publication_id;
+      const publication = safePublications.find(p => p.id === publicationId);
+      
+      if (publication) {
+        setSelectedPublicationForEdit(publication);
+        setIsEditPublicationOpen(true);
+      }
     }
   };
 
@@ -223,6 +308,8 @@ export function EventBoardScreen() {
               onDeleteClick={handleDeleteClick}
               onPublish={handlePublish}
               onAttendance={handleAttendance}
+              onEditEvent={handleEditEvent}
+              onEditPublication={handleEditPublication}
               onCreateEvent={() => navigate("/create-event")}
               onCreatePublication={() => setCreatePublicationOpen(true)}
             />
@@ -238,6 +325,8 @@ export function EventBoardScreen() {
               onDeleteClick={handleDeleteClick}
               onPublish={handlePublish}
               onAttendance={handleAttendance}
+              onEditEvent={handleEditEvent}
+              onEditPublication={handleEditPublication}
               onCreateEvent={() => navigate("/create-event")}
               onCreatePublication={() => setCreatePublicationOpen(true)}
             />
@@ -283,6 +372,45 @@ export function EventBoardScreen() {
         onOpenChange={setIsAttendanceModalOpen}
         eventId={selectedEventForAttendance?.id || null}
         eventTitle={selectedEventForAttendance?.title || ""}
+      />
+
+      <EditEventDialog
+        open={isEditEventOpen}
+        onOpenChange={setIsEditEventOpen}
+        event={selectedEventForEdit}
+        hasPublication={selectedEventForEdit?.publication_id !== null}
+        onUpdateEvent={(data) => {
+          if (selectedEventForEdit) {
+            updateEventMutation.mutate({
+              id: selectedEventForEdit.id,
+              data,
+            });
+          }
+        }}
+        isPending={updateEventMutation.isPending}
+      />
+
+      <EditPublicationDialog
+        open={isEditPublicationOpen}
+        onOpenChange={setIsEditPublicationOpen}
+        publication={selectedPublicationForEdit}
+        onUpdatePublication={(data) => {
+          if (selectedPublicationForEdit) {
+            updatePublicationMutation.mutate({
+              id: selectedPublicationForEdit.id,
+              data: {
+                title: data.title,
+                content: data.content,
+                type: data.type,
+                status: data.saveAsDraft ? "borrador" : data.status,
+                visibility: data.visibility,
+                summary: data.summary || "",
+                image_url: data.image,
+              },
+            });
+          }
+        }}
+        isPending={updatePublicationMutation.isPending}
       />
     </div>
   );

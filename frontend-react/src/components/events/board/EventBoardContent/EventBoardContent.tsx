@@ -13,6 +13,8 @@ interface EventBoardContentProps {
   onDeleteClick: (item: ItemToDelete) => void;
   onPublish: (item: ContentItem) => void;
   onAttendance: (item: ContentItem) => void;
+  onEditEvent: (item: ContentItem) => void;
+  onEditPublication: (item: ContentItem) => void;
   onCreateEvent: () => void;
   onCreatePublication: () => void;
 }
@@ -26,6 +28,8 @@ const EventBoardContent = ({
   onDeleteClick,
   onPublish,
   onAttendance,
+  onEditEvent,
+  onEditPublication,
   onCreateEvent,
   onCreatePublication,
 }: EventBoardContentProps) => {
@@ -46,7 +50,7 @@ const EventBoardContent = ({
                 <Plus className="mr-2 h-4 w-4 shrink-0" /> <span className="hidden sm:inline">Nuevo Evento</span><span className="sm:hidden">Evento</span>
             </Button>
             <Button variant="outline" onClick={onCreatePublication} className="text-xs sm:text-sm px-2 sm:px-4 py-2 h-auto sm:h-9">
-                <Plus className="mr-2 h-4 w-4 shrink-0" /> <span className="hidden sm:inline">Nueva Publicación</span><span className="sm:hidden">Pub.</span>
+                <Plus className="mr-2 h-4 w-4 shrink-0" /> <span className="hidden sm:inline">Nueva Publicación</span><span className="sm:hidden">Publicación</span>
             </Button>
         </div>
       </div>
@@ -62,6 +66,8 @@ const EventBoardContent = ({
               onDeleteClick={onDeleteClick}
               onPublish={onPublish}
               onAttendance={onAttendance}
+              onEditEvent={onEditEvent}
+              onEditPublication={onEditPublication}
             />
           ))}
         </div>
@@ -76,6 +82,8 @@ const EventBoardContent = ({
               onDeleteClick={onDeleteClick}
               onPublish={onPublish}
               onAttendance={onAttendance}
+              onEditEvent={onEditEvent}
+              onEditPublication={onEditPublication}
             />
           ))}
         </div>

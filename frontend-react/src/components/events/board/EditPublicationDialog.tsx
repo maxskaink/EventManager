@@ -4,13 +4,14 @@ import { Input } from "../../ui/input";
 import { Label } from "../../ui/label";
 import { Textarea } from "../../ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../ui/select";
-import { CheckCircle2, Loader2, ImagePlus, X } from "lucide-react";
+import { CheckCircle2, Loader2, ImagePlus, X, AlertCircle } from "lucide-react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useEffect, useState } from "react";
+import { Alert, AlertDescription } from "../../ui/alert";
+import { Checkbox } from "../../ui/checkbox";
 
-// Zod validation schema for simple publications (non-event)
 const publicationSchema = z.object({
   title: z.string()
     .min(3, "El título debe tener al menos 3 caracteres")
@@ -18,7 +19,7 @@ const publicationSchema = z.object({
   content: z.string()
     .min(10, "El contenido debe tener al menos 10 caracteres")
     .max(5000, "El contenido no puede exceder 5000 caracteres"),
-  type: z.enum(["aviso", "comunicado", "material"], {
+  type: z.enum(["aviso", "comunicado", "material", "evento"], {
     message: "Selecciona un tipo de publicación",
   }),
   summary: z.string()
@@ -30,21 +31,24 @@ const publicationSchema = z.object({
 
 type PublicationFormData = z.infer<typeof publicationSchema>;
 
-interface CreatePublicationDialogProps {
+interface EditPublicationDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onCreatePublication: (data: PublicationFormData & { image?: File }) => void;
+  onUpdatePublication: (data: PublicationFormData & { image?: File; saveAsDraft?: boolean }) => void;
   isPending?: boolean;
+  publication: API.Publication | null;
 }
 
-export const CreatePublicationDialog = ({
+export const EditPublicationDialog = ({
   open,
   onOpenChange,
-  onCreatePublication,
-  isPending = false
-}: CreatePublicationDialogProps) => {
+  onUpdatePublication,
+  isPending = false,
+  publication,
+}: EditPublicationDialogProps) => {
   const [image, setImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [saveAsDraft, setSaveAsDraft] = useState(false);
 
   const {
     register,
@@ -52,31 +56,46 @@ export const CreatePublicationDialog = ({
     control,
     formState: { errors },
     reset,
+    watch,
   } = useForm<PublicationFormData>({
     resolver: zodResolver(publicationSchema),
-    defaultValues: {
-      title: "",
-      content: "",
-      type: "aviso",
-      summary: "",
-      visibility: "public",
-      status: "activo",
-    },
   });
 
-  // Reset form when dialog closes
+  const currentStatus = watch("status");
+
+  // Reset form when dialog opens with publication data
+  useEffect(() => {
+    if (open && publication) {
+      reset({
+        title: publication.title,
+        content: publication.content,
+        type: publication.type,
+        summary: publication.summary || "",
+        visibility: publication.visibility,
+        status: publication.status === "inactivo" ? "activo" : publication.status,
+      });
+      
+      if (publication.image_url) {
+        setImagePreview(publication.image_url);
+      }
+      
+      setSaveAsDraft(publication.status === "borrador");
+    }
+  }, [open, publication, reset]);
+
+  // Reset image when dialog closes
   useEffect(() => {
     if (!open) {
-      reset();
       setImage(null);
       setImagePreview(null);
+      setSaveAsDraft(false);
     }
-  }, [open, reset]);
+  }, [open]);
 
   // Clean up image preview URL
   useEffect(() => {
     return () => {
-      if (imagePreview) {
+      if (imagePreview && imagePreview.startsWith("blob:")) {
         URL.revokeObjectURL(imagePreview);
       }
     };
@@ -96,29 +115,41 @@ export const CreatePublicationDialog = ({
   };
 
   const removeImage = () => {
-    if (imagePreview) {
+    if (imagePreview && imagePreview.startsWith("blob:")) {
       URL.revokeObjectURL(imagePreview);
     }
     setImage(null);
-    setImagePreview(null);
+    setImagePreview(publication?.image_url || null);
   };
 
   const onSubmit = (data: PublicationFormData) => {
-    onCreatePublication({
+    onUpdatePublication({
       ...data,
       image: image || undefined,
+      saveAsDraft,
     });
   };
+
+  const isEventPublication = publication?.type === "evento";
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-[calc(100vw-2rem)] sm:max-w-2xl max-h-[90vh] overflow-y-auto overflow-x-hidden p-4 sm:p-6">
         <DialogHeader>
-          <DialogTitle>Crear Publicación</DialogTitle>
+          <DialogTitle>Editar Publicación</DialogTitle>
           <DialogDescription>
-            Crea una publicación simple (aviso, comunicado o material educativo).
+            Actualiza la información de la publicación.
           </DialogDescription>
         </DialogHeader>
+
+        {isEventPublication && (
+          <Alert className="bg-blue-50 border-blue-200">
+            <AlertCircle className="h-4 w-4 text-blue-600" />
+            <AlertDescription className="text-blue-800">
+              Esta es una publicación de evento. Los cambios aquí no afectarán el evento original.
+            </AlertDescription>
+          </Alert>
+        )}
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-3 sm:space-y-4 overflow-x-hidden">
           <div className="w-full">
@@ -144,7 +175,7 @@ export const CreatePublicationDialog = ({
                 <Select
                   onValueChange={field.onChange}
                   value={field.value}
-                  disabled={isPending}
+                  disabled={isPending || isEventPublication}
                 >
                   <SelectTrigger className={errors.type ? "border-destructive" : ""}>
                     <SelectValue placeholder="Selecciona el tipo" />
@@ -153,6 +184,7 @@ export const CreatePublicationDialog = ({
                     <SelectItem value="aviso">Aviso</SelectItem>
                     <SelectItem value="comunicado">Comunicado</SelectItem>
                     <SelectItem value="material">Material Educativo</SelectItem>
+                    <SelectItem value="evento">Evento</SelectItem>
                   </SelectContent>
                 </Select>
               )}
@@ -284,6 +316,23 @@ export const CreatePublicationDialog = ({
             )}
           </div>
 
+          {currentStatus === "activo" && (
+            <div className="flex items-center space-x-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <Checkbox
+                id="save-as-draft"
+                checked={saveAsDraft}
+                onCheckedChange={(checked) => setSaveAsDraft(checked as boolean)}
+                disabled={isPending}
+              />
+              <label
+                htmlFor="save-as-draft"
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+              >
+                Guardar como borrador (no publicar los cambios inmediatamente)
+              </label>
+            </div>
+          )}
+
           <div className="flex flex-col-reverse sm:flex-row gap-2 justify-end pt-4">
             <Button
               type="button"
@@ -298,12 +347,12 @@ export const CreatePublicationDialog = ({
               {isPending ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Creando...
+                  Actualizando...
                 </>
               ) : (
                 <>
                   <CheckCircle2 className="h-4 w-4 mr-2" />
-                  Crear Publicación
+                  Actualizar Publicación
                 </>
               )}
             </Button>

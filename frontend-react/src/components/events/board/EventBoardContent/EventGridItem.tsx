@@ -21,6 +21,8 @@ const EventGridItem = ({
   onDeleteClick,
   onPublish,
   onAttendance,
+  onEditEvent,
+  onEditPublication,
 }: {
   item: ContentItem;
   isPinned: boolean;
@@ -28,6 +30,8 @@ const EventGridItem = ({
   onDeleteClick: (item: ItemToDelete) => void;
   onPublish: (item: ContentItem) => void;
   onAttendance: (item: ContentItem) => void;
+  onEditEvent: (item: ContentItem) => void;
+  onEditPublication: (item: ContentItem) => void;
 }) => {
   const isEvent = isEventType(item.type);
   const occupancy = isEvent && item.capacity && item.enrolled ? getOccupancyLevel(item.enrolled, item.capacity) : null;
@@ -44,6 +48,10 @@ const EventGridItem = ({
   console.log(currentDate)
   console.log(hasEnded)
 
+  // Check if event has publication OR if publication has event
+  const hasPublication = item.kind === "publication" || (item.original?.publication_id !== null && item.original?.publication_id !== undefined);
+  const hasEvent = item.kind === "event" || ( item.original?.event !== null && item.original?.event !== undefined);
+
   return (
     <Card className={`transition-all duration-300 hover:shadow-xl hover:-translate-y-1 overflow-hidden group ${isPinned ? "border-blue-500 border-2" : "border border-slate-200"}`}>
       {/* Background gradient on hover */}
@@ -56,7 +64,7 @@ const EventGridItem = ({
             <Badge className={`text-xs font-medium ${getTypeColor(item.type)}`}>{item.type}</Badge>
             <Badge className={`text-xs font-medium ${getStatusColor(item.status)}`}>{getStatusLabel(item.status)}</Badge>
           </div>
-          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+          <div className="flex items-center gap-1 transition-opacity duration-200">
             {isPinned && <Pin className="h-4 w-4 text-blue-500" />}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -65,6 +73,10 @@ const EventGridItem = ({
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => onViewDetails(item)} className="cursor-pointer">
+                  <Eye className="h-4 w-4 mr-2" />
+                  Ver detalles
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => onAttendance(item)} className="cursor-pointer">
                     <Users className="h-4 w-4 mr-2" />
                     Ver participantes
@@ -73,6 +85,20 @@ const EventGridItem = ({
                   <DropdownMenuItem onClick={() => onAttendance(item)} className="cursor-pointer">
                     <Users className="h-4 w-4 mr-2" />
                     Asistencia
+                  </DropdownMenuItem>
+                )}
+                {/* Show event edit if it's an event OR if it's a publication with an event */}
+                {(isEvent || hasEvent) && (
+                  <DropdownMenuItem onClick={() => onEditEvent(item)} className="cursor-pointer">
+                    <Edit2 className="h-4 w-4 mr-2" />
+                    Editar Evento
+                  </DropdownMenuItem>
+                )}
+                {/* Show publication edit if it's a publication OR if it's an event with publication */}
+                {(!isEvent || hasPublication) && (
+                  <DropdownMenuItem onClick={() => onEditPublication(item)} className="cursor-pointer">
+                    <Edit2 className="h-4 w-4 mr-2" />
+                    Editar Publicación
                   </DropdownMenuItem>
                 )}
                 <DropdownMenuItem
