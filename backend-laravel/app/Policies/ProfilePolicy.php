@@ -8,6 +8,10 @@ class ProfilePolicy
 {
     /**
      * Determine whether the user can view a profile.
+     *
+     * @param User $authUser The authenticated user
+     * @param User|int $targetUser The target user or user ID
+     * @return bool
      */
     public function view(User $authUser, $targetUser): bool
     {
@@ -15,9 +19,12 @@ class ProfilePolicy
         return $authUser->id === $targetUserId || $authUser->role === 'mentor';
     }
 
-
     /**
      * Determine whether the user can update their profile.
+     *
+     * @param User $authUser The authenticated user
+     * @param User|int $targetUser The target user or user ID
+     * @return bool
      */
     public function update(User $authUser, $targetUser): bool
     {

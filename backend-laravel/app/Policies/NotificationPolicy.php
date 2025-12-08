@@ -7,7 +7,10 @@ use App\Models\User;
 class NotificationPolicy
 {
     /**
-     * Determine whether the user can view any articles (mentor only).
+     * Determine whether the user can view any notifications (mentor only).
+     *
+     * @param User $user
+     * @return bool
      */
     public function viewAny(User $user): bool
     {
@@ -15,14 +18,16 @@ class NotificationPolicy
     }
 
     /**
-     * Determine whether the user can view articles of a specific user.
-     * The second argument can be a user id or a User instance.
+     * Determine whether the user can view notifications of a specific user.
+     *
+     * @param User $authUser The authenticated user
+     * @param User $targetUser The target user
+     * @return bool
      */
-    public function viewByUser(User $authUser,User $targetUser): bool
+    public function viewByUser(User $authUser, User $targetUser): bool
     {
-        $targetUserId =  $targetUser->id;
+        $targetUserId = $targetUser->id;
 
         return $authUser->id === $targetUserId || $authUser->role === 'mentor';
     }
-
 }

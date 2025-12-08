@@ -9,6 +9,9 @@ class InterestPolicy
 {
     /**
      * Determine whether the user can view any interests.
+     *
+     * @param User $user
+     * @return bool
      */
     public function viewAny(User $user): bool
     {
@@ -18,19 +21,25 @@ class InterestPolicy
 
     /**
      * Determine whether the user can create an interest.
+     *
+     * @param User $user
+     * @return bool
      */
     public function create(User $user): bool
     {
-        // Only mentors or admins can create new interests
+        // Only mentors or coordinators can create new interests
         return in_array($user->role, ['mentor', 'coordinator']);
     }
 
     /**
      * Determine whether the user can delete an interest.
+     *
+     * @param User $user
+     * @return bool
      */
     public function delete(User $user): bool
     {
-        // Only mentors or admins can delete interests
+        // Only mentors or coordinators can delete interests
         return in_array($user->role, ['mentor', 'coordinator']);
     }
 }
