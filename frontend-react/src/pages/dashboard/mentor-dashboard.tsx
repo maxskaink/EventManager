@@ -88,12 +88,12 @@ export function MentorDashboardPage() {
   const loadContentForReview = async () => {
     try {
       const [eventsData, publicationsResponse] = await Promise.all([
-        EventAPI.listAllEvents().catch((error) => {
+        EventAPI.listAllEvents().catch((error: unknown) => {
           console.error("Error cargando eventos:", error);
           toast.error("No se pudieron cargar los eventos para revisión");
           return [] as API.Event[];
         }),
-        PublicationAPI.listPublicationsByFilters({ per_page: 1000 }).catch((error) => {
+        PublicationAPI.listAllPublications().then((data) => ({ data })).catch((error: unknown) => {
           console.warn("Publicaciones no disponibles:", error);
           return { data: [] as API.Publication[] };
         }),
@@ -101,7 +101,7 @@ export function MentorDashboardPage() {
 
       const publicationsData = publicationsResponse.data || [];
 
-      const eventSubs: Submission[] = eventsData.map((event) => ({
+      const eventSubs: Submission[] = eventsData.map((event: API.Event) => ({
         id: String(event.id),
         type: "event",
         title: event.name,
@@ -111,7 +111,7 @@ export function MentorDashboardPage() {
         description: event.description,
       }));
 
-      const publicationSubs: Submission[] = publicationsData.map((publication) => ({
+      const publicationSubs: Submission[] = publicationsData.map((publication: API.Publication) => ({
         id: String(publication.id),
         type: "publication",
         title: publication.title,
