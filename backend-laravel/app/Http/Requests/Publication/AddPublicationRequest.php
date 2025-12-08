@@ -8,21 +8,26 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class AddPublicationRequest extends FormRequest
 {
+    /**
+     * Determine if the user is authorized to make this request.
+     *
+     * @return bool
+     */
     public function authorize(): bool
     {
         /** @var User|null $user */
         $user = auth()->user();
 
         return $user && (
-                $user->getRoleAttribute() === 'mentor' ||
-                $user->getRoleAttribute() === 'coordinator'
-            );
+            $user->getRoleAttribute() === 'mentor' ||
+            $user->getRoleAttribute() === 'coordinator'
+        );
     }
 
     /**
      * Define the validation rules for creating a publication.
      *
-     * @return array<string, ValidationRule|array|string>
+     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
@@ -37,9 +42,10 @@ class AddPublicationRequest extends FormRequest
         ];
     }
 
-
     /**
      * Define custom validation messages.
+     *
+     * @return array<string, string>
      */
     public function messages(): array
     {

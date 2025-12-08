@@ -60,11 +60,19 @@ class ProfileInterest extends Model
 
     /**
      * Get the user that owns this interest.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
+
+    /**
+     * Get a string representation of the profile interest.
+     *
+     * @return string
+     */
     public function __toString(): string
     {
         return sprintf(
@@ -74,5 +82,4 @@ class ProfileInterest extends Model
             $this->user?->name ?? 'Unknown user'
         );
     }
-
 }

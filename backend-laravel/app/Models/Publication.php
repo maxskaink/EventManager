@@ -26,6 +26,11 @@ class Publication extends Model
 {
     use HasFactory;
 
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var list<string>
+     */
     protected $fillable = [
         'author_id',
         'event_id',
@@ -38,6 +43,11 @@ class Publication extends Model
         'visibility',
     ];
 
+    /**
+     * The attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
     protected function casts(): array
     {
         return [
@@ -48,16 +58,31 @@ class Publication extends Model
         ];
     }
 
+    /**
+     * Get the author of the publication.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
     public function author(): BelongsTo
     {
         return $this->belongsTo(User::class, 'author_id');
     }
 
+    /**
+     * Get the event associated with the publication.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
     public function event(): BelongsTo
     {
         return $this->belongsTo(Event::class, 'event_id');
     }
 
+    /**
+     * The interests associated with the publication.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     */
     public function interests(): BelongsToMany
     {
         return $this->belongsToMany(
@@ -68,6 +93,11 @@ class Publication extends Model
         );
     }
 
+    /**
+     * Get a string representation of the publication.
+     *
+     * @return string
+     */
     public function __toString(): string
     {
         $author = $this->author?->name ?? 'Unknown author';

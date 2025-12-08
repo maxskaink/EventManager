@@ -47,6 +47,8 @@ class Participation extends Model
 
     /**
      * Get the user associated with this participation.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function user(): BelongsTo
     {
@@ -55,12 +57,19 @@ class Participation extends Model
 
     /**
      * Get the event associated with this participation.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function event(): BelongsTo
     {
         return $this->belongsTo(Event::class);
     }
 
+    /**
+     * Get a string representation of the participation.
+     *
+     * @return string
+     */
     public function __toString(): string
     {
         return sprintf(

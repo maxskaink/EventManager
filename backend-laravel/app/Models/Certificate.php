@@ -69,6 +69,8 @@ class Certificate extends Model
 
     /**
      * Get the user who owns this certificate.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function user(): BelongsTo
     {
@@ -77,6 +79,8 @@ class Certificate extends Model
 
     /**
      * String representation of the certificate for debugging/logging.
+     *
+     * @return string
      */
     public function __toString(): string
     {

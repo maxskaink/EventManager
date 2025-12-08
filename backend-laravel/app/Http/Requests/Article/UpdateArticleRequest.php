@@ -6,11 +6,21 @@ use Illuminate\Validation\Rule;
 
 class UpdateArticleRequest extends FormRequest
 {
+    /**
+     * Determine if the user is authorized to make this request.
+     *
+     * @return bool
+     */
     public function authorize(): bool
     {
         return auth()->check();
     }
 
+    /**
+     * Get the validation rules that apply to the request.
+     *
+     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     */
     public function rules(): array
     {
         $articleId = $this->route('article'); // Asumiendo que la ruta tiene {article}
@@ -23,7 +33,7 @@ class UpdateArticleRequest extends FormRequest
                 'string',
                 'max:255',
                 Rule::unique('articles')
-                    ->where(fn ($query) => $query->where('user_id', $userId))
+                    ->where(fn($query) => $query->where('user_id', $userId))
                     ->ignore($articleId),
             ],
             'description' => ['sometimes', 'nullable', 'string', 'max:2000'],
@@ -33,6 +43,11 @@ class UpdateArticleRequest extends FormRequest
         ];
     }
 
+    /**
+     * Get custom messages for validator errors.
+     *
+     * @return array<string, string>
+     */
     public function messages(): array
     {
         return [
