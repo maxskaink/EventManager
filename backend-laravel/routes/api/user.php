@@ -10,12 +10,7 @@ Route::middleware('auth:sanctum')->prefix('user')->group(function () {
 });
 // Rutas públicas de “listar usuarios activos”
 Route::prefix('user')->group(function () {
-    Route::get('interested', [UserController::class, 'listActiveInterested']);
-    Route::get('active-member', [UserController::class, 'listActiveMembers']);
-    Route::get('seed', [UserController::class, 'listActiveSeeds']);
-    Route::get('coordinator', [UserController::class, 'listActiveCoordinators']);
-    Route::get('mentor', [UserController::class, 'listActiveMentors']);
-    Route::get('active', [UserController::class, 'listActiveUsers']);
+    Route::get('filter', [UserController::class, 'listFilteredUsers']);
     Route::get('{user}', [UserController::class, 'getUserById']);
 });
 

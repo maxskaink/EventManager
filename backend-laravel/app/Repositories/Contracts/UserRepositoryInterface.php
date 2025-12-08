@@ -3,6 +3,7 @@
 namespace App\Repositories\Contracts;
 
 use App\Models\User;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 
 interface UserRepositoryInterface
@@ -15,7 +16,7 @@ interface UserRepositoryInterface
 
     public function updateRole(int $id, string $role): User;
 
-    public function listByRole(?string $role = null, bool $onlyActive = true): Collection;
+    public function listFiltered(array $filters, int $perPage = 15): LengthAwarePaginator;
 
-    public function listInactive(): Collection;
+    public function listInactive(int $perPage = 15): LengthAwarePaginator;
 }

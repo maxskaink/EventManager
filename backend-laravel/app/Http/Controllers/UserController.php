@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\User\FilterUserRequest;
 use App\Http\Requests\User\ToggleRoleRequest;
 use App\Models\User;
 use App\Services\Contracts\UserServiceInterface;
@@ -41,53 +42,19 @@ class UserController extends Controller
 
 
     /**
-     * List all active interested users.
-     *
-     * @throws AuthorizationException
+     * List users with filters.
      */
-    public function listActiveInterested(): JsonResponse
+    public function listFilteredUsers(FilterUserRequest $request): JsonResponse
     {
-        return response()->json($this->userService->listActiveInterested());
-    }
+        $data = $request->validated();
+        $perPage = $data['per_page'] ?? 15;
 
-    /**
-     * List all active seeds.
-     *
-     * @throws AuthorizationException
-     */
-    public function listActiveSeeds(): JsonResponse
-    {
-        return response()->json($this->userService->listActiveSeeds());
-    }
+        $filters = [
+            'role' => $data['role'] ?? null,
+            'search' => $data['search'] ?? null,
+        ];
 
-    /**
-     * List all active members.
-     *
-     * @throws AuthorizationException
-     */
-    public function listActiveMembers(): JsonResponse
-    {
-        return response()->json($this->userService->listActiveMembers());
-    }
-
-    /**
-     * List all active coordinators.
-     *
-     * @throws AuthorizationException
-     */
-    public function listActiveCoordinators(): JsonResponse
-    {
-        return response()->json($this->userService->listActiveCoordinators());
-    }
-
-    /**
-     * List all active mentors.
-     *
-     * @throws AuthorizationException
-     */
-    public function listActiveMentors(): JsonResponse
-    {
-        return response()->json($this->userService->listActiveMentors());
+        return response()->json($this->userService->listFilteredUsers($filters, $perPage));
     }
 
     /**
@@ -98,17 +65,8 @@ class UserController extends Controller
     public function listInactiveUsers(): JsonResponse
     {
         $this->authorize('viewAny', Auth::user());
-        return response()->json($this->userService->listInactiveUsers());
-    }
-
-    /**
-     * List all active users.
-     *
-     * @throws AuthorizationException
-     */
-    public function listActiveUsers(): JsonResponse
-    {
-        return response()->json($this->userService->listActiveUsers());
+        $perPage = request()->input('per_page', 15);
+        return response()->json($this->userService->listInactiveUsers($perPage));
     }
 
     /**
