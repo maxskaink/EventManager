@@ -21,13 +21,14 @@ export function CoordinatorDashboardPage() {
     queryFn: () => EventAPI.listAllEvents(),
   });
   const events = eventQuery.data ?? [];
-  // Lógica y datos derivados se mantienen en el componente 'padre'
+  
+  // Métricas basadas en datos reales
   const totalEvents = events.length;
-  const totalEnrolled = events.reduce((sum, event) => sum + (event.capacity ?? 0), 0);
+  const totalEnrolled = 0; // Placeholder - se actualizará cuando haya API de participantes reales
   const totalCapacity = events.reduce((sum, event) => sum + (event.capacity ?? 0), 0);
 
   // Evitar división por cero
-  const averageParticipation = totalCapacity > 0
+  const averageParticipation = totalCapacity > 0 && totalEnrolled > 0
     ? Math.round((totalEnrolled / totalCapacity) * 100)
     : 0;
 
@@ -44,7 +45,7 @@ export function CoordinatorDashboardPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="min-h-screen bg-gray-50/50 pb-20">
       {/* 1. Cabecera */}
       <HideOnScrollWrapper>
         <UnifiedHeader
@@ -54,7 +55,7 @@ export function CoordinatorDashboardPage() {
       </HideOnScrollWrapper>
 
       {/* Contenedor principal del contenido */}
-      <div className="max-w-4xl mx-auto p-4 space-y-6">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         {/* 2. Métricas */}
         <DashboardMetrics
           totalEvents={totalEvents}
