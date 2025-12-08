@@ -2,8 +2,26 @@
  * @file responses.d.ts
  * This file is used to define all the responses from the api
  */
-
-
+type PaginatedResponse<T> = {
+  current_page: number;
+  data: T[];
+  first_page_url: string;
+  from: number;
+  last_page: number;
+  last_page_url: string;
+  links: {
+    url: string | null;
+    label: string;
+    page: null | number;
+    active: boolean;
+  }[];
+  next_page_url: string | null;
+  path: string;
+  per_page: number;
+  prev_page_url: string | null;
+  to: number;
+  total: number;
+}
 
 type MessageRes = {
   message: string;
@@ -36,6 +54,15 @@ namespace UserAPI {
     user: API.User;
   }
   type ListUsersRes = API.User[];
+  type ListUsersPaginatedRes = PaginatedResponse<API.User>;
+
+  type ListUsersFilters = {
+    search?: string;
+    role?: string;
+    status?: string;
+    page?: number;
+    per_page?: number;
+  }
 }
 
 namespace ProfileAPI {
@@ -90,6 +117,19 @@ namespace ArticleAPI {
   type ListArticlesRes = {
     articles: API.Article[];
   }
+}
 
+namespace PublicationAPI {
+  type ListPublicationsRes = {
+    publications: PaginatedResponse<API.Publication>;
+  }
 
+  type ListPublicationsFilters = {
+    search?: string;
+    date_from?: string;
+    date_to?: string;
+    type?: API.PublicationType
+    page?: number;
+    per_page?: number;
+  }
 }

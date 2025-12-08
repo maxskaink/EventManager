@@ -12,6 +12,7 @@ export type ContentItem = {
   enrolled?: number;
   views?: number;
   kind: 'event' | 'publication';
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   original?: any;
   eventId?: string;
 };

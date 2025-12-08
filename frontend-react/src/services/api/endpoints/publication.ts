@@ -7,17 +7,22 @@ async function getPublicationById(id: number) {
 }
 
 async function listAllPublications() {
-  const response = await axiosInstance.get<{ publications: API.Publication[] }>('/publication/all');
+  const response = await axiosInstance.get<PublicationAPI.ListPublicationsRes>('/publication/all');
+  return response.data.publications;
+}
+
+async function listPublicationsByFilters(filters: PublicationAPI.ListPublicationsFilters) {
+  const response = await axiosInstance.get<PublicationAPI.ListPublicationsRes>('/publication/filter', { params: filters });
   return response.data.publications;
 }
 
 async function listPublishedPublications() {
-  const response = await axiosInstance.get<{ publications: API.Publication[] }>('/publication/active');
+  const response = await axiosInstance.get<PublicationAPI.ListPublicationsRes>('/publication/active');
   return response.data.publications;
 }
 
 async function listDraftPublications() {
-  const response = await axiosInstance.get<{ publications: API.Publication[] }>('/publication/draft');
+  const response = await axiosInstance.get<PublicationAPI.ListPublicationsRes>('/publication/draft');
   return response.data.publications;
 }
 
@@ -80,5 +85,6 @@ export default {
   grantPublicationAccess,
   updatePublication,
   removePublicationInterests,
-  revokePublicationAccess
+  revokePublicationAccess,
+  listPublicationsByFilters
 };

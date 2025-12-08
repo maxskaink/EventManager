@@ -55,7 +55,7 @@ const EventGridItem = ({
   return (
     <Card className={`transition-all duration-300 hover:shadow-xl hover:-translate-y-1 overflow-hidden group ${isPinned ? "border-blue-500 border-2" : "border border-slate-200"}`}>
       {/* Background gradient on hover */}
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-50/0 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+      <div className="absolute inset-0 bg-linear-to-br from-blue-50/0 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
       
       <CardContent className="p-5 relative z-10">
         {/* Header: Badges y Menu */}
