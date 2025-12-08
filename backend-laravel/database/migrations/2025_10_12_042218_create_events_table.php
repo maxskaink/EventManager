@@ -4,9 +4,16 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
-    public function up(): void {
+return new class extends Migration {
+    /**
+     * Run the migrations.
+     *
+     * Creates the events table to store event information including talks, courses, and workshops.
+     *
+     * @return void
+     */
+    public function up(): void
+    {
         Schema::create('events', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('publication_id')->nullable();
@@ -24,7 +31,13 @@ return new class extends Migration
         });
     }
 
-    public function down(): void {
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
+    public function down(): void
+    {
         Schema::dropIfExists('events');
     }
 };

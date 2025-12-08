@@ -5,6 +5,13 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration {
+    /**
+     * Run the migrations.
+     *
+     * Adds all foreign key constraints to establish relationships between tables.
+     *
+     * @return void
+     */
     public function up(): void
     {
         // Certificate → User
@@ -79,6 +86,13 @@ return new class extends Migration {
 
     }
 
+    /**
+     * Reverse the migrations.
+     *
+     * Drops all foreign key constraints in reverse order.
+     *
+     * @return void
+     */
     public function down(): void
     {
         // Drop foreign keys in reverse order
