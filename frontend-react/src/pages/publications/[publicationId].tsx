@@ -18,6 +18,7 @@ const PublicationDetailPage = () => {
   const { publicationId } = useParams<{ publicationId: string }>();
   const [publication, setPublication] = useState<API.Publication | null>(null);
   const [event, setEvent] = useState<API.Event | null>(null);
+  const [enrolledCount, setEnrolledCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const { user } = useAuthStore();
@@ -40,6 +41,14 @@ const PublicationDetailPage = () => {
           if (pub.type === "evento" && pub.event_id) {
             const eventData = await EventAPI.getEventById(pub.event_id);
             setEvent(eventData);
+
+            // Cargar participaciones del evento
+            try {
+              const participations = await EventAPI.listEnrollmentsByEvent(pub.event_id);
+              setEnrolledCount(participations.length);
+            } catch (err) {
+              console.error("Failed to fetch enrollments count", err);
+            }
 
             // Check enrollment if user is logged in
             if (user) {
@@ -124,7 +133,7 @@ const PublicationDetailPage = () => {
     imageSrc = resolveImageUrl(publication.image_url);
   }
 
-  const isEventFull = event && event.capacity ? event.capacity <= 0 : false; // Placeholder logic for full event
+  const isEventFull = event && event.capacity ? enrolledCount >= event.capacity : false;
 
   const handleShare = async () => {
     if (navigator.share) {
@@ -314,7 +323,15 @@ const PublicationDetailPage = () => {
                       </div>
                       <div>
                         <p className="text-muted-foreground text-sm">Cupos</p>
-                        <p className="font-medium">{event.capacity ? `${event.capacity} cupos` : "Ilimitado"}</p>
+                        {event?.capacity && event.capacity > 0 ? (
+                          isEventFull ? (
+                            <p className="font-medium text-red-600">🔴 Evento lleno</p>
+                          ) : (
+                            <p className="font-medium">{event.capacity - enrolledCount} cupos disponibles</p>
+                          )
+                        ) : (
+                          <p className="font-medium">Ilimitado</p>
+                        )}
                       </div>
                     </div>
                   </div>

@@ -53,7 +53,7 @@ export const DashboardUpcomingEvents: React.FC<DashboardUpcomingEventsProps> = (
                     <Button 
                       size="sm" 
                       className="bg-blue-600 hover:bg-blue-700 text-white"
-                      onClick={() => navigate(`/publications/${event.original?.id}`)}
+                      onClick={() => navigate(`/publications/${event.original?.publication_id}`)}
                     >
                       <Eye className="h-4 w-4" />
                     </Button>

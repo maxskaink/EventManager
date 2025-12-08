@@ -7,10 +7,11 @@ import {
   DashboardAdminActions,
 } from '../../components/dashboard/coordinator';
 import { useAuthStore } from '@/stores/auth.store';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueries } from '@tanstack/react-query';
 import { EventAPI } from '@/services/api';
 import { mapEventsToContentItems } from '@/features/events';
 import { HideOnScrollWrapper } from '@/components/layout/HideOnScrollWrapper';
+import { useMemo } from 'react';
 
 // Nota: Renombrado a '...Page' para claridad, o puedes llamarlo 'CoordinatorDashboard'
 export function CoordinatorDashboardPage() {
@@ -22,22 +23,43 @@ export function CoordinatorDashboardPage() {
   });
   const events = eventQuery.data ?? [];
   
+  // Cargar participaciones para todos los eventos usando useQueries
+  const participationsQueries = useQueries({
+    queries: events.map(event => ({
+      queryKey: ['event-participations', event.id],
+      queryFn: () => EventAPI.listEnrollmentsByEvent(event.id),
+    })),
+  });
+  
+  // Enriquecer eventos con datos de participaciones
+  const eventsWithParticipations = useMemo(() => {
+    return events.map((event, index) => {
+      const participations = participationsQueries[index]?.data ?? [];
+      return {
+        ...event,
+        enrolled: participations.length,
+      };
+    });
+  }, [events, participationsQueries]);
+  
   // Métricas basadas en datos reales
-  const totalEvents = events.length;
-  const totalEnrolled = 0; // Placeholder - se actualizará cuando haya API de participantes reales
-  const totalCapacity = events.reduce((sum, event) => sum + (event.capacity ?? 0), 0);
+  const totalEvents = eventsWithParticipations.length;
+  const totalEnrolled = eventsWithParticipations.reduce((sum, event) => sum + (event.enrolled ?? 0), 0);
+  const totalCapacity = eventsWithParticipations.reduce((sum, event) => sum + (event.capacity ?? 0), 0);
 
   // Evitar división por cero
   const averageParticipation = totalCapacity > 0 && totalEnrolled > 0
     ? Math.round((totalEnrolled / totalCapacity) * 100)
     : 0;
 
-  const upcomingEvents = events.filter(
+  const upcomingEvents = eventsWithParticipations.filter(
     (event) => (new Date(event.start_date)).getTime() - new Date().getTime() > -5 * 24 * 60 * 60 * 1000,
   );
 
-
-  const upcomingContent = mapEventsToContentItems(upcomingEvents);
+  const upcomingContent = mapEventsToContentItems(upcomingEvents).map((item, idx) => ({
+    ...item,
+    enrolled: upcomingEvents[idx]?.enrolled ?? 0,
+  }));
 
   // Idealmente, deberías tener un estado de carga o un 'early return'
   if (!user) {
