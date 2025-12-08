@@ -1,5 +1,5 @@
 import { Button } from "../../ui/button";
-import { ArrowLeft, Plus, FileText } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { getDashboardRouteFromRole } from "../../../services/navigation/redirects";
 import type { NavigateFunction } from "react-router";
 import { LogoutConfirmDialog } from "../../auth/LogoutConfirmDialog";
@@ -10,10 +10,9 @@ import { LogOut } from "lucide-react";
 type Props = {
   userRole: string;
   onNavigate: NavigateFunction;
-  onCreatePublication?: () => void;
 };
 
-export function EventBoardHeader({ userRole, onNavigate, onCreatePublication }: Props) {
+export function EventBoardHeader({ userRole, onNavigate }: Props) {
   const { logout } = useAuthStore();
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 

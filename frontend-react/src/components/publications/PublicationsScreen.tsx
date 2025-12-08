@@ -31,20 +31,6 @@ import BottomNavbarWrapper from "../nav/BottomNavbarWrapper";
 import { useAuthStore } from "../../stores/auth.store";
 import { publicationQueries } from "../../services/react-query/queries";
 
-interface Publication {
-  id: string;
-  title: string;
-  type: "comunicado" | "articulo" | "anuncio";
-  content: string;
-  excerpt: string;
-  author: string;
-  date: string;
-  status: "draft" | "published" | "archived";
-  visibility: "all" | "mentors" | "members" | "coordinators";
-  views: number;
-  comments: number;
-}
-
 export function PublicationsScreen() {
 
   const user = useAuthStore(s => s.user);
@@ -56,8 +42,11 @@ export function PublicationsScreen() {
 
   // Fetch publications from API
   const {
-    data: publications = []
+    data: publicationsResponse
   } = useQuery(publicationQueries.all());
+
+  // Extract the data array from the paginated response
+  const publications = publicationsResponse?.data ?? [];
 
   const getTypeIcon = (type: string) => {
     switch (type) {
@@ -126,7 +115,7 @@ export function PublicationsScreen() {
     }
   };
 
-  const filteredPublications = publications.filter((pub: Publication) => {
+  const filteredPublications = publications.filter((pub: any) => {
     const matchesSearch =
       pub.title
         .toLowerCase()
@@ -267,7 +256,7 @@ export function PublicationsScreen() {
               </div>
               <h3 className="text-2xl">
                 {publications.reduce(
-                  (sum: number, pub: Publication) => sum + pub.views,
+                  (sum: number, pub: any) => sum + (pub.views || 0),
                   0,
                 )}
               </h3>
@@ -284,7 +273,7 @@ export function PublicationsScreen() {
               </div>
               <h3 className="text-2xl">
                 {publications.reduce(
-                  (sum: number, pub: Publication) => sum + pub.comments,
+                  (sum: number, pub: any) => sum + (pub.comments || 0),
                   0,
                 )}
               </h3>
@@ -302,7 +291,7 @@ export function PublicationsScreen() {
               <h3 className="text-2xl">
                 {
                   publications.filter(
-                    (pub: Publication) => pub.status === "published",
+                    (pub: any) => pub.status === "published",
                   ).length
                 }
               </h3>
@@ -316,7 +305,7 @@ export function PublicationsScreen() {
         {/* Lista de publicaciones */}
         <section>
           <div className="space-y-4">
-            {filteredPublications.map((publication: Publication) => (
+            {filteredPublications.map((publication: any) => (
               <Card key={publication.id}>
                 <CardContent className="p-4">
                   <div className="flex items-start gap-4">

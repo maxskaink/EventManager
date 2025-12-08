@@ -1,5 +1,5 @@
-import { useState, useMemo } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2, Search, User, X, Shield, ShieldAlert, Plus, Trash2 } from "lucide-react";
+import { Loader2, Search, User, X, Shield, Trash2 } from "lucide-react";
 import { PublicationAPI, UserAPI } from "@/services/api";
 import { toast } from "sonner";
 import { useDebounce } from "@/hooks/use-debounce";
@@ -20,7 +20,6 @@ interface SharePublicationDialogProps {
 }
 
 export function SharePublicationDialog({ open, onOpenChange, publication }: SharePublicationDialogProps) {
-  const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState("add");
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearch = useDebounce(searchTerm, 300);

@@ -19,14 +19,14 @@ const publicationSchema = z.object({
   content: z.string()
     .min(10, "El contenido debe tener al menos 10 caracteres")
     .max(5000, "El contenido no puede exceder 5000 caracteres"),
-  type: z.enum(["aviso", "comunicado", "material", "evento"], {
+  type: z.enum(["aviso", "comunicado", "material", "evento", "articulo"], {
     message: "Selecciona un tipo de publicación",
   }),
   summary: z.string()
     .max(500, "El resumen no puede exceder 500 caracteres")
     .optional(),
   visibility: z.enum(["public", "private", "role_based"]),
-  status: z.enum(["borrador", "activo"]),
+  status: z.enum(["borrador", "activo", "pendiente"]),
 });
 
 type PublicationFormData = z.infer<typeof publicationSchema>;

@@ -11,7 +11,7 @@ import { PublicationsSearchBar } from "../components/publications/wall/Publicati
 import { publicationQueries } from "@/services/react-query/queries";
 import type { ContentItem } from "@/features/events/types";
 import { UnifiedHeader } from "@/components/layout/UnifiedHeader";
-import { publicationToContentItem } from "@/features/events";
+import { publicationToContentItem } from "@/features/events/publication.helpers";
 import { HideOnScrollWrapper } from "@/components/layout/HideOnScrollWrapper";
 import { PublicationsDateFilter } from "@/components/publications/wall/PublicationsDateFilter";
 import type { DateRange } from "react-day-picker";
