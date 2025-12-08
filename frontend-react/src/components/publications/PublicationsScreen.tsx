@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "../ui/button";
 import { Card, CardContent } from "../ui/card";
 import { Badge } from "../ui/badge";
@@ -28,6 +29,7 @@ import {
 import { useNavigate } from "react-router";
 import BottomNavbarWrapper from "../nav/BottomNavbarWrapper";
 import { useAuthStore } from "../../stores/auth.store";
+import { publicationQueries } from "../../services/react-query/queries";
 
 interface Publication {
   id: string;
@@ -52,69 +54,10 @@ export function PublicationsScreen() {
   const [filterType, setFilterType] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
 
-  // Mock publications data
-  const [publications] = useState<Publication[]>([
-    {
-      id: "1",
-      title: "Convocatoria: Taller de Machine Learning",
-      type: "comunicado",
-      content:
-        "Se abre convocatoria para el taller de Machine Learning que se realizará el próximo mes...",
-      excerpt:
-        "Se abre convocatoria para el taller de Machine Learning...",
-      author: "Dr. María González",
-      date: "2024-01-20",
-      status: "published",
-      visibility: "all",
-      views: 234,
-      comments: 12,
-    },
-    {
-      id: "2",
-      title: "Resultados del Hackathon 2024",
-      type: "articulo",
-      content:
-        "El pasado fin de semana se llevó a cabo nuestro hackathon anual con excelentes resultados...",
-      excerpt:
-        "Resumen de los resultados del hackathon anual...",
-      author: "Carlos López",
-      date: "2024-01-18",
-      status: "published",
-      visibility: "members",
-      views: 156,
-      comments: 8,
-    },
-    {
-      id: "3",
-      title: "Cambios en el horario de reuniones",
-      type: "anuncio",
-      content:
-        "Informamos que a partir del próximo lunes habrá cambios en los horarios...",
-      excerpt:
-        "Cambios importantes en los horarios de reunión...",
-      author: "Ana Rodríguez",
-      date: "2024-01-15",
-      status: "draft",
-      visibility: "coordinators",
-      views: 0,
-      comments: 0,
-    },
-    {
-      id: "4",
-      title: "Nuevas oportunidades de investigación",
-      type: "comunicado",
-      content:
-        "Estamos emocionados de anunciar nuevas oportunidades de investigación...",
-      excerpt:
-        "Nuevas oportunidades de investigación disponibles...",
-      author: "Dr. Roberto Silva",
-      date: "2024-01-10",
-      status: "published",
-      visibility: "mentors",
-      views: 89,
-      comments: 5,
-    },
-  ]);
+  // Fetch publications from API
+  const {
+    data: publications = []
+  } = useQuery(publicationQueries.all());
 
   const getTypeIcon = (type: string) => {
     switch (type) {
@@ -183,7 +126,7 @@ export function PublicationsScreen() {
     }
   };
 
-  const filteredPublications = publications.filter((pub) => {
+  const filteredPublications = publications.filter((pub: Publication) => {
     const matchesSearch =
       pub.title
         .toLowerCase()
@@ -324,7 +267,7 @@ export function PublicationsScreen() {
               </div>
               <h3 className="text-2xl">
                 {publications.reduce(
-                  (sum, pub) => sum + pub.views,
+                  (sum: number, pub: Publication) => sum + pub.views,
                   0,
                 )}
               </h3>
@@ -341,7 +284,7 @@ export function PublicationsScreen() {
               </div>
               <h3 className="text-2xl">
                 {publications.reduce(
-                  (sum, pub) => sum + pub.comments,
+                  (sum: number, pub: Publication) => sum + pub.comments,
                   0,
                 )}
               </h3>
@@ -359,7 +302,7 @@ export function PublicationsScreen() {
               <h3 className="text-2xl">
                 {
                   publications.filter(
-                    (pub) => pub.status === "published",
+                    (pub: Publication) => pub.status === "published",
                   ).length
                 }
               </h3>
@@ -373,7 +316,7 @@ export function PublicationsScreen() {
         {/* Lista de publicaciones */}
         <section>
           <div className="space-y-4">
-            {filteredPublications.map((publication) => (
+            {filteredPublications.map((publication: Publication) => (
               <Card key={publication.id}>
                 <CardContent className="p-4">
                   <div className="flex items-start gap-4">

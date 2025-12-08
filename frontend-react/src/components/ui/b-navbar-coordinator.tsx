@@ -1,8 +1,6 @@
 import {
   User,
-  BarChart,
   MessageSquare,
-  CalendarDays,
   LayoutDashboard,
   Users,
 } from "lucide-react";
@@ -21,22 +19,10 @@ const BNavBarCoordinator = () => {
       isActive: location.pathname === "/dashboard-coordinator",
     },
     {
-      icon: CalendarDays,
-      label: "Eventos",
-      onClick: () => navigate("/events"),
-      isActive: location.pathname === "/events",
-    },
-    {
       icon: MessageSquare,
       label: "Publicaciones",
-      onClick: () => navigate("/event-board"),
-      isActive: location.pathname === "/event-board",
-    },
-    {
-      icon: BarChart,
-      label: "Reportes",
-      onClick: () => navigate("/reports"),
-      isActive: location.pathname === "/reports",
+      onClick: () => navigate("/publications"),
+      isActive: location.pathname === "/publications",
     },
     {
       icon: Users,

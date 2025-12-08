@@ -3,9 +3,9 @@ import { useNavigate } from "react-router";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "../../components/ui/button";
 import { Card, CardContent } from "../../components/ui/card";
-import { UnifiedHeader } from "../../components/layout/UnifiedHeader";
 import { Badge } from "../../components/ui/badge";
-import { Calendar, Clock, MapPin } from "lucide-react";
+import { Calendar, Clock, MapPin, LogOut, Bell } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "../../components/ui/avatar";
 import { BNavBarInterested } from "../../components/ui/b-navbar-interested";
 import { publicationQueries } from "@/services/react-query/queries";
 import { getErrorMessageForToast } from "@/features/errors/error.helpers";
@@ -13,9 +13,13 @@ import { RecentPublicationsSection } from "@/components/dashboard/guest/RecentPu
 import { ImageWithFallback } from "@/components/figma/ImageWithFallback";
 import { resolveImageUrl } from "@/features/api";
 import { HideOnScrollWrapper } from "@/components/layout/HideOnScrollWrapper";
+import { useAuthStore } from "@/stores/auth.store";
+import brainImage from "@/assets/brain.png";
 
 export function GuestDashboard() {
   const navigate = useNavigate();
+  const user = useAuthStore(s => s.user);
+  const logout = useAuthStore(s => s.logout);
 
   const {
     data: publications,
@@ -27,11 +31,11 @@ export function GuestDashboard() {
   const error = publicationsError;
 
   const upcomingEvents = useMemo(
-    () => publications?.filter((publication) => Boolean(publication.event)).slice(0, 3) || [],
+    () => publications?.filter((publication: API.Publication) => Boolean(publication.event)).slice(0, 3) || [],
     [publications],
   );
   const recentPosts = useMemo(
-    () => publications?.filter((publication) => !publication.event).slice(0, 3) || [],
+    () => publications?.filter((publication: API.Publication) => !publication.event).slice(0, 3) || [],
     [publications],
   );
 
@@ -39,10 +43,64 @@ export function GuestDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50/50 pb-20">
-      {/* Header */}
+      {/* Header Personalizado */}
       <HideOnScrollWrapper>
-        <UnifiedHeader title="Bienvenido" subtitle="Explora nuestros eventos y actividades" />
+        <header className="bg-[#0a2740] text-white shadow-sm">
+          <div className="container mx-auto px-4 py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <img
+                  alt="Logo del Semillero"
+                  className="h-10 w-10 object-contain rounded-full bg-white"
+                  src={brainImage}
+                />
+                <div>
+                  <h1 className="text-lg font-bold">Bienvenido</h1>
+                  <p className="text-white/80 text-sm">Explora nuestros eventos y actividades</p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src={user?.avatar || undefined} />
+                    <AvatarFallback>
+                      {user?.name
+                        ?.split(" ")
+                        .map((n) => n[0])
+                        .join("")}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="hidden sm:inline text-sm">{user?.name}</span>
+                  <Badge className="bg-white/20 text-white hover:bg-white/30 border-0">
+                    Visitante
+                  </Badge>
+                </div>
+
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="text-white hover:bg-white/10 h-9 w-9"
+                >
+                  <Bell className="h-5 w-5" />
+                </Button>
+
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="text-white hover:bg-white/10 h-9 w-9"
+                  onClick={logout}
+                  title="Cerrar sesión"
+                  aria-label="Cerrar sesión"
+                >
+                  <LogOut className="h-5 w-5" />
+                </Button>
+              </div>
+            </div>
+          </div>
+        </header>
       </HideOnScrollWrapper>
+      
       <div className="mx-auto max-w-4xl space-y-6 p-4">
         {/* Eventos Recomendados */}
         <section>
@@ -72,7 +130,7 @@ export function GuestDashboard() {
               <div className="text-muted-foreground col-span-full">No hay eventos activos por ahora.</div>
             )}
             {!loading &&
-              upcomingEvents.map((publication) => <NextEventCard key={publication.id} publication={publication} />)}
+              upcomingEvents.map((publication: API.Publication) => <NextEventCard key={publication.id} publication={publication} />)}
           </div>
         </section>
 

@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "../ui/button";
 import { Card, CardContent } from "../ui/card";
 import { Badge } from "../ui/badge";
@@ -30,6 +31,7 @@ import {
 import { useNavigate } from "react-router";
 import BottomNavbarWrapper from "../nav/BottomNavbarWrapper";
 import { useAuthStore } from "../../stores/auth.store";
+import { UserAPI } from "../../services/api";
 
 export function ReportsScreen() {
   const someUser = useAuthStore(s => s.user);
@@ -37,68 +39,44 @@ export function ReportsScreen() {
   const [reportType, setReportType] = useState("participation");
   const [timeFilter, setTimeFilter] = useState("all");
 
-  // Mock data for member participation
-  const memberStats = [
-    {
-      id: "1",
-      name: "Ana García",
-      email: "ana@example.com",
-      avatar: "",
-      eventsAttended: 8,
-      certificates: 5,
-      participation: 85,
-      lastActivity: "2024-01-15",
-      interests: ["Machine Learning", "React"],
-    },
-    {
-      id: "2",
-      name: "Carlos López",
-      email: "carlos@example.com",
-      avatar: "",
-      eventsAttended: 12,
-      certificates: 8,
-      participation: 95,
-      lastActivity: "2024-01-20",
-      interests: ["Python", "Data Science"],
-    },
-    {
-      id: "3",
-      name: "María Rodríguez",
-      email: "maria@example.com",
-      avatar: "",
-      eventsAttended: 6,
-      certificates: 3,
-      participation: 70,
-      lastActivity: "2024-01-10",
-      interests: ["Web Development", "UI/UX"],
-    },
-    {
-      id: "4",
-      name: "David Silva",
-      email: "david@example.com",
-      avatar: "",
-      eventsAttended: 15,
-      certificates: 12,
-      participation: 100,
-      lastActivity: "2024-01-22",
-      interests: ["Backend", "DevOps"],
-    },
-  ];
+  // Fetch real data from API
+  const { data: users = [] } = useQuery({
+    queryKey: ['users-for-reports'],
+    queryFn: async () => {
+      const result = await UserAPI.listUsersByFilters({ role: 'active-member', per_page: 100 });
+      return result.data || [];
+    }
+  });
+
+  // Calculate member stats based on real data
+  const memberStats = useMemo(() => {
+    return users.map((user: API.User) => ({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      avatar: user.avatar || "",
+      eventsAttended: 0, // Will be populated by enrollment queries
+      certificates: 0,   // Will be populated by certificate queries
+      participation: 0,  // Calculated from events and certificates
+      lastActivity: user.last_login_at || new Date().toISOString(),
+      interests: [] as string[],
+    }));
+  }, [users]);
 
   const totalMembers = memberStats.length;
   const averageAttendance = Math.round(
     memberStats.reduce(
-      (sum, member) => sum + member.eventsAttended,
+      (sum: number, member: typeof memberStats[0]) => sum + member.eventsAttended,
       0,
     ) / totalMembers,
   );
   const totalCertificates = memberStats.reduce(
-    (sum, member) => sum + member.certificates,
+    (sum: number, member: typeof memberStats[0]) => sum + member.certificates,
     0,
   );
   const averageParticipation = Math.round(
     memberStats.reduce(
-      (sum, member) => sum + member.participation,
+      (sum: number, member: typeof memberStats[0]) => sum + member.participation,
       0,
     ) / totalMembers,
   );
@@ -336,7 +314,7 @@ export function ReportsScreen() {
           </div>
 
           <div className="space-y-3">
-            {memberStats.map((member) => (
+            {memberStats.map((member: typeof memberStats[0]) => (
               <Card key={member.id}>
                 <CardContent className="p-4">
                   <div className="flex items-center gap-4">
@@ -362,7 +340,7 @@ export function ReportsScreen() {
                         {member.email}
                       </p>
                       <div className="flex flex-wrap gap-1 mt-2">
-                        {member.interests.map((interest) => (
+                        {member.interests.map((interest: string) => (
                           <Badge
                             key={interest}
                             variant="outline"

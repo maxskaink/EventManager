@@ -31,12 +31,6 @@ const getTimeCategory = (date: string) => {
   return null;
 }
 
-// these are dummy values
-// const EVENT_CARD_HEIGHT_WITH_IMAGE = 350;
-// const EVENT_CARD_HEIGHT_WITHOUT_IMAGE = 250;
-// const PUBLICATION_CARD_HEIGHT = 250;
-// const PUBLICATION_CARD_HEIGHT_WITH_IMAGE = 350;
-
 const PublicationCard: React.FC<PublicationCardProps> = ({ publication }) => {
   const isEvent = publication.kind === 'event' || publication.type === 'evento';
 
@@ -118,7 +112,13 @@ const PublicationCard: React.FC<PublicationCardProps> = ({ publication }) => {
               {publication.capacity !== undefined && (
                 <div className="flex items-center gap-2">
                   <Users className="h-4 w-4 shrink-0" />
-                  <span>Cupos: {publication.capacity}</span>
+                  {publication.capacity === 0 || (publication.enrolled ?? 0) >= publication.capacity ? (
+                    <span className="font-medium text-red-600">🔴 Evento lleno</span>
+                  ) : (
+                    <span>
+                      {publication.capacity - (publication.enrolled ?? 0)} cupos disponibles
+                    </span>
+                  )}
                 </div>
               )}
             </div>

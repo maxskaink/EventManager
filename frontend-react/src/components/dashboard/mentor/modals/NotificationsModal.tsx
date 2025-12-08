@@ -42,7 +42,6 @@ export const NotificationsModal: React.FC<NotificationsModalProps> = ({ open, on
               </div>
             </div>
           </div>
-          {/* ... (más notificaciones mock) ... */}
         </div>
 
         <div className="flex gap-2 justify-end flex-shrink-0 pt-4 border-t">

@@ -9,41 +9,43 @@ export const DashboardPrimaryActions: React.FC = () => {
 
   return (
     <section>
-      <h2 className="mb-4">Acciones Principales</h2>
+      <h2 className="text-2xl font-bold text-slate-900 mb-6">Acciones Principales</h2>
       <div className="grid gap-4 md:grid-cols-2">
         {/* Crear evento */}
-        <Card className="bg-gradient-to-r from-blue-50 to-purple-50 border-dashed">
-          <CardContent className="p-4 text-center">
-            <div className="p-2 bg-primary rounded-lg w-fit mx-auto mb-3">
-              <Plus className="h-5 w-5 text-primary-foreground" />
+        <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 hover:shadow-lg transition-all duration-300">
+          <CardContent className="p-6 text-center">
+            <div className="p-3 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl w-fit mx-auto mb-4 shadow-md">
+              <Plus className="h-6 w-6 text-white" />
             </div>
-            <h4>Crear Evento</h4>
-            <p className="text-sm text-muted-foreground mb-3">
+            <h4 className="font-bold text-slate-900 mb-2">Crear Evento</h4>
+            <p className="text-sm text-slate-600 mb-4">
               Organiza charlas, cursos y convocatorias
             </p>
             <Button
-              className="w-full"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold"
               onClick={() => navigate('/create-event')}
             >
+              <Plus className="h-4 w-4 mr-2" />
               Crear Evento
             </Button>
           </CardContent>
         </Card>
 
         {/* Crear publicación */}
-        <Card className="bg-gradient-to-r from-green-50 to-blue-50 border-dashed">
-          <CardContent className="p-4 text-center">
-            <div className="p-2 bg-green-600 rounded-lg w-fit mx-auto mb-3">
-              <Edit3 className="h-5 w-5 text-white" />
+        <Card className="bg-gradient-to-br from-emerald-50 to-emerald-100 border border-emerald-200 hover:shadow-lg transition-all duration-300">
+          <CardContent className="p-6 text-center">
+            <div className="p-3 bg-gradient-to-br from-emerald-600 to-emerald-700 rounded-xl w-fit mx-auto mb-4 shadow-md">
+              <Edit3 className="h-6 w-6 text-white" />
             </div>
-            <h4>Nueva Publicación</h4>
-            <p className="text-sm text-muted-foreground mb-3">
+            <h4 className="font-bold text-slate-900 mb-2">Nueva Publicación</h4>
+            <p className="text-sm text-slate-600 mb-4">
               Redacta comunicados y artículos
             </p>
             <Button
-              className="w-full"
+              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold"
               onClick={() => navigate('/create-publication')}
             >
+              <Edit3 className="h-4 w-4 mr-2" />
               Crear Publicación
             </Button>
           </CardContent>

@@ -43,7 +43,6 @@ export function EventBoardScreen() {
   const [isPublishModalOpen, setIsPublishModalOpen] = useState(false);
   const [isAttendanceModalOpen, setIsAttendanceModalOpen] = useState(false);
   const [selectedEventForAttendance, setSelectedEventForAttendance] = useState<{ id: number; title: string } | null>(null);
-  const [pinnedContent] = useState<string[]>([]); // Mock
   
   // Edit state
   const [isEditEventOpen, setIsEditEventOpen] = useState(false);
@@ -173,10 +172,7 @@ export function EventBoardScreen() {
     });
 
     return filtered.sort((a, b) => {
-      const aPinned = pinnedContent.includes(a.id);
-      const bPinned = pinnedContent.includes(b.id);
-      if (aPinned && !bPinned) return -1;
-      if (!aPinned && bPinned) return 1;
+      // Sort by date (newest first)
       return new Date(b.date).getTime() - new Date(a.date).getTime();
     });
   };
@@ -295,12 +291,11 @@ export function EventBoardScreen() {
 
       <div className="max-w-7xl mx-auto p-4 md:p-6 space-y-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-
           <EventBoardStats
             loading={loading}
             totalContent={totalContent} // Total overall
             totalEvents={safeEvents.length}
-            totalPinned={pinnedContent.length}
+            totalPinned={0}
           />
 
           <EventBoardFilters
@@ -324,7 +319,7 @@ export function EventBoardScreen() {
               loading={loading}
               viewMode={viewMode}
               content={sortedEvents}
-              pinnedContent={pinnedContent}
+              pinnedContent={[]}
               onViewDetails={handleViewDetails}
               onDeleteClick={handleDeleteClick}
               onPublish={handlePublish}
@@ -342,7 +337,7 @@ export function EventBoardScreen() {
               loading={loading}
               viewMode={viewMode}
               content={sortedPublications}
-              pinnedContent={pinnedContent}
+              pinnedContent={[]}
               onViewDetails={handleViewDetails}
               onDeleteClick={handleDeleteClick}
               onPublish={handlePublish}
