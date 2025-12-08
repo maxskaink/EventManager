@@ -14,6 +14,11 @@ class UserController extends Controller
 {
     protected UserServiceInterface $userService;
 
+    /**
+     * Create a new instance of UserController.
+     *
+     * @param UserServiceInterface $userService The service to handle user logic.
+     */
     public function __construct(UserServiceInterface $userService)
     {
         $this->userService = $userService;
@@ -22,12 +27,17 @@ class UserController extends Controller
     /**
      * Change a user's role.
      *
-     * @throws AuthorizationException
+     * @param ToggleRoleRequest $request The request containing the new role.
+     * @param int $userId The ID of the user whose role to change.
+     * @return JsonResponse A success message with the updated role.
+     * @throws \Illuminate\Database\Eloquent\ModelNotFoundException If the user is not found.
+     * @throws AuthorizationException If the user is not authorized.
      */
     public function toggleRole(ToggleRoleRequest $request, int $userId): JsonResponse
     {
         $targetUser = User::query()->findOrFail($userId);
 
+        // Authorization: check if the user can change the role of the target user
         $this->authorize('changeRole', $targetUser);
 
         $data = $request->validated();
@@ -43,6 +53,9 @@ class UserController extends Controller
 
     /**
      * List users with filters.
+     *
+     * @param FilterUserRequest $request The request containing filters.
+     * @return JsonResponse A list of filtered users.
      */
     public function listFilteredUsers(FilterUserRequest $request): JsonResponse
     {
@@ -60,11 +73,14 @@ class UserController extends Controller
     /**
      * List all inactive users.
      *
-     * @throws AuthorizationException
+     * @return JsonResponse A list of inactive users.
+     * @throws AuthorizationException If the user is not authorized.
      */
     public function listInactiveUsers(): JsonResponse
     {
+        // Authorization: check if the user can view inactive users (admin only)
         $this->authorize('viewAny', Auth::user());
+
         $perPage = request()->input('per_page', 15);
         return response()->json($this->userService->listInactiveUsers($perPage));
     }
@@ -72,13 +88,11 @@ class UserController extends Controller
     /**
      * Get a user by ID.
      *
-     * @param int $userId
-     * @return JsonResponse
-     * @throws AuthorizationException
+     * @param int $userId The ID of the user.
+     * @return JsonResponse The user data.
      */
     public function getUserById(int $userId): JsonResponse
     {
-
         $user = $this->userService->getUserById($userId);
 
         return response()->json([

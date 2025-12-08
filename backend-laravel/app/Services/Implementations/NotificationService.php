@@ -2,7 +2,6 @@
 
 namespace App\Services\Implementations;
 
-use App\Models\Notification;
 use App\Repositories\Contracts\NotificationRepositoryInterface;
 use App\Services\Contracts\NotificationServiceInterface;
 use Illuminate\Database\Eloquent\Collection;

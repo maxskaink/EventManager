@@ -41,6 +41,13 @@ interface ExternalEventServiceInterface
     public function getExternalEventsByUser(int $userId): Collection;
 
     /**
+     * Get external events for the currently active user.
+     *
+     * @return Collection<int, ExternalEvent>
+     */
+    public function getExternalEventsOfActiveUser(): Collection;
+
+    /**
      * Get all external events in the system.
      *
      * @return Collection<int, ExternalEvent>
