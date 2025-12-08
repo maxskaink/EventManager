@@ -97,6 +97,11 @@ class PublicationService implements PublicationServiceInterface
         return $this->publicationRepo->listFiltered($filters, $user, $perPage);
     }
 
+    public function getUsersWithAccess(int $publicationId): Collection
+    {
+        return $this->publicationRepo->getUsersWithAccess($publicationId);
+    }
+
 
 
     public function listDraftPublications(int $perPage = 15): LengthAwarePaginator

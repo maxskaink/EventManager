@@ -27,6 +27,8 @@ interface PublicationServiceInterface
 
     public function listFilteredPublications(array $filters, ?User $user, int $perPage = 15): LengthAwarePaginator;
 
+    public function getUsersWithAccess(int $publicationId): Collection;
+
     /**
      * @return LengthAwarePaginator<int, Publication>
      */

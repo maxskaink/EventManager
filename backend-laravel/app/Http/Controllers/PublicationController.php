@@ -263,4 +263,16 @@ class PublicationController extends Controller
         ]);
     }
 
+    /**
+     * Get users with access to a publication.
+     */
+    public function getUsersWithAccess(int $publicationId): JsonResponse
+    {
+        $this->authorize('viewAccess', Publication::class);
+
+        return response()->json([
+            'users' => $this->publicationService->getUsersWithAccess($publicationId),
+        ]);
+    }
+
 }

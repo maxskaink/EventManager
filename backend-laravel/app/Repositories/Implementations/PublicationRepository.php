@@ -138,4 +138,15 @@ class PublicationRepository implements PublicationRepositoryInterface
             ->paginate($perPage);
     }
 
+    public function getUsersWithAccess(int $publicationId): Collection
+    {
+        return User::query()
+            ->whereIn('id', function ($query) use ($publicationId) {
+                $query->select('profile_id')
+                    ->from('publication_accesses')
+                    ->where('publication_id', $publicationId);
+            })
+            ->get();
+    }
+
 }

@@ -37,4 +37,9 @@ class PublicationPolicy
     {
         return in_array($authUser->role, ['mentor', 'coordinator'], true);
     }
+
+    public function viewAccess(User $authUser): bool
+    {
+        return in_array($authUser->role, ['mentor', 'coordinator'], true);
+    }
 }
