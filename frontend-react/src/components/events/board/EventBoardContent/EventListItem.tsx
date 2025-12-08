@@ -3,7 +3,7 @@ import { Button } from "../../../ui/button";
 import { Badge } from "../../../ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../../../ui/dropdown-menu";
 
-import { Trash2, Eye, Pin, Share, Users, MoreVertical, Calendar, MapPin, Users2, Edit2 } from "lucide-react";
+import { Trash2, Eye, Pin, Share, Users, MoreVertical, Calendar, MapPin, Users2, Edit, Share2 } from "lucide-react";
 import {
   getTypeColor,
   getStatusColor,
@@ -14,7 +14,18 @@ import {
 import type { ContentItem, ItemToDelete } from "../../../../features/events";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../../../ui/tooltip";
 
-// Componente Interno: List Item
+interface EventListItemProps {
+  item: ContentItem;
+  isPinned: boolean;
+  onViewDetails: (item: ContentItem) => void;
+  onDeleteClick: (item: ItemToDelete) => void;
+  onPublish: (item: ContentItem) => void;
+  onAttendance: (item: ContentItem) => void;
+  onEditEvent: (item: ContentItem) => void;
+  onEditPublication: (item: ContentItem) => void;
+  onSharePublication: (item: ContentItem) => void;
+}
+
 const EventListItem = ({
   item,
   isPinned,
@@ -24,23 +35,18 @@ const EventListItem = ({
   onAttendance,
   onEditEvent,
   onEditPublication,
-}: {
-  item: ContentItem;
-  isPinned: boolean;
-  onViewDetails: (item: ContentItem) => void;
-  onDeleteClick: (item: ItemToDelete) => void;
-  onPublish: (item: ContentItem) => void;
-  onAttendance: (item: ContentItem) => void;
-  onEditEvent: (item: ContentItem) => void;
-  onEditPublication: (item: ContentItem) => void;
-}) => {
-  const isEventT = isEventType(item.type);
-  const occupancy = isEventT && item.capacity && item.enrolled ? getOccupancyLevel(item.enrolled, item.capacity) : null;
-  const hasEnded = isEventT && new Date(item.date) < new Date();
+  onSharePublication,
+}: EventListItemProps) => {
+  const isEvent = isEventType(item.type);
+  const occupancy = isEvent && item.capacity && item.enrolled ? getOccupancyLevel(item.enrolled, item.capacity) : null;
+  const hasEnded = isEvent && new Date(item.date) < new Date();
   
   // Check if event has publication OR if publication has event
   const hasPublication = item.original?.publication_id !== null && item.original?.publication_id !== undefined;
   const hasEvent = item.original?.event !== null && item.original?.event !== undefined;
+
+  // Helper to determine if we show "Editar Publicación"
+  const showEditPublication = !isEvent || (isEvent && hasPublication);
 
   return (
     <Card className={`transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 overflow-hidden group ${isPinned ? "border-l-4 border-l-blue-500 border border-slate-200" : "border border-slate-200"}`}>
@@ -76,13 +82,13 @@ const EventListItem = ({
                   <span className="font-medium truncate">{occupancy.label}</span>
                 </div>
               )}
-              {isEventT && item.date && (
+              {isEvent && item.date && (
                 <div className="flex items-center gap-1.5">
                   <Calendar className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
                   <span>{new Date(item.date).toLocaleDateString('es-ES')}</span>
                 </div>
               )}
-              {isEventT && item.location && (
+              {isEvent && item.location && (
                 <div className="flex items-center gap-1.5">
                   <MapPin className="h-3.5 w-3.5 text-orange-600 shrink-0" />
                   <span className="truncate">{item.location}</span>
@@ -144,17 +150,23 @@ const EventListItem = ({
                   </DropdownMenuItem>
                 )}
                 {/* Show event edit if it's an event OR if it's a publication with an event */}
-                {(isEventT || hasEvent) && (
+                {(isEvent || hasEvent) && (
                   <DropdownMenuItem onClick={() => onEditEvent(item)} className="cursor-pointer">
-                    <Edit2 className="h-4 w-4 mr-2" />
+                    <Edit className="h-4 w-4 mr-2" />
                     Editar Evento
                   </DropdownMenuItem>
                 )}
                 {/* Show publication edit if it's a publication OR if it's an event with publication */}
-                {(!isEventT || hasPublication) && (
+                {showEditPublication && (
                   <DropdownMenuItem onClick={() => onEditPublication(item)} className="cursor-pointer">
-                    <Edit2 className="h-4 w-4 mr-2" />
+                    <Edit className="h-4 w-4 mr-2" />
                     Editar Publicación
+                  </DropdownMenuItem>
+                )}
+                {/* Share Option - Only for direct publications */}
+                {!isEvent && (
+                  <DropdownMenuItem onClick={() => onSharePublication(item)} className="cursor-pointer">
+                    <Share2 className="h-4 w-4 mr-2" /> Compartir Acceso
                   </DropdownMenuItem>
                 )}
                 <DropdownMenuItem

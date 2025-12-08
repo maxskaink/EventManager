@@ -1,4 +1,4 @@
-import {  Edit2, Eye, MoreVertical, Pin, Share, Trash2, Users, Calendar, MapPin, Users2 } from "lucide-react";
+import { Calendar, MapPin, MoreVertical, Eye, Trash2, Users, Edit, Share2, Users2, Pin, Share } from "lucide-react";
 import { Button } from "../../../ui/button";
 import { Card, CardContent } from "../../../ui/card";
 import {
@@ -13,7 +13,18 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import type { ContentItem, ItemToDelete } from "../../../../features/events";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../../../ui/tooltip";
 
-// Componente Interno: Grid Item
+interface EventGridItemProps {
+  item: ContentItem;
+  isPinned: boolean;
+  onViewDetails: (item: ContentItem) => void;
+  onDeleteClick: (item: ItemToDelete) => void;
+  onPublish: (item: ContentItem) => void;
+  onAttendance: (item: ContentItem) => void;
+  onEditEvent: (item: ContentItem) => void;
+  onEditPublication: (item: ContentItem) => void;
+  onSharePublication: (item: ContentItem) => void;
+}
+
 const EventGridItem = ({
   item,
   isPinned,
@@ -23,34 +34,23 @@ const EventGridItem = ({
   onAttendance,
   onEditEvent,
   onEditPublication,
-}: {
-  item: ContentItem;
-  isPinned: boolean;
-  onViewDetails: (item: ContentItem) => void;
-  onDeleteClick: (item: ItemToDelete) => void;
-  onPublish: (item: ContentItem) => void;
-  onAttendance: (item: ContentItem) => void;
-  onEditEvent: (item: ContentItem) => void;
-  onEditPublication: (item: ContentItem) => void;
-}) => {
+  onSharePublication,
+}: EventGridItemProps) => {
   const isEvent = isEventType(item.type);
   const occupancy = isEvent && item.capacity && item.enrolled ? getOccupancyLevel(item.enrolled, item.capacity) : null;
 
   const eventDate = new Date(item.date);
   const currentDate = new Date();
 
-  console.log(isEvent)
-  console.log(item.type)
-  
   // Check if event has ended
   const hasEnded = isEvent && (eventDate < currentDate);
-  console.log(eventDate)
-  console.log(currentDate)
-  console.log(hasEnded)
 
   // Check if event has publication OR if publication has event
-  const hasPublication = item.kind === "publication" || (item.original?.publication_id !== null && item.original?.publication_id !== undefined);
-  const hasEvent = item.kind === "event" || ( item.original?.event !== null && item.original?.event !== undefined);
+  const hasPublication = item.original?.publication_id !== null && item.original?.publication_id !== undefined;
+  const hasEvent = item.original?.event !== null && item.original?.event !== undefined;
+
+  // Helper to determine if we show "Editar Publicación"
+  const showEditPublication = !isEvent || (isEvent && hasPublication);
 
   return (
     <Card className={`transition-all duration-300 hover:shadow-xl hover:-translate-y-1 overflow-hidden group ${isPinned ? "border-blue-500 border-2" : "border border-slate-200"}`}>
@@ -90,15 +90,21 @@ const EventGridItem = ({
                 {/* Show event edit if it's an event OR if it's a publication with an event */}
                 {(isEvent || hasEvent) && (
                   <DropdownMenuItem onClick={() => onEditEvent(item)} className="cursor-pointer">
-                    <Edit2 className="h-4 w-4 mr-2" />
+                    <Edit className="h-4 w-4 mr-2" />
                     Editar Evento
                   </DropdownMenuItem>
                 )}
                 {/* Show publication edit if it's a publication OR if it's an event with publication */}
-                {(!isEvent || hasPublication) && (
+                {showEditPublication && (
                   <DropdownMenuItem onClick={() => onEditPublication(item)} className="cursor-pointer">
-                    <Edit2 className="h-4 w-4 mr-2" />
+                    <Edit className="h-4 w-4 mr-2" />
                     Editar Publicación
+                  </DropdownMenuItem>
+                )}
+                {/* Share Option - Only for direct publications or events with publications? User said "only a publication can modify it's access"  */}
+                {!isEvent && (
+                  <DropdownMenuItem onClick={() => onSharePublication(item)} className="cursor-pointer">
+                    <Share2 className="h-4 w-4 mr-2" /> Compartir Acceso
                   </DropdownMenuItem>
                 )}
                 <DropdownMenuItem

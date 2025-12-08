@@ -16,9 +16,12 @@ export const publicationQueries = {
     all: (filters?: PublicationAPI.ListPublicationsFilters) =>
         queryOptions({
             queryKey: ["publications", filters],
-            queryFn: async () => {
-                const response = await PublicationAPI.listPublicationsByFilters(filters || {});
-                return response.data || [];
+            queryFn: async ({ pageParam = 1 }: { pageParam?: number }) => {
+                const response = await PublicationAPI.listAllPublications({
+                    page: pageParam,
+                    per_page: 9, // Using 9 for grid layout (3x3)
+                });
+                return response;
             },
         }),
     published: (filters?: PublicationAPI.ListPublicationsFilters) => 

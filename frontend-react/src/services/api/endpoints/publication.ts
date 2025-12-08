@@ -6,8 +6,8 @@ async function getPublicationById(id: number) {
   return respnose.data.publication;
 }
 
-async function listAllPublications() {
-  const response = await axiosInstance.get<PublicationAPI.ListPublicationsRes>('/publication/all');
+async function listAllPublications(params: { page: number, per_page: number}) {
+  const response = await axiosInstance.get<PublicationAPI.ListPublicationsRes>('/publication/all', { params });
   return response.data.publications;
 }
 
@@ -50,7 +50,7 @@ async function setPublicationImage(publicationId: number, image: File) {
   return response.data.publication;
 }
 
-async function grantPublicationAccess(publicationId: number, userIds: number[], roles: string[]) {
+async function grantPublicationAccess(publicationId: number, userIds: number[] | undefined, roles: string[] | undefined) {
   const response = await axiosInstance.post(`/publication/${publicationId}/access/grant`, { user_ids: userIds, roles });
   return response.data;
 }
@@ -68,9 +68,28 @@ async function removePublicationInterests(publicationId: number, interests: numb
   return response.data;
 }
 
-async function revokePublicationAccess(publicationId: number, userIds: number[], roles: string[]) {
+async function revokePublicationAccess(publicationId: number, userIds: number[] | undefined, roles: string[] | undefined) {
   const response = await axiosInstance.delete(`/publication/${publicationId}/access/revoke`, { data: { user_ids: userIds, roles } });
   return response.data;
+}
+
+// MOCK: Get access list (simulated)
+async function getPublicationAccess(publicationId: number) {
+  // Simulate API delay
+  await new Promise(resolve => setTimeout(resolve, 500));
+  
+  // Return fake data based on ID to be consistent but varied
+  const mockUsers = [
+    { id: 101, name: "Juan Pérez", email: "juan@example.com", role: "mentor", avatar: null as string | null },
+    { id: 102, name: "Maria Garcia", email: "maria@example.com", role: "coordinator", avatar: null as string | null },
+    { id: 103, name: "Carlos Lopez", email: "carlos@example.com", role: "member", avatar: null as string | null },
+  ];
+
+  if (publicationId % 2 === 0) {
+    return { users: mockUsers, roles: ["mentor"] };
+  } else {
+    return { users: [mockUsers[0]], roles: [] };
+  }
 }
 
 export default {
@@ -86,5 +105,6 @@ export default {
   updatePublication,
   removePublicationInterests,
   revokePublicationAccess,
-  listPublicationsByFilters
+  listPublicationsByFilters,
+  getPublicationAccess
 };

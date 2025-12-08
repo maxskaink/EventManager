@@ -11,6 +11,8 @@ import { EventDeleteDialog } from "../../components/events/board/EventDeleteDial
 import { EditEventDialog } from "../../components/events/board/EditEventDialog";
 import { EditPublicationDialog } from "../../components/events/board/EditPublicationDialog";
 import { getErrorMessageForToast } from "../../features/errors/error.helpers";
+import { SharePublicationDialog } from "../../components/events/board/SharePublicationDialog";
+
 import { type ContentItem, type ItemToDelete, isEventType, mapEventsToContentItems, mapPublicationsToContentItems } from "../../features/events";
 import { PublishContentModal } from "../../components/events/board/PublishContentModal";
 import { CreatePublicationDialog } from "../../components/events/board/CreatePublicationDialog";
@@ -51,10 +53,41 @@ export function EventBoardScreen() {
   const [selectedEventForEdit, setSelectedEventForEdit] = useState<API.Event | null>(null);
   const [selectedPublicationForEdit, setSelectedPublicationForEdit] = useState<API.Publication | null>(null);
 
+  // Share state
+  const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
+  const [selectedPublicationForShare, setSelectedPublicationForShare] = useState<API.Publication | null>(null);
+
   // Queries
   const { data: events = [], isLoading: isLoadingEvents } = useQuery(eventQueries.all());
 
-  const { data: publications = [], isLoading: isLoadingPublications } = useQuery(publicationQueries.all());
+  // Pagination state for publications
+  const [publicationPage, setPublicationPage] = useState(1);
+
+  // We typed this response as any temp because we are changing the API response structure
+  // Ideally this should be properly typed with PaginatedResponse
+  const publicationQuery = useQuery({
+     ...publicationQueries.all({ page: publicationPage }),
+     placeholderData: (prev) => prev,
+  });
+
+  const { data: publicationsResponse, isLoading: isLoadingPublications } = publicationQuery;
+  
+  // Safe type handling
+  const isPaginated = (data: unknown): data is PaginatedResponse<API.Publication> => {
+    return !!data && typeof data === 'object' && 'data' in data && Array.isArray((data as any).data);
+  };
+
+  const publicationsData = isPaginated(publicationsResponse) 
+      ? publicationsResponse.data 
+      : (Array.isArray(publicationsResponse) ? publicationsResponse : []);
+      
+  const publicationMeta = isPaginated(publicationsResponse)
+      ? {
+          current_page: publicationsResponse.current_page,
+          last_page: publicationsResponse.last_page,
+          total: publicationsResponse.total
+        }
+      : null;
 
   const loading = isLoadingEvents || isLoadingPublications;
 
@@ -140,7 +173,7 @@ export function EventBoardScreen() {
 
   // Transformación de Datos
   const safeEvents = Array.isArray(events) ? events : [];
-  const safePublications = Array.isArray(publications) ? publications : [];
+  const safePublications = Array.isArray(publicationsData) ? publicationsData : [];
 
   const eventItems: ContentItem[] = mapEventsToContentItems(safeEvents);
   const publicationItems: ContentItem[] = mapPublicationsToContentItems(safePublications, safeEvents);
@@ -192,6 +225,13 @@ export function EventBoardScreen() {
     if (!isNaN(eventId)) {
       setSelectedEventForAttendance({ id: eventId, title: item.title });
       setIsAttendanceModalOpen(true);
+    }
+  };
+
+  const handleSharePublication = (item: ContentItem) => {
+    if (item.kind === 'publication' && item.original) {
+      setSelectedPublicationForShare(item.original as API.Publication);
+      setIsShareDialogOpen(true);
     }
   };
 
@@ -310,6 +350,7 @@ export function EventBoardScreen() {
               onAttendance={handleAttendance}
               onEditEvent={handleEditEvent}
               onEditPublication={handleEditPublication}
+              onSharePublication={handleSharePublication}
               onCreateEvent={() => navigate("/create-event")}
               onCreatePublication={() => setCreatePublicationOpen(true)}
             />
@@ -327,8 +368,12 @@ export function EventBoardScreen() {
               onAttendance={handleAttendance}
               onEditEvent={handleEditEvent}
               onEditPublication={handleEditPublication}
+              onSharePublication={handleSharePublication}
               onCreateEvent={() => navigate("/create-event")}
               onCreatePublication={() => setCreatePublicationOpen(true)}
+              currentPage={publicationMeta?.current_page}
+              totalPages={publicationMeta?.last_page}
+              onPageChange={setPublicationPage}
             />
           </TabsContent>
         </Tabs>
@@ -405,12 +450,18 @@ export function EventBoardScreen() {
                 status: data.saveAsDraft ? "borrador" : data.status,
                 visibility: data.visibility,
                 summary: data.summary || "",
-                image_url: data.image,
+                image: data.image,
               },
             });
           }
         }}
         isPending={updatePublicationMutation.isPending}
+      />
+
+      <SharePublicationDialog
+        open={isShareDialogOpen}
+        onOpenChange={setIsShareDialogOpen}
+        publication={selectedPublicationForShare}
       />
     </div>
   );
