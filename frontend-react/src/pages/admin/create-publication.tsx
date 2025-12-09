@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 import { PublicationAPI } from "@/services/api";
 import { toast } from "sonner";
@@ -31,6 +31,10 @@ export function CreatePublicationPage() {
     status: "activo",
     image: null as File | null,
   });
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>

@@ -84,13 +84,14 @@ export function GuestDashboard() {
                         aria-label="Abrir menú de usuario"
                         className="hover:opacity-80 transition-opacity"
                       >
-                        <Avatar className="h-8 w-8">
-                          <AvatarImage src={user?.avatar || undefined} />
-                          <AvatarFallback>
+                        <Avatar className="h-8 w-8 flex-shrink-0">
+                          {user?.avatar && <AvatarImage src={user.avatar} alt={user.name} />}
+                          <AvatarFallback className="bg-blue-500 text-white text-xs font-semibold">
                             {user?.name
                               ?.split(" ")
                               .map((n) => n[0])
-                              .join("")}
+                              .join("")
+                              .toUpperCase()}
                           </AvatarFallback>
                         </Avatar>
                       </button>

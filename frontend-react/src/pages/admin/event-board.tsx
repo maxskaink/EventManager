@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 import { EventAPI, ArticleAPI, PublicationAPI } from "../../services/api";
 import { toast } from "sonner";
@@ -27,6 +27,10 @@ export function EventBoardScreen() {
   const user = useAuthStore(s => s.user);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   // Estado de UI y Filtros
   const [searchQuery, setSearchQuery] = useState("");
