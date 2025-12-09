@@ -100,14 +100,14 @@ export const UserDetailScreen = () => {
 
         {/* Tabs */}
         <Tabs defaultValue="certificates" className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 gap-2">
             <TabsTrigger value="certificates" className="text-xs md:text-sm">Certificados</TabsTrigger>
             <TabsTrigger value="external" className="text-xs md:text-sm">Eventos Ext.</TabsTrigger>
             <TabsTrigger value="participations" className="text-xs md:text-sm">Participaciones</TabsTrigger>
             <TabsTrigger value="articles" className="text-xs md:text-sm">Artículos</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="certificates" className="mt-4 space-y-4">
+          <TabsContent value="certificates" className="mt-6 sm:mt-4 space-y-4">
             {certificates.length === 0 ? (
               <p className="text-center text-muted-foreground py-4">No hay certificados.</p>
             ) : (
@@ -128,7 +128,7 @@ export const UserDetailScreen = () => {
             )}
           </TabsContent>
 
-          <TabsContent value="external" className="mt-4 space-y-4">
+          <TabsContent value="external" className="mt-6 sm:mt-4 space-y-4">
             {externalEvents.length === 0 ? (
               <p className="text-center text-muted-foreground py-4">No hay eventos externos.</p>
             ) : (
@@ -149,7 +149,7 @@ export const UserDetailScreen = () => {
             )}
           </TabsContent>
 
-          <TabsContent value="participations" className="mt-4 space-y-4">
+          <TabsContent value="participations" className="mt-6 sm:mt-4 space-y-4">
             {(!participations || participations.length === 0) ? (
               <p className="text-center text-muted-foreground py-4">No hay participaciones.</p>
             ) : (
@@ -172,7 +172,7 @@ export const UserDetailScreen = () => {
             )}
           </TabsContent>
 
-          <TabsContent value="articles" className="mt-4 space-y-4">
+          <TabsContent value="articles" className="mt-6 sm:mt-4 space-y-4">
             {(!articles || articles.length === 0) ? (
               <p className="text-center text-muted-foreground py-4">No hay artículos.</p>
             ) : (
