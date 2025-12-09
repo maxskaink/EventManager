@@ -30,12 +30,12 @@ export function LoginScreen() {
     >
       {/* Capa decorativa de patrón */}
       {/* Capa decorativa de patrón */}
-      <div className="absolute inset-0 -z-20 bg-[radial-gradient(circle_at_50%_50%,rgba(59,130,246,0.2),transparent_70%)]" />
-      <div className="absolute inset-0 -z-10 bg-gradient-to-br from-blue-50/80 via-white/50 to-blue-100/50 backdrop-blur-[2px]" />
-      <div className="absolute inset-0 pointer-events-none select-none opacity-20 animate-noise mix-blend-soft-light" />
+      <div className="absolute inset-0 -z-20 bg-[radial-gradient(circle_at_50%_50%,rgba(59,130,246,0.15),transparent_70%)]" />
+      <div className="absolute inset-0 -z-10 bg-gradient-to-br from-blue-100/40 via-white/30 to-blue-200/40 backdrop-blur-[0.5px]" />
+      <div className="absolute inset-0 pointer-events-none select-none opacity-5 animate-noise mix-blend-soft-light" />
 
       <div className="w-full max-w-sm relative animate-in fade-in zoom-in-95 duration-500">
-        <Card className="login-panel w-full overflow-hidden transition-all duration-300 pt-8 pb-8 border-white/40 bg-white/70 backdrop-blur-md shadow-2xl hover:shadow-blue-500/10 hover:border-white/60">
+        <Card className="login-panel w-full overflow-hidden transition-all duration-300 pt-8 pb-8 border-blue-300/60 bg-blue-50/90 backdrop-blur-md shadow-2xl hover:shadow-blue-500/20 hover:border-blue-400/80">
           <Button
             variant="ghost"
             size="icon"
@@ -69,7 +69,7 @@ export function LoginScreen() {
 
             <Button
               onClick={handleLogin}
-              className="group relative w-full h-14 font-semibold text-lg rounded-xl bg-gradient-to-r from-blue-600 via-blue-500 to-blue-400 text-white shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 overflow-hidden"
+              className="group relative w-full h-14 font-semibold text-lg rounded-xl bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 text-white shadow-lg shadow-blue-600/40 hover:shadow-blue-600/60 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 focus-visible:ring-2 focus-visible:ring-blue-700 focus-visible:ring-offset-2 overflow-hidden"
             >
               <span className="relative z-10 flex items-center justify-center gap-2">
                 <span className="inline-block transition-transform group-hover:scale-105">Iniciar sesión con Google</span>
