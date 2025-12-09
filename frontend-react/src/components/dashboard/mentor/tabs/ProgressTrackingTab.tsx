@@ -138,8 +138,9 @@ export const ProgressTrackingTab: React.FC<ProgressTrackingTabProps> = ({
 
               return (
                 <div key={user.id} className="border rounded-lg p-4">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-3">
+                  {/* Mobile S: flex-col (avatar + info vertical), md+: flex-row (avatar + info horizontal) */}
+                  <div className="flex flex-col items-center gap-3 mb-4 sm:flex-row sm:items-start sm:justify-between">
+                    <div className="flex flex-col items-center gap-3 sm:flex-row sm:items-center">
                       <Avatar className="h-10 w-10">
                         <AvatarImage src={user.avatar ?? undefined} />
                         <AvatarFallback>
@@ -147,7 +148,7 @@ export const ProgressTrackingTab: React.FC<ProgressTrackingTabProps> = ({
                             "?"}
                         </AvatarFallback>
                       </Avatar>
-                      <div>
+                      <div className="text-center sm:text-left">
                         <h3 className="font-medium">
                           {user.name || "Sin nombre"}
                         </h3>
@@ -158,7 +159,7 @@ export const ProgressTrackingTab: React.FC<ProgressTrackingTabProps> = ({
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="text-center p-3 bg-muted rounded-lg">
                       <Calendar className="h-6 w-6 mx-auto mb-2 text-primary" />
                       <p className="text-sm text-muted-foreground">
@@ -180,11 +181,12 @@ export const ProgressTrackingTab: React.FC<ProgressTrackingTabProps> = ({
 
                   </div>
 
-                  <div className="mt-4 flex gap-2">
+                  <div className="mt-4 flex flex-col gap-2 sm:flex-row">
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => onViewProfile(memberData)}
+                      className="w-full sm:w-auto"
                     >
                       Ver Perfil Completo
                     </Button>
@@ -192,6 +194,7 @@ export const ProgressTrackingTab: React.FC<ProgressTrackingTabProps> = ({
                       variant="outline"
                       size="sm"
                       onClick={() => onGenerateReport(memberData)}
+                      className="w-full sm:w-auto"
                     >
                       Generar Reporte
                     </Button>

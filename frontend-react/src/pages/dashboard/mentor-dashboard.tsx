@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { UserAPI, EventAPI, PublicationAPI } from "../../services/api";
+import { UserAPI } from "../../services/api";
 import { toast } from "sonner";
 import { BNavBarMentor } from "../../components/ui/b-navbar-mentor";
 import {
@@ -12,25 +12,17 @@ import {
   ProfileModal,
   ProfileReportModal,
   InterestManagerModal,
-  type Submission,
   type MemberProgressData,
 } from "../../components/dashboard/mentor";
 import { getErrorMessageForToast } from "../../features/errors/error.helpers";
 import { useAuthStore } from "../../stores/auth.store";
 import { HideOnScrollWrapper } from "@/components/layout/HideOnScrollWrapper";
 
-// Submissions se construirán dinámicamente a partir de eventos y publicaciones reales
-
-// Submissions se construirán dinámicamente a partir de eventos y publicaciones reales
-
 export function MentorDashboardPage() {
   const user = useAuthStore(s => s.user)
   const logout = useAuthStore(s => s.logout)
   const [users, setUsers] = useState<API.User[]>([]);
   const [loading, setLoading] = useState(true);
-
-  // Estado de submissions generado dinámicamente
-  const [submissions, setSubmissions] = useState<Submission[]>([]);
 
   // Estado centralizado para todos los modales
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
@@ -42,7 +34,6 @@ export function MentorDashboardPage() {
 
   useEffect(() => {
     loadUsers();
-    // No cargar contenido automáticamente, solo cuando se acceda a la tab
   }, []);
 
   const loadUsers = async () => {
@@ -50,7 +41,7 @@ export function MentorDashboardPage() {
       setLoading(true);
       const response = await UserAPI.listUsersByFilters({ 
         status: 'active',
-        per_page: 100 // Reducido a 100 para cargar rápido
+        per_page: 100
       });
       setUsers(response.data);
     } catch (error) {
@@ -58,78 +49,6 @@ export function MentorDashboardPage() {
       console.error("Error loading users:", error);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const normalizeEventStatus = (status: string | null | undefined): Submission["status"] => {
-    const normalized = status?.toLowerCase();
-    if (!normalized) return "pending";
-    if (["rejected", "rechazado", "cancelado", "cancelled", "inactivo"].includes(normalized)) {
-      return "rejected";
-    }
-    if (["approved", "aprobado", "publicado", "finalizado", "activo"].includes(normalized)) {
-      return normalized === "activo" ? "pending" : "approved";
-    }
-    return "pending";
-  };
-
-  const normalizePublicationStatus = (status: string | null | undefined): Submission["status"] => {
-    const normalized = status?.toLowerCase();
-    if (!normalized) return "pending";
-    if (["inactivo", "rechazado", "rejected"].includes(normalized)) {
-      return "rejected";
-    }
-    if (["activo", "publicado", "approved"].includes(normalized)) {
-      return "approved";
-    }
-    return "pending";
-  };
-
-  const loadContentForReview = async () => {
-    try {
-      // Cargar eventos y publicaciones secuencialmente para no sobrecargar
-      const eventsData = await EventAPI.listAllEvents().catch((error: unknown) => {
-        console.error("Error cargando eventos:", error);
-        return [] as API.Event[];
-      });
-
-      // Pequeño delay entre solicitudes
-      await new Promise(resolve => setTimeout(resolve, 200));
-
-      // TODO: Fix the component to handle various pages
-      const publicationsData = await PublicationAPI.listAllPublications({ page: 1}).catch((error: unknown) => {
-        console.warn("Publicaciones no disponibles:", error);
-        return [] as API.Publication[];
-      });
-
-      // Asegurar que tenemos arrays válidos
-      const safeEvents = Array.isArray(eventsData) ? eventsData : [];
-      const safePublications = Array.isArray(publicationsData) ? publicationsData : [];
-
-      const eventSubs: Submission[] = safeEvents.map((event: API.Event) => ({
-        id: String(event.id),
-        type: "event",
-        title: event.name,
-        submittedById: null,
-        date: event.start_date,
-        status: normalizeEventStatus(event.status),
-        description: event.description,
-      }));
-
-      const publicationSubs: Submission[] = safePublications.map((publication: API.Publication) => ({
-        id: String(publication.id),
-        type: "publication",
-        title: publication.title,
-        submittedById: null,
-        date: publication.published_at,
-        status: normalizePublicationStatus(publication.status),
-        description: publication.summary ?? publication.content,
-      }));
-
-      setSubmissions([...eventSubs, ...publicationSubs]);
-    } catch (error) {
-      console.error("Error general cargando contenido:", error);
-      toast.error("Ocurrió un error al cargar el contenido para revisión");
     }
   };
 
@@ -148,29 +67,6 @@ export function MentorDashboardPage() {
     }
   };
 
-  // Handlers para lógica de submissions
-  const handleApproveSubmission = (submissionId: string) => {
-    setSubmissions(submissions.map(sub =>
-      sub.id === submissionId
-        ? { ...sub, status: "approved" as const }
-        : sub
-    ));
-    toast.success("✅ Contenido aprobado exitosamente");
-    // Recargar contenido después de aprobar
-    setTimeout(() => loadContentForReview(), 500);
-  };
-
-  const handleRejectSubmission = (submissionId: string) => {
-    setSubmissions(submissions.map(sub =>
-      sub.id === submissionId
-        ? { ...sub, status: "rejected" as const }
-        : sub
-    ));
-    toast.error("❌ Contenido rechazado");
-    // Recargar contenido después de rechazar
-    setTimeout(() => loadContentForReview(), 500);
-  };
-
   // Handlers para abrir modales
   const handleViewProfile = (member: MemberProgressData) => {
     setSelectedMember(member);
@@ -182,9 +78,7 @@ export function MentorDashboardPage() {
     setIsReportModalOpen(true);
   };
 
-  const pendingSubmissions = submissions.filter(s => s.status === "pending");
-
-  if (!user) return null; // O un spinner de carga
+  if (!user) return null;
 
   return (
     <div className="space-y-8 bg-gray-50/50 min-h-screen pb-10">
@@ -209,13 +103,9 @@ export function MentorDashboardPage() {
         <MentorTabs
           users={users}
           loadingUsers={loading}
-          submissions={submissions}
-          onApproveSubmission={handleApproveSubmission}
-          onRejectSubmission={handleRejectSubmission}
           onChangeRole={handleRoleChange}
           onViewProfile={handleViewProfile}
           onGenerateReport={handleGenerateReport}
-          onLoadSubmissions={loadContentForReview}
         />
       </div>
 
@@ -239,8 +129,6 @@ export function MentorDashboardPage() {
         open={isGeneralReportOpen}
         onOpenChange={setIsGeneralReportOpen}
         users={users}
-        submissions={submissions}
-        pendingSubmissions={pendingSubmissions}
       />
 
       <NotificationsModal

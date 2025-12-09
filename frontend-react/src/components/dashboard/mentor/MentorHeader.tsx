@@ -1,8 +1,6 @@
 import React from 'react';
-import { Button } from '../../ui/button';
 import { Badge } from '../../ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '../../ui/avatar';
-import { LogOut } from 'lucide-react';
 import brainImage from '../../../assets/brain.png';
 import { NotificationPopover } from '@/components/notifications/NotificationPopover';
 import { LogoutConfirmDialog } from '../../auth/LogoutConfirmDialog';
@@ -40,33 +38,35 @@ export const MentorHeader: React.FC<MentorHeaderProps> = ({
             />
             <div>
               <h1>Panel de Mentor</h1>
-              <p className="text-muted-foreground">
+              <p className="text-muted-foreground hidden md:block">
                 Gestión avanzada del semillero
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-4">
-
-
             <div className="flex items-center gap-2">
-              <Avatar className="h-8 w-8">
-                <AvatarImage src={user?.avatar ?? undefined} />
-                <AvatarFallback>
-                  {user?.name
-                    ?.split(" ")
-                    .map((n) => n[0])
-                    .join("")}
-                </AvatarFallback>
-              </Avatar>
+              <button
+                onClick={handleLogoutClick}
+                className="hover:opacity-80 transition-opacity"
+                title="Cerrar sesión"
+                aria-label="Cerrar sesión"
+              >
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src={user?.avatar ?? undefined} />
+                  <AvatarFallback>
+                    {user?.name
+                      ?.split(" ")
+                      .map((n) => n[0])
+                      .join("")}
+                  </AvatarFallback>
+                </Avatar>
+              </button>
               <span className="hidden sm:inline">{user?.name}</span>
               <Badge variant="secondary">Mentor</Badge>
             </div>
 
             <NotificationPopover />
-            <Button variant="ghost-destructive" size="icon" onClick={handleLogoutClick} title="Cerrar sesión" aria-label="Cerrar sesión">
-              <LogOut className="h-5 w-5" />
-            </Button>
           </div>
         </div>
       </div>

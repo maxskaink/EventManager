@@ -4,7 +4,7 @@ import { InterestsAPI } from "../../../services/api";
 import { Button } from "../../ui/button";
 import { Input } from "../../ui/input";
 import { Badge } from "../../ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../ui/card";
+import { Card, CardContent } from "../../ui/card";
 import { ConfirmDeleteDialog } from "../../profile/dialogs/confirm-delete-dialog";
 import { Loader2, Plus, X } from "lucide-react";
 import { toast } from "sonner";
@@ -67,13 +67,7 @@ export function InterestManager() {
     return (
         <>
             <Card>
-                <CardHeader>
-                    <CardTitle>Gestión de Intereses</CardTitle>
-                    <CardDescription>
-                        Administra los temas de interés disponibles para los usuarios.
-                    </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
+                <CardContent className="space-y-6 pt-6">
                     {/* Add Interest Form */}
                     <div className="flex gap-2">
                         <Input
@@ -86,13 +80,16 @@ export function InterestManager() {
                         <Button
                             onClick={handleAddInterest}
                             disabled={!newInterest.trim() || addInterestMutation.isPending}
+                            className="w-auto"
                         >
                             {addInterestMutation.isPending ? (
                                 <Loader2 className="h-4 w-4 animate-spin" />
                             ) : (
-                                <Plus className="h-4 w-4 mr-2" />
+                                <>
+                                    <Plus className="h-4 w-4 md:mr-2" />
+                                    <span className="hidden md:inline">Agregar</span>
+                                </>
                             )}
-                            Agregar
                         </Button>
                     </div>
 

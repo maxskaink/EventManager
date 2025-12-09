@@ -1,7 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '../../ui/avatar';
-import { LogOut } from 'lucide-react';
-// Asumiendo que el tipo 'User' está disponible en tu contexto o en 'types.d.ts'
+import { LogoutConfirmDialog } from '../../auth/LogoutConfirmDialog';
 
 interface DashboardHeaderProps {
   user: User;
@@ -9,27 +8,44 @@ interface DashboardHeaderProps {
 }
 
 export const DashboardHeader: React.FC<DashboardHeaderProps> = ({ user, onLogout }) => {
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+
+  const handleLogoutClick = () => {
+    setShowLogoutConfirm(true);
+  };
+
+  const handleConfirmLogout = () => {
+    onLogout();
+    setShowLogoutConfirm(false);
+  };
+
   return (
-    <div className="bg-[#0a2740] p-4 shadow-sm text-white">
-      <div className="max-w-4xl mx-auto flex items-center gap-4">
-        <Avatar className="h-12 w-12">
-          <AvatarImage src={user.avatar ?? undefined} />
-          <AvatarFallback>{user.name?.charAt(0).toUpperCase()}</AvatarFallback>
-        </Avatar>
-        <button
-          data-slot="button"
-          onClick={onLogout}
-          className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50 size-9 rounded-md"
-          title="Cerrar sesión"
-          aria-label="Cerrar sesión"
-        >
-          <LogOut className="h-5 w-5" />
-        </button>
-        <div className="flex-1">
-          <h1>Panel de Coordinación</h1>
-          <p className="text-white/80">Bienvenido, {user.name}</p>
+    <>
+      <div className="bg-[#0a2740] p-4 shadow-sm text-white">
+        <div className="max-w-4xl mx-auto flex items-center gap-4">
+          <button
+            onClick={handleLogoutClick}
+            className="hover:opacity-80 transition-opacity"
+            title="Cerrar sesión"
+            aria-label="Cerrar sesión"
+          >
+            <Avatar className="h-12 w-12">
+              <AvatarImage src={user.avatar ?? undefined} />
+              <AvatarFallback>{user.name?.charAt(0).toUpperCase()}</AvatarFallback>
+            </Avatar>
+          </button>
+          <div className="flex-1">
+            <h1>Panel de Coordinación</h1>
+            <p className="text-white/80 hidden md:block">Bienvenido, {user.name}</p>
+            <p className="text-white/80 md:hidden text-sm">{user.name?.split(' ')[0]}</p>
+          </div>
         </div>
       </div>
-    </div>
+      <LogoutConfirmDialog
+        open={showLogoutConfirm}
+        onOpenChange={setShowLogoutConfirm}
+        onConfirm={handleConfirmLogout}
+      />
+    </>
   );
 };
