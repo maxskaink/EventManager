@@ -27,6 +27,7 @@ return new class extends Migration {
             $table->string('virtual_url')->nullable();
             $table->string('status', 50);
             $table->integer('capacity')->nullable();
+            $table->integer('enrolled_participants')->default(0);
             $table->timestamps();
         });
     }

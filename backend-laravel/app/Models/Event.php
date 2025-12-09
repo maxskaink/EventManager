@@ -3,7 +3,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 
@@ -20,6 +19,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $virtual_url
  * @property string $status
  * @property int|null $capacity
+ * @property int $enrolled_participants
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
@@ -44,6 +44,7 @@ class Event extends Model
         'virtual_url',
         'status',
         'capacity',
+        'enrolled_participants',
     ];
 
     /**
@@ -57,6 +58,7 @@ class Event extends Model
             'start_date' => 'datetime',
             'end_date' => 'datetime',
             'capacity' => 'integer',
+            'enrolled_participants' => 'integer',
             'publication_id' => 'integer',
             'virtual_url' => 'string',
             'created_at' => 'datetime',
