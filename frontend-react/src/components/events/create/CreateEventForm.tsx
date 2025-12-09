@@ -77,16 +77,16 @@ export const CreateEventForm: React.FC<Props> = ({
   }, [publicationData.image]);
 
   return (
-    <div className="max-w-4xl mx-auto p-3 sm:p-4 space-y-4 sm:space-y-6">
+    <div className="max-w-4xl mx-auto p-2 sm:p-4 md:p-0 space-y-3 sm:space-y-4 md:space-y-6">
       {/* Información básica */}
-      <Card className="shadow-md hover:shadow-lg transition-shadow duration-300">
-        <CardHeader className="px-4 sm:px-6 py-3 sm:py-6">
+      <Card className="shadow-none md:shadow-md md:hover:shadow-lg transition-shadow duration-300 border-0 md:border rounded-none md:rounded-xl">
+        <CardHeader className="px-2 sm:px-4 md:px-6 py-2 sm:py-3 md:py-6">
           <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
             <Info className="h-5 w-5 shrink-0" />
             Información Básica
           </CardTitle>
         </CardHeader>
-        <CardContent className="px-4 sm:px-6 pb-4 sm:pb-6 space-y-4">
+        <CardContent className="px-2 sm:px-4 md:px-6 pb-3 sm:pb-4 md:pb-6 space-y-4">
           <div>
             <Label htmlFor="name">Nombre del Evento *</Label>
             <Input
@@ -132,14 +132,14 @@ export const CreateEventForm: React.FC<Props> = ({
       </Card>
 
       {/* Fecha y hora */}
-      <Card className="shadow-md hover:shadow-lg transition-shadow duration-300">
-        <CardHeader className="px-4 sm:px-6 py-3 sm:py-6">
+      <Card className="shadow-none md:shadow-md md:hover:shadow-lg transition-shadow duration-300 border-0 md:border rounded-none md:rounded-xl">
+        <CardHeader className="px-2 sm:px-4 md:px-6 py-2 sm:py-3 md:py-6">
           <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
             <Calendar className="h-5 w-5 shrink-0" />
             Fecha y Hora
           </CardTitle>
         </CardHeader>
-        <CardContent className="px-4 sm:px-6 pb-4 sm:pb-6 space-y-4">
+        <CardContent className="px-2 sm:px-4 md:px-6 pb-3 sm:pb-4 md:pb-6 space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Label htmlFor="start_date">Fecha de Inicio *</Label>
@@ -189,14 +189,14 @@ export const CreateEventForm: React.FC<Props> = ({
       </Card>
 
       {/* Modalidad y ubicación */}
-      <Card className="shadow-md hover:shadow-lg transition-shadow duration-300">
-        <CardHeader className="px-4 sm:px-6 py-3 sm:py-6">
+      <Card className="shadow-none md:shadow-md md:hover:shadow-lg transition-shadow duration-300 border-0 md:border rounded-none md:rounded-xl">
+        <CardHeader className="px-2 sm:px-4 md:px-6 py-2 sm:py-3 md:py-6">
           <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
             <MapPin className="h-5 w-5 shrink-0" />
             Modalidad y Ubicación
           </CardTitle>
         </CardHeader>
-        <CardContent className="px-4 sm:px-6 pb-4 sm:pb-6 space-y-4">
+        <CardContent className="px-2 sm:px-4 md:px-6 pb-3 sm:pb-4 md:pb-6 space-y-4">
           <div>
             <Label htmlFor="modality">Modalidad *</Label>
             <Select
@@ -236,14 +236,14 @@ export const CreateEventForm: React.FC<Props> = ({
       </Card>
 
       {/* Capacidad y estado */}
-      <Card className="shadow-md hover:shadow-lg transition-shadow duration-300">
-        <CardHeader className="px-4 sm:px-6 py-3 sm:py-6">
+      <Card className="shadow-none md:shadow-md md:hover:shadow-lg transition-shadow duration-300 border-0 md:border rounded-none md:rounded-xl">
+        <CardHeader className="px-2 sm:px-4 md:px-6 py-2 sm:py-3 md:py-6">
           <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
             <Users className="h-5 w-5 shrink-0" />
             Capacidad y Estado
           </CardTitle>
         </CardHeader>
-        <CardContent className="px-4 sm:px-6 pb-4 sm:pb-6 space-y-4">
+        <CardContent className="px-2 sm:px-4 md:px-6 pb-3 sm:pb-4 md:pb-6 space-y-4">
           <div>
             <Label htmlFor="capacity">Capacidad Máxima (opcional)</Label>
             <Input
@@ -276,8 +276,8 @@ export const CreateEventForm: React.FC<Props> = ({
       </Card>
 
       {/* Publicación */}
-      <Card className="border-blue-200 dark:border-blue-800 shadow-md hover:shadow-lg transition-shadow duration-300">
-        <CardHeader className="pb-3 px-4 sm:px-6">
+      <Card className="border-blue-200 dark:border-blue-800 shadow-none md:shadow-md md:hover:shadow-lg transition-shadow duration-300 border-0 md:border rounded-none md:rounded-xl">
+        <CardHeader className="pb-2 sm:pb-3 md:pb-3 px-2 sm:px-4 md:px-6 pt-2 sm:pt-3 md:pt-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <CardTitle className="flex items-center gap-2 text-blue-700 dark:text-blue-400 text-base sm:text-lg">
               <FileText className="h-5 w-5 shrink-0" />
@@ -299,7 +299,7 @@ export const CreateEventForm: React.FC<Props> = ({
         </CardHeader>
 
         {publishImmediately && (
-          <CardContent className="px-4 sm:px-6 pb-4 sm:pb-6 space-y-6 pt-0 animate-in fade-in slide-in-from-top-4 duration-300">
+          <CardContent className="px-2 sm:px-4 md:px-6 pb-3 sm:pb-4 md:pb-6 space-y-6 pt-0 animate-in fade-in slide-in-from-top-4 duration-300">
             <div className="grid grid-cols-1 gap-6 py-4">
               {/* Imagen */}
               <div className="space-y-2">
@@ -396,7 +396,7 @@ export const CreateEventForm: React.FC<Props> = ({
       </Card>
 
       {/* Botones de acción */}
-      <div className="flex flex-col-reverse sm:flex-row gap-3 justify-end px-0">
+      <div className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-3 justify-end px-2 sm:px-4 md:px-0 pb-2 sm:pb-0">
         <Button variant="outline" onClick={onCancel} className="w-full sm:w-auto text-xs sm:text-sm py-2 sm:py-auto h-auto sm:h-9">
           Cancelar
         </Button>

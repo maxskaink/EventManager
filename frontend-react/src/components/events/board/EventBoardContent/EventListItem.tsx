@@ -9,7 +9,6 @@ import {
   getStatusColor,
   getStatusLabel,
   getOccupancyLevel,
-  isEventType,
 } from "../../../../features/events/event-board.helpers";
 import type { ContentItem, ItemToDelete } from "../../../../features/events";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../../../ui/tooltip";
@@ -37,7 +36,7 @@ const EventListItem = ({
   onEditPublication,
   onSharePublication,
 }: EventListItemProps) => {
-  const isEvent = isEventType(item.type);
+  const isEvent = item.kind === 'event';
   const occupancy = isEvent && item.capacity && item.enrolled ? getOccupancyLevel(item.enrolled, item.capacity) : null;
   const hasEnded = isEvent && new Date(item.date) < new Date();
   
@@ -109,24 +108,27 @@ const EventListItem = ({
               <span className="hidden sm:inline ml-1">Ver</span>
             </Button>
 
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button 
-                    size="sm" 
-                    variant="outline"
-                    className="flex-1 sm:flex-auto text-xs sm:text-sm h-8 px-2 transition-all hover:bg-emerald-50 hover:border-emerald-300 hover:text-emerald-700"
-                    onClick={() => onPublish(item)}
-                  >
-                    <Share className="h-3.5 w-3.5 shrink-0" />
-                    <span className="hidden sm:inline ml-1">Publicar</span>
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent sideOffset={5}>
-                  <p>Publicar</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            {/* Solo mostrar botón "Publicar" si es un evento */}
+            {isEvent && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      className="flex-1 sm:flex-auto text-xs sm:text-sm h-8 px-2 transition-all hover:bg-emerald-50 hover:border-emerald-300 hover:text-emerald-700"
+                      onClick={() => onPublish(item)}
+                    >
+                      <Share className="h-3.5 w-3.5 shrink-0" />
+                      <span className="hidden sm:inline ml-1">Publicar</span>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent sideOffset={5}>
+                    <p>Publicar</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -139,15 +141,19 @@ const EventListItem = ({
                   <Eye className="h-4 w-4 mr-2" />
                   Ver detalles
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onAttendance(item)} className="cursor-pointer">
-                  <Users className="h-4 w-4 mr-2" />
-                  Ver participantes
-                </DropdownMenuItem>
-                {hasEnded && (
-                  <DropdownMenuItem onClick={() => onAttendance(item)} className="cursor-pointer">
-                    <Users className="h-4 w-4 mr-2" />
-                    Asistencia
-                  </DropdownMenuItem>
+                {isEvent && (
+                  <>
+                    <DropdownMenuItem onClick={() => onAttendance(item)} className="cursor-pointer">
+                      <Users className="h-4 w-4 mr-2" />
+                      Ver participantes
+                    </DropdownMenuItem>
+                    {hasEnded && (
+                      <DropdownMenuItem onClick={() => onAttendance(item)} className="cursor-pointer">
+                        <Users className="h-4 w-4 mr-2" />
+                        Asistencia
+                      </DropdownMenuItem>
+                    )}
+                  </>
                 )}
                 {/* Show event edit if it's an event OR if it's a publication with an event */}
                 {(isEvent || hasEvent) && (
@@ -163,8 +169,8 @@ const EventListItem = ({
                     Editar Publicación
                   </DropdownMenuItem>
                 )}
-                {/* Share Option - Only for direct publications */}
-                {!isEvent && (
+                {/* Share Option - Only for draft publications */}
+                {item.kind === 'publication' && item.status === 'borrador' && (
                   <DropdownMenuItem onClick={() => onSharePublication(item)} className="cursor-pointer">
                     <Share2 className="h-4 w-4 mr-2" /> Compartir Acceso
                   </DropdownMenuItem>

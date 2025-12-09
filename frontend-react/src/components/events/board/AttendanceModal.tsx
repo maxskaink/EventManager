@@ -14,10 +14,9 @@ interface AttendanceModalProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   eventId: number | null;
-  eventTitle: string;
 }
 
-export function AttendanceModal({ isOpen, onOpenChange, eventId, eventTitle }: AttendanceModalProps) {
+export function AttendanceModal({ isOpen, onOpenChange, eventId }: AttendanceModalProps) {
   const [selectedUsers, setSelectedUsers] = useState<number[]>([]);
   const queryClient = useQueryClient();
 
@@ -121,63 +120,64 @@ export function AttendanceModal({ isOpen, onOpenChange, eventId, eventTitle }: A
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[500px] w-[calc(100vw-2rem)] max-h-[90vh]">
         <DialogHeader>
-          <DialogTitle>Asistencia - {eventTitle}</DialogTitle>
+          <DialogTitle className="text-base sm:text-lg">Asistencia</DialogTitle>
         </DialogHeader>
 
-        <div className="py-4">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center space-x-2">
+        <div className="py-2 sm:py-4">
+          <div className="flex items-center justify-between mb-4 gap-2">
+            <div className="flex items-center space-x-2 flex-1 min-w-0">
               <Checkbox 
                 id="select-all" 
                 checked={enrollments.length > 0 && selectedUsers.length === enrollments.length}
                 onCheckedChange={toggleAll}
                 disabled={isLoading || enrollments.length === 0}
+                className="size-3 sm:size-4"
               />
-              <label htmlFor="select-all" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+              <label htmlFor="select-all" className="text-xs sm:text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 truncate">
                 Seleccionar todos
               </label>
             </div>
-            <span className="text-sm text-muted-foreground">
-              {selectedUsers.length} seleccionados
+            <span className="text-xs sm:text-sm text-muted-foreground whitespace-nowrap">
+              {selectedUsers.length} sel.
             </span>
           </div>
 
-          <ScrollArea className="h-[300px] border rounded-md p-4">
+          <ScrollArea className="h-[250px] sm:h-[300px] border rounded-md p-2 sm:p-4">
             {isLoading ? (
-              <div className="text-center py-8">Cargando participantes...</div>
+              <div className="text-center py-8 text-xs sm:text-sm">Cargando participantes...</div>
             ) : enrollments.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">No hay participantes inscritos.</div>
+              <div className="text-center py-8 text-xs sm:text-sm text-muted-foreground">No hay participantes inscritos.</div>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-2 sm:space-y-4">
                 {enrollments.map((enrollment) => (
-                  <div key={enrollment.id} className="flex items-center space-x-4">
+                  <div key={enrollment.id} className="flex items-center gap-2 sm:gap-4">
                     <Checkbox 
                       id={`user-${enrollment.user_id}`} 
                       checked={selectedUsers.includes(enrollment.user_id)}
                       onCheckedChange={() => toggleUser(enrollment.user_id)}
+                      className="size-3 sm:size-4 shrink-0"
                     />
-                    <div className="flex items-center gap-3 flex-1">
-                      <Avatar className="h-8 w-8">
+                    <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+                      <Avatar className="h-6 sm:h-8 w-6 sm:w-8 shrink-0">
                         <AvatarImage src={userById.get(enrollment.user_id)?.avatar || undefined} />
-                        <AvatarFallback><User className="h-4 w-4" /></AvatarFallback>
+                        <AvatarFallback><User className="h-3 sm:h-4 w-3 sm:w-4" /></AvatarFallback>
                       </Avatar>
-                      <div className="grid gap-0.5">
+                      <div className="grid gap-0.5 min-w-0">
                         <label 
                           htmlFor={`user-${enrollment.user_id}`}
-                          className="text-sm font-medium leading-none cursor-pointer"
+                          className="text-xs sm:text-sm font-medium leading-none cursor-pointer truncate"
                         >
                           {userById.get(enrollment.user_id)?.name 
                             || userById.get(enrollment.user_id)?.email 
                             || `ID ${enrollment.user_id}`}
                         </label>
                         {userById.get(enrollment.user_id)?.email && (
-                          <p className="text-xs text-muted-foreground">{userById.get(enrollment.user_id)!.email}</p>
+                          <p className="text-xs text-muted-foreground truncate">{userById.get(enrollment.user_id)!.email}</p>
                         )}
                       </div>
-                      <div className="ml-auto">
-                         {/* We could show current status if available in enrollment object */}
+                      <div className="ml-auto shrink-0">
                          <span className="text-xs text-muted-foreground capitalize">{enrollment.status}</span>
                       </div>
                     </div>
@@ -193,14 +193,14 @@ export function AttendanceModal({ isOpen, onOpenChange, eventId, eventTitle }: A
             variant="destructive" 
             onClick={handleMarkAbsence}
             disabled={markAbsenceMutation.isPending || isLoading || enrollments.length === 0}
-            className="w-full sm:w-auto"
+            className="w-full sm:w-auto text-xs sm:text-sm h-8 sm:h-9 px-2 sm:px-4"
           >
             {markAbsenceMutation.isPending ? "Marcando..." : "Marcar Inasistencia"}
           </Button>
           <Button 
             onClick={handleMarkAttendance}
             disabled={markAttendanceMutation.isPending || isLoading || enrollments.length === 0}
-            className="w-full sm:w-auto"
+            className="w-full sm:w-auto text-xs sm:text-sm h-8 sm:h-9 px-2 sm:px-4"
           >
             {markAttendanceMutation.isPending ? "Marcando..." : "Marcar Asistencia"}
           </Button>

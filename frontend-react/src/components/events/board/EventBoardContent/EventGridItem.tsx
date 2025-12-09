@@ -6,7 +6,6 @@ import {
   getStatusColor,
   getStatusLabel,
   getTypeColor,
-  isEventType,
 } from "../../../../features/events/event-board.helpers";
 import { Badge } from "../../../ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../../../ui/dropdown-menu";
@@ -36,7 +35,7 @@ const EventGridItem = ({
   onEditPublication,
   onSharePublication,
 }: EventGridItemProps) => {
-  const isEvent = isEventType(item.type);
+  const isEvent = item.kind === 'event';
   const occupancy = isEvent && item.capacity && item.enrolled ? getOccupancyLevel(item.enrolled, item.capacity) : null;
 
   const eventDate = new Date(item.date);
@@ -77,15 +76,19 @@ const EventGridItem = ({
                   <Eye className="h-4 w-4 mr-2" />
                   Ver detalles
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onAttendance(item)} className="cursor-pointer">
-                    <Users className="h-4 w-4 mr-2" />
-                    Ver participantes
-                </DropdownMenuItem>
-                {hasEnded && (
-                  <DropdownMenuItem onClick={() => onAttendance(item)} className="cursor-pointer">
-                    <Users className="h-4 w-4 mr-2" />
-                    Asistencia
-                  </DropdownMenuItem>
+                {isEvent && (
+                  <>
+                    <DropdownMenuItem onClick={() => onAttendance(item)} className="cursor-pointer">
+                        <Users className="h-4 w-4 mr-2" />
+                        Ver participantes
+                    </DropdownMenuItem>
+                    {hasEnded && (
+                      <DropdownMenuItem onClick={() => onAttendance(item)} className="cursor-pointer">
+                        <Users className="h-4 w-4 mr-2" />
+                        Asistencia
+                      </DropdownMenuItem>
+                    )}
+                  </>
                 )}
                 {/* Show event edit if it's an event OR if it's a publication with an event */}
                 {(isEvent || hasEvent) && (
@@ -101,8 +104,8 @@ const EventGridItem = ({
                     Editar Publicación
                   </DropdownMenuItem>
                 )}
-                {/* Share Option - Only for direct publications or events with publications? User said "only a publication can modify it's access"  */}
-                {!isEvent && (
+                {/* Share Option - Only for draft publications */}
+                {item.kind === 'publication' && item.status === 'borrador' && (
                   <DropdownMenuItem onClick={() => onSharePublication(item)} className="cursor-pointer">
                     <Share2 className="h-4 w-4 mr-2" /> Compartir Acceso
                   </DropdownMenuItem>
@@ -165,23 +168,26 @@ const EventGridItem = ({
             <span className="hidden sm:inline">Ver</span>
             <span className="sm:hidden">Ver</span>
           </Button>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button 
-                  size="sm" 
-                  variant="outline"
-                  className="text-xs sm:text-sm h-8 px-2 transition-all hover:bg-emerald-50 hover:border-emerald-300 hover:text-emerald-700"
-                  onClick={() => onPublish(item)}
-                >
-                  <Share className="h-3.5 w-3.5 shrink-0" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent sideOffset={5}>
-                <p>Publicar</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          {/* Solo mostrar botón "Publicar" si es un evento */}
+          {isEvent && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button 
+                    size="sm" 
+                    variant="outline"
+                    className="text-xs sm:text-sm h-8 px-2 transition-all hover:bg-emerald-50 hover:border-emerald-300 hover:text-emerald-700"
+                    onClick={() => onPublish(item)}
+                  >
+                    <Share className="h-3.5 w-3.5 shrink-0" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent sideOffset={5}>
+                  <p>Publicar</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
         </div>
       </CardContent>
     </Card>

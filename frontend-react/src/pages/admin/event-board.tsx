@@ -378,7 +378,6 @@ export function EventBoardScreen() {
         isOpen={isAttendanceModalOpen}
         onOpenChange={setIsAttendanceModalOpen}
         eventId={selectedEventForAttendance?.id || null}
-        eventTitle={selectedEventForAttendance?.title || ""}
       />
 
       <EditEventDialog

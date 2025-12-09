@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { UnifiedHeader } from "@/components/layout/UnifiedHeader";
 import { HideOnScrollWrapper } from "@/components/layout/HideOnScrollWrapper";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -16,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ImagePlus, ArrowLeft } from "lucide-react";
+import { ImagePlus, ArrowLeft, Info } from "lucide-react";
 import { getErrorMessageForToast } from "@/features/errors/error.helpers";
 
 export function CreatePublicationPage() {
@@ -105,10 +105,16 @@ export function CreatePublicationPage() {
         />
       </HideOnScrollWrapper>
 
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Card className="border border-slate-200 shadow-lg rounded-2xl">
-          <CardContent className="p-6 sm:p-8">
-            <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="max-w-3xl mx-auto p-0 md:px-6 lg:px-8 md:py-8 space-y-8">
+        <Card className="border-0 md:border md:border-slate-200 shadow-none md:shadow-lg md:rounded-2xl rounded-none">
+          <CardHeader className="px-2 sm:px-4 md:px-6 py-2 sm:py-3 md:py-6 border-b border-slate-200">
+            <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+              <Info className="h-5 w-5 shrink-0" />
+              Información Básica
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-0 md:p-6 lg:p-8 min-h-[calc(100vh-200px)] md:min-h-auto">
+            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6 px-2 sm:px-4 md:px-0">
               {/* Título */}
               <div className="space-y-2">
                 <Label htmlFor="title" className="text-slate-700 font-semibold">
@@ -232,7 +238,7 @@ export function CreatePublicationPage() {
                 <div className="mt-2">
                   <label
                     htmlFor="image"
-                    className="flex flex-col items-center justify-center w-full px-6 py-12 border-2 border-dashed border-slate-300 rounded-xl cursor-pointer hover:border-blue-400 hover:bg-blue-50/50 transition-all duration-200 group disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex flex-col items-center justify-center w-full px-3 sm:px-6 py-6 sm:py-12 border-2 border-dashed border-slate-300 rounded-xl cursor-pointer hover:border-blue-400 hover:bg-blue-50/50 transition-all duration-200 group disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <div className="flex flex-col items-center justify-center">
                       <ImagePlus className="h-10 w-10 text-slate-400 mb-3 group-hover:text-blue-500 transition-colors" />
@@ -263,13 +269,13 @@ export function CreatePublicationPage() {
               </div>
 
               {/* Botones */}
-              <div className="flex flex-col-reverse sm:flex-row gap-3 pt-6 border-t border-slate-200">
+              <div className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-3 pt-4 sm:pt-6 border-t border-slate-200 px-2 sm:px-4 md:px-0 pb-2 sm:pb-0">
                 <Button
                   type="button"
                   variant="outline"
                   onClick={handleCancel}
                   disabled={isLoading}
-                  className="sm:w-auto flex items-center justify-center gap-2 border-slate-200 hover:bg-slate-50"
+                  className="w-full sm:w-auto flex items-center justify-center gap-2 border-slate-200 hover:bg-slate-50 text-xs sm:text-sm py-2 sm:py-auto h-auto sm:h-9"
                 >
                   <ArrowLeft className="h-4 w-4" />
                   Cancelar
@@ -277,7 +283,7 @@ export function CreatePublicationPage() {
                 <Button
                   type="submit"
                   disabled={isLoading}
-                  className="sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-md hover:shadow-lg transition-all"
+                  className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-md hover:shadow-lg transition-all text-xs sm:text-sm py-2 sm:py-auto h-auto sm:h-9"
                 >
                   {isLoading ? "Creando..." : "Crear Publicación"}
                 </Button>

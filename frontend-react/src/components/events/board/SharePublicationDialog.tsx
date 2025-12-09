@@ -7,6 +7,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 import { Loader2, Search, User, X, Shield, Trash2 } from "lucide-react";
 import { PublicationAPI, UserAPI } from "@/services/api";
 import { toast } from "sonner";
@@ -27,6 +29,11 @@ export function SharePublicationDialog({ open, onOpenChange, publication }: Shar
   // Grant Access State
   const [selectedUsers, setSelectedUsers] = useState<API.User[]>([]);
   const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
+  
+  // Filter State
+  const [typeFilter, setTypeFilter] = useState<string>(publication?.type || "evento");
+  const [statusFilter, setStatusFilter] = useState<string>(publication?.status || "borrador");
+  const [visibilityFilter, setVisibilityFilter] = useState<string>(publication?.visibility || "public");
   
   // --- QUERIES ---
 
@@ -203,6 +210,53 @@ export function SharePublicationDialog({ open, onOpenChange, publication }: Shar
                     <label htmlFor={`role-${role.id}`} className="text-sm cursor-pointer">{role.label}</label>
                   </div>
                 ))}
+              </div>
+            </div>
+
+            {/* Filtros de Tipo, Estado y Visibilidad */}
+            <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="type-select">Tipo</Label>
+                <Select value={typeFilter} onValueChange={setTypeFilter} disabled>
+                  <SelectTrigger id="type-select">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="evento">Evento</SelectItem>
+                    <SelectItem value="articulo">Artículo</SelectItem>
+                    <SelectItem value="aviso">Aviso</SelectItem>
+                    <SelectItem value="comunicado">Comunicado</SelectItem>
+                    <SelectItem value="material">Material</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="status-select">Estado</Label>
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger id="status-select">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="borrador">Borrador</SelectItem>
+                    <SelectItem value="activo">Activo</SelectItem>
+                    <SelectItem value="inactivo">Inactivo</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="visibility-select">Visibilidad</Label>
+                <Select value={visibilityFilter} onValueChange={setVisibilityFilter}>
+                  <SelectTrigger id="visibility-select">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="public">Público</SelectItem>
+                    <SelectItem value="private">Privado</SelectItem>
+                    <SelectItem value="role_based">Por Rol</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
             
