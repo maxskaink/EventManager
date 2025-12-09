@@ -1,11 +1,13 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "../../components/ui/button";
 import { Card, CardContent } from "../../components/ui/card";
 import { Badge } from "../../components/ui/badge";
-import { Calendar, Clock, MapPin, LogOut, Bell } from "lucide-react";
+import { Calendar, Clock, MapPin, Bell, User, LogOut } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "../../components/ui/avatar";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "../../components/ui/dropdown-menu";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "../../components/ui/alert-dialog";
 import { BNavBarInterested } from "../../components/ui/b-navbar-interested";
 import { publicationQueries } from "@/services/react-query/queries";
 import { getErrorMessageForToast } from "@/features/errors/error.helpers";
@@ -20,6 +22,19 @@ export function GuestDashboard() {
   const navigate = useNavigate();
   const user = useAuthStore(s => s.user);
   const logout = useAuthStore(s => s.logout);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+
+  const getRoleLabel = (role?: string) => {
+    const roleMap: { [key: string]: string } = {
+      guest: "Visitante",
+      interested: "Interesado",
+      member: "Miembro",
+      coordinator: "Coordinador",
+      mentor: "Mentor",
+      seed: "Semilla",
+    };
+    return roleMap[role || "guest"] || role || "Panel";
+  };
 
   const {
     data: publications,
@@ -54,26 +69,55 @@ export function GuestDashboard() {
                   className="h-10 w-10 object-contain rounded-full bg-white"
                   src={brainImage}
                 />
-                <div>
-                  <h1 className="text-lg font-bold">Bienvenido</h1>
-                  <p className="text-white/80 text-sm">Explora nuestros eventos y actividades</p>
+                <div className="flex flex-col">
+                  <h1 className="text-lg font-bold">Panel de {getRoleLabel(user?.role)}</h1>
+                  <p className="text-white/80 text-sm hidden md:block">Explora nuestros eventos y actividades</p>
                 </div>
               </div>
 
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2">
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage src={user?.avatar || undefined} />
-                    <AvatarFallback>
-                      {user?.name
-                        ?.split(" ")
-                        .map((n) => n[0])
-                        .join("")}
-                    </AvatarFallback>
-                  </Avatar>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button
+                        title="Abrir menú de usuario"
+                        aria-label="Abrir menú de usuario"
+                        className="hover:opacity-80 transition-opacity"
+                      >
+                        <Avatar className="h-8 w-8">
+                          <AvatarImage src={user?.avatar || undefined} />
+                          <AvatarFallback>
+                            {user?.name
+                              ?.split(" ")
+                              .map((n) => n[0])
+                              .join("")}
+                          </AvatarFallback>
+                        </Avatar>
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-56">
+                      <DropdownMenuLabel className="flex flex-col space-y-1">
+                        <p className="text-sm font-medium leading-none">{user?.name}</p>
+                        <p className="text-xs leading-none text-muted-foreground">{user?.email}</p>
+                      </DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={() => navigate("/profile")}>
+                        <User className="mr-2 h-4 w-4" />
+                        <span>Mi Perfil</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        onClick={() => setShowLogoutConfirm(true)}
+                        className="text-red-600 focus:text-red-600 focus:bg-red-50"
+                      >
+                        <LogOut className="mr-2 h-4 w-4" />
+                        <span>Cerrar sesión</span>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                   <span className="hidden sm:inline text-sm">{user?.name}</span>
                   <Badge className="bg-white/20 text-white hover:bg-white/30 border-0">
-                    Visitante
+                    {getRoleLabel(user?.role)}
                   </Badge>
                 </div>
 
@@ -84,22 +128,32 @@ export function GuestDashboard() {
                 >
                   <Bell className="h-5 w-5" />
                 </Button>
-
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="text-white hover:bg-white/10 h-9 w-9"
-                  onClick={logout}
-                  title="Cerrar sesión"
-                  aria-label="Cerrar sesión"
-                >
-                  <LogOut className="h-5 w-5" />
-                </Button>
               </div>
             </div>
           </div>
         </header>
       </HideOnScrollWrapper>
+
+      {/* Logout Confirmation Dialog */}
+      <AlertDialog open={showLogoutConfirm} onOpenChange={setShowLogoutConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Estás seguro que deseas cerrar sesión?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tendrás que iniciar sesión nuevamente para acceder a tu cuenta.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={logout}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Cerrar sesión
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       
       <div className="mx-auto max-w-4xl space-y-6 p-4">
         {/* Eventos Recomendados */}
