@@ -34,10 +34,17 @@ class ExternalEventController extends Controller
      */
     public function addExternalEvent(AddExternalEventRequest $request): JsonResponse
     {
-        // Authorization: check if the user can create external events
-        $this->authorize('create', ExternalEvent::class);
-
         $data = $request->validated();
+
+        // Find target user for authorization
+        $targetUser = \App\Models\User::query()->find($data['user_id']);
+        if (!$targetUser) {
+            throw new NotFoundHttpException('The specified user does not exist.');
+        }
+
+        // Authorization: check if the user can create external events for the target user
+        $this->authorize('create', [ExternalEvent::class, $targetUser]);
+
         $newEvent = $this->externalEventService->addExternalEvent($data);
 
         return response()->json([
@@ -66,6 +73,16 @@ class ExternalEventController extends Controller
         $this->authorize('update', $event);
 
         $data = $request->validated();
+
+        // If reassigning user, check authorization for that too
+        if (isset($data['user_id']) && $data['user_id'] !== $event->user_id) {
+            $newUser = \App\Models\User::query()->find($data['user_id']);
+            if (!$newUser) {
+                throw new NotFoundHttpException('The specified new user does not exist.');
+            }
+            $this->authorize('create', [ExternalEvent::class, $newUser]);
+        }
+
         $updatedEvent = $this->externalEventService->updateExternalEvent($eventId, $data);
 
         return response()->json([
@@ -118,7 +135,6 @@ class ExternalEventController extends Controller
      *
      * @param int $userId The ID of the user whose external events to list.
      * @return JsonResponse A list of the user's external events.
-     * @throws AuthorizationException If the user is not authorized.
      */
     public function listExternalEventsByUser(int $userId): JsonResponse
     {
