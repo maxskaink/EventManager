@@ -13,6 +13,7 @@ namespace API {
   type EventModality = "presencial" | "virtual" | "mixta";
   type EventStatus = "activo" | "inactivo" | "pendiente" | "cancelado";
   type EventType = "charla" | "taller" | "conferencia" | "semillero";
+  type TrustedOrgType = "article" | "event" | "certificate";
 
   interface User {
     id: number;
@@ -154,5 +155,15 @@ namespace API {
   interface TrustedOrganization {
     name: string;
     // ... otros campos si los hay
+  }
+
+  interface TrustedOrg {
+    id: number;
+    org: string;
+    trusted_for_article: boolean;
+    trusted_for_event: boolean;
+    trusted_for_certificate: boolean;
+    created_at: string;
+    updated_at: string;
   }
 }

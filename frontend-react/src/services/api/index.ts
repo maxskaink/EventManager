@@ -7,6 +7,7 @@ import ArticleAPI from "./endpoints/article";
 import PublicationAPI from "./endpoints/publication";
 import InterestsAPI from "./endpoints/interests";
 import ExternalEventsAPI from "./endpoints/external-events";
+import TrustedOrgsAPI from "./endpoints/trusted-organizations";
 
 export {
   AuthAPI,
@@ -18,4 +19,5 @@ export {
   PublicationAPI,
   InterestsAPI,
   ExternalEventsAPI,
+  TrustedOrgsAPI
 };

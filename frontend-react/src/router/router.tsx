@@ -19,6 +19,7 @@ import { CreateArticleScreen } from "../components/publications/CreatePublicatio
 import { ProfileScreen } from "../pages/profile";
 import NotificationsPage from "../pages/notifications";
 import CreateEventPage from "../pages/admin/create-event";
+import TrustedOrganizationsPage from "../pages/admin/trusted-organizations";
 import { UserSearchScreen } from "../pages/users";
 import { UserDetailScreen } from "../pages/users/[userId]";
 import { RootLayout } from "../components/nav/RootLayout";
@@ -86,6 +87,7 @@ export const router = createBrowserRouter([
               // The user asked to unify headers, so let's wrap it and handle the header inside
               { path: "create-event", element: <CreateEventPage /> },
               { path: "create-publication", element: <CreatePublicationPage /> },
+              { path: "trusted-organizations", element: <TrustedOrganizationsPage /> },
             ]
           },
         ],

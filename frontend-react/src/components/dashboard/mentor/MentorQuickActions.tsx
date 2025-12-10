@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button } from '../../ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../../ui/card';
-import { Calendar, BarChart3, Tag } from 'lucide-react';
+import { Calendar, BarChart3, Tag, Building2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 interface MentorQuickActionsProps {
@@ -46,6 +46,15 @@ export const MentorQuickActions: React.FC<MentorQuickActionsProps> = ({
             >
               <Tag className="h-6 w-6" />
               <span>Gestionar Intereses</span>
+            </Button>
+
+            <Button
+              variant="outline"
+              className="h-auto p-4 flex flex-col items-center gap-2"
+              onClick={() => navigate("/trusted-organizations")}
+            >
+              <Building2 className="h-6 w-6" />
+              <span>Gestionar Organizaciones</span>
             </Button>
           </div>
         </CardContent>
