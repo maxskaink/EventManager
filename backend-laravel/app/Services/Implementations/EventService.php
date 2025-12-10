@@ -145,25 +145,36 @@ class EventService implements EventServiceInterface
         if ($existing) {
             // If previously cancelled, re-enroll
             if ($existing->status === 'cancelado') {
+                // Check capacity before re-enrollment using enrolled_participants counter
+                if ($event->capacity !== null && $event->enrolled_participants >= $event->capacity) {
+                    throw new ValidationException('Los cupos para este evento están llenos.');
+                }
                 $existing->update(['status' => 'inscrito']);
-                return $existing;
+                // Increment enrolled participants counter
+                $event->increment('enrolled_participants');
+                return $existing->fresh();
             }
             throw new DuplicatedResourceException('User is already enrolled in this event.');
         }
 
-        // Check capacity if set
-        if ($event->capacity !== null) {
-            $count = $this->participationRepository->countActiveByEvent($eventId);
-            if ($count >= $event->capacity) {
-                throw new ValidationException('Event capacity reached.');
-            }
+        // Check capacity if set using enrolled_participants counter
+        if ($event->capacity !== null && $event->enrolled_participants >= $event->capacity) {
+            throw new ValidationException('Los cupos para este evento están llenos.');
         }
 
-        return $this->participationRepository->create([
-            'event_id' => $eventId,
-            'user_id' => $userId,
-            'status' => 'inscrito',
-        ]);
+        // Create participation and increment counter in a transaction
+        return DB::transaction(function () use ($eventId, $userId, $event) {
+            $participation = $this->participationRepository->create([
+                'event_id' => $eventId,
+                'user_id' => $userId,
+                'status' => 'inscrito',
+            ]);
+
+            // Increment enrolled participants counter
+            $event->increment('enrolled_participants');
+
+            return $participation;
+        });
     }
 
     /**
@@ -191,8 +202,16 @@ class EventService implements EventServiceInterface
             throw new ValidationException('Cannot cancel enrollment after the event has started.');
         }
 
-        $participation->update(['status' => 'cancelado']);
-        return $participation;
+        // Only decrement if the user was actually enrolled (not already cancelled)
+        if ($participation->status === 'inscrito') {
+            $participation->update(['status' => 'cancelado']);
+            // Decrement enrolled participants counter
+            $event->decrement('enrolled_participants');
+        } else {
+            $participation->update(['status' => 'cancelado']);
+        }
+
+        return $participation->fresh();
     }
 
     /**

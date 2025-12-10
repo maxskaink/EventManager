@@ -3,15 +3,12 @@
 namespace App\Services\Implementations;
 
 use App\Exceptions\DuplicatedResourceException;
-use App\Exceptions\InvalidRoleException;
 use App\Models\ExternalEvent;
 use App\Models\User;
 use App\Repositories\Contracts\ExternalEventRepositoryInterface;
 use App\Services\Contracts\ExternalEventServiceInterface;
-use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
@@ -33,34 +30,15 @@ class ExternalEventService implements ExternalEventServiceInterface
     /**
      * {@inheritDoc}
      *
-     * @throws InvalidRoleException
-     * @throws ResourceNotFoundException
-     * @throws DuplicatedResourceException
-     * @throws InvalidArgumentException
-     */
-    /**
-     * {@inheritDoc}
-     *
-     * @throws InvalidRoleException
      * @throws ResourceNotFoundException
      * @throws DuplicatedResourceException
      * @throws InvalidArgumentException
      */
     public function addExternalEvent(array $data): ExternalEvent
     {
-        $authUser = Auth::user();
-        if (!$authUser) {
-            throw new InvalidRoleException('You must be logged in to add an external event.');
-        }
-
         $user = User::query()->find($data['user_id']);
         if (!$user) {
             throw new ResourceNotFoundException('The specified user does not exist.');
-        }
-
-        // Authorization: Only mentors can create events for others
-        if ($authUser->id !== $user->id && $authUser->role !== 'mentor') {
-            throw new InvalidRoleException('You are not allowed to create external events for other users.');
         }
 
         // Check for duplicate events
@@ -92,37 +70,22 @@ class ExternalEventService implements ExternalEventServiceInterface
     /**
      * {@inheritDoc}
      *
-     * @throws InvalidRoleException
      * @throws ResourceNotFoundException
      * @throws DuplicatedResourceException
      * @throws InvalidArgumentException
      */
     public function updateExternalEvent(int $eventId, array $data): ExternalEvent
     {
-        $authUser = Auth::user();
-        if (!$authUser) {
-            throw new InvalidRoleException('You must be logged in to update an external event.');
-        }
-
         $event = $this->repository->findById($eventId);
         if (!$event) {
             throw new ResourceNotFoundException('The specified external event does not exist.');
         }
 
-        // Authorization: Only owner or mentor can update
-        if ($authUser->id !== $event->user_id && $authUser->role !== 'mentor') {
-            throw new InvalidRoleException('You are not allowed to update this external event.');
-        }
-
-        // If reassigning user, validate permissions
+        // If reassigning user, validate user exists
         if (isset($data['user_id'])) {
             $newUser = User::query()->find($data['user_id']);
             if (!$newUser) {
                 throw new ResourceNotFoundException('The specified user does not exist.');
-            }
-
-            if ($authUser->role !== 'mentor' && $data['user_id'] !== $authUser->id) {
-                throw new InvalidRoleException('You cannot reassign this external event to another user.');
             }
         }
 
@@ -157,101 +120,64 @@ class ExternalEventService implements ExternalEventServiceInterface
     /**
      * {@inheritDoc}
      *
-     * @throws InvalidRoleException
      * @throws ResourceNotFoundException
      */
     public function deleteExternalEvent(int $eventId): void
     {
-        $authUser = Auth::user();
-        if (!$authUser) {
-            throw new InvalidRoleException('You must be logged in to delete an external event.');
-        }
-
         $event = $this->repository->findById($eventId);
         if (!$event) {
             throw new ResourceNotFoundException('The specified external event does not exist.');
-        }
-
-        // Authorization: Only owner or mentor can delete
-        if ($authUser->id !== $event->user_id && $authUser->role !== 'mentor') {
-            throw new InvalidRoleException('You are not allowed to delete this external event.');
         }
 
         $this->repository->delete($eventId);
     }
 
     /**
-     * Get external events for the currently authenticated user.
+     * Get external events for a specific user.
      *
+     * @param int $userId The user ID
      * @return Collection<int, ExternalEvent>
-     * @throws InvalidRoleException
      */
-    public function getExternalEventsOfActiveUser(): Collection
+    public function getExternalEventsOfUser(int $userId): Collection
     {
-        $authUser = Auth::user();
-        if (!$authUser) {
-            throw new InvalidRoleException('You must be logged in to view your external events.');
-        }
-
-        return $this->repository->findByUserId($authUser->id);
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @throws InvalidRoleException
-     * @throws ResourceNotFoundException
-     * @throws AuthorizationException
-     */
-    public function getExternalEventsByUser(int $userId): Collection
-    {
-        $authUser = Auth::user();
-
-        if (!$authUser) {
-            throw new InvalidRoleException('You must be logged in.');
-        }
-
-        $user = User::query()->find($userId);
-        if (!$user) {
-            throw new ResourceNotFoundException('The specified user does not exist.');
-        }
-
-        if ($authUser->id !== $userId && $authUser->role !== 'mentor') {
-            throw new AuthorizationException('You are not allowed to view external events of other users.');
-        }
-
         return $this->repository->findByUserId($userId);
     }
 
     /**
      * {@inheritDoc}
-     *
-     * @throws AuthorizationException
      */
     public function getAllExternalEvents(): Collection
     {
-        $authUser = Auth::user();
-
-        if (!$authUser || $authUser->role !== 'mentor') {
-            throw new AuthorizationException('Only mentors can view all external events.');
-        }
-
         return $this->repository->findAll();
     }
 
     /**
      * {@inheritDoc}
+     */
+    public function getExternalEventsByUser(int $userId): Collection
+    {
+        return $this->getExternalEventsOfUser($userId);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getExternalEventsOfActiveUser(): Collection
+    {
+        $authUser = request()->user();
+        if (!$authUser) {
+            throw new \RuntimeException('No authenticated user found.');
+        }
+        return $this->getExternalEventsOfUser($authUser->id);
+    }
+
+    /**
+     * {@inheritDoc}
      *
-     * @throws AuthorizationException
      * @throws InvalidArgumentException
      */
     public function getExternalEventsByDateRange(string $startDate, string $endDate): Collection
     {
-        $authUser = Auth::user();
-
-        if (!$authUser || $authUser->role !== 'mentor') {
-            throw new AuthorizationException('Only mentors can filter external events by date.');
-        }
 
         if (Carbon::parse($endDate)->isBefore(Carbon::parse($startDate))) {
             throw new InvalidArgumentException('The end date cannot be earlier than the start date.');

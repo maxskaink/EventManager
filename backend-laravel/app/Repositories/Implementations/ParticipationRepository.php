@@ -34,6 +34,7 @@ class ParticipationRepository implements ParticipationRepositoryInterface
     public function findByEventId(int $eventId): Collection
     {
         return Participation::query()
+            ->with('user.profile')
             ->where('event_id', $eventId)
             ->orderBy('created_at', 'desc')
             ->get();
@@ -45,6 +46,7 @@ class ParticipationRepository implements ParticipationRepositoryInterface
     public function findByUserId(int $userId): Collection
     {
         return Participation::query()
+            ->with('event')
             ->where('user_id', $userId)
             ->orderBy('created_at', 'desc')
             ->get();
@@ -67,7 +69,7 @@ class ParticipationRepository implements ParticipationRepositoryInterface
      */
     public function findAll(?string $status = null): Collection
     {
-        $query = Participation::query();
+        $query = Participation::query()->with(['event', 'user.profile']);
 
         // Apply status filter if provided.
         if ($status) {
