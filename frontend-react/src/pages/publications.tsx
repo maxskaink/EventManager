@@ -17,6 +17,26 @@ import { PublicationsDateFilter } from "@/components/publications/wall/Publicati
 import type { DateRange } from "react-day-picker";
 import { InfiniteScrollTrigger } from "@/components/common/InfiniteScrollTrigger";
 
+
+function getEmptyListMessage(searchTerm: string, selectedCategory: string, dateRange: DateRange | undefined) {
+  const strOut = "No se encontraron anuncios"
+  const conditions: string[] = []
+
+  if (searchTerm) {
+    conditions.push("para " + searchTerm);
+  }
+
+  if (selectedCategory !== "todos") {
+    conditions.push("para la categoría " + selectedCategory);
+  }
+
+  if (dateRange) {
+    conditions.push("para el rango de fechas " + dateRange.from?.toISOString().split('T')[0] + " a " + dateRange.to?.toISOString().split('T')[0]);
+  }
+
+  return strOut + conditions.join("; ");
+}
+
 /**
  * This publications screen lists all the PUBLIC publications
  * please don't list any events here, it will break the application
@@ -103,7 +123,9 @@ export function PublicationsScreen() {
     }
 
     if (sortedItems.length === 0) {
-      return <PublicationEmpty />;
+      return <PublicationEmpty 
+      message={getEmptyListMessage(searchTerm, selectedCategory, dateRange)}
+      />;
     }
 
     return (
