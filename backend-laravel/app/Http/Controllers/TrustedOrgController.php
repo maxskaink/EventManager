@@ -106,7 +106,7 @@ class TrustedOrgController extends Controller
     /**
      * List trusted organizations filtered by type.
      *
-     * @param string $type The type to filter by: 'certificate', 'event', or 'publication'
+     * @param string $type The type to filter by: 'certificate', 'external_event', or 'article'
      * @return JsonResponse A list of trusted organizations of the specified type.
      * @throws AuthorizationException If the user is not authorized.
      */
@@ -116,9 +116,9 @@ class TrustedOrgController extends Controller
         $this->authorize('viewAny', TrustedOrg::class);
 
         // Validate type
-        if (!in_array($type, ['certificate', 'event', 'publication'])) {
+        if (!in_array($type, ['certificate', 'external_event', 'article'])) {
             return response()->json([
-                'message' => 'Invalid type. Must be one of: certificate, event, publication.',
+                'message' => 'Invalid type. Must be one of: certificate, external_event, article.',
             ], 400);
         }
 

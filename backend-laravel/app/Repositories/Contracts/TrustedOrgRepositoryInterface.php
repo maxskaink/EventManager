@@ -58,7 +58,7 @@ interface TrustedOrgRepositoryInterface
     /**
      * Retrieve trusted organizations by type.
      *
-     * @param string $type The type: 'certificate', 'event', or 'publication'
+     * @param string $type The type: 'certificate', 'external_event', or 'article'
      * @return Collection<int, TrustedOrg>
      */
     public function findByType(string $type): Collection;
