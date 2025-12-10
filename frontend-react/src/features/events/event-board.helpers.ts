@@ -108,7 +108,7 @@ export const mapEventsToContentItems = (events: API.Event[]): ContentItem[] => {
               ? "cancelled"
               : "upcoming",
     capacity: event.capacity ?? 0,
-    enrolled: 0,
+    enrolled: event.enrolled_participants ?? 0,
     views: undefined,
     original: event,
     kind: 'event' as const,
