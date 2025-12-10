@@ -17,7 +17,8 @@ use App\Models\{
     Publication,
     Profile,
     User,
-    Notification
+    Notification,
+    TrustedOrg
 };
 
 // POLICIES
@@ -29,7 +30,8 @@ use App\Policies\{
     PublicationPolicy,
     ProfilePolicy,
     UserPolicy,
-    NotificationPolicy
+    NotificationPolicy,
+    TrustedOrgPolicy
 };
 
 // SERVICES
@@ -43,7 +45,8 @@ use App\Services\Contracts\{
     NotificationServiceInterface,
     ProfileServiceInterface,
     PublicationServiceInterface,
-    UserServiceInterface
+    UserServiceInterface,
+    TrustedOrgServiceInterface
 };
 use App\Services\Implementations\{
     ArticleService,
@@ -55,11 +58,13 @@ use App\Services\Implementations\{
     NotificationService,
     ProfileService,
     PublicationService,
-    UserService
+    UserService,
+    TrustedOrgService
 };
 
 // REPOSITORIES
-use App\Repositories\Contracts\{ArticleRepositoryInterface,
+use App\Repositories\Contracts\{
+    ArticleRepositoryInterface,
     AuthRepositoryInterface,
     CertificateRepositoryInterface,
     EventRepositoryInterface,
@@ -71,8 +76,11 @@ use App\Repositories\Contracts\{ArticleRepositoryInterface,
     PublicationRepositoryInterface,
     PublicationInterestRepositoryInterface,
     PublicationAccessRepositoryInterface,
-    UserRepositoryInterface};
-use App\Repositories\Implementations\{ArticleRepository,
+    UserRepositoryInterface,
+    TrustedOrgRepositoryInterface
+};
+use App\Repositories\Implementations\{
+    ArticleRepository,
     AuthRepository,
     CertificateRepository,
     EventRepository,
@@ -84,7 +92,9 @@ use App\Repositories\Implementations\{ArticleRepository,
     PublicationRepository,
     PublicationInterestRepository,
     PublicationAccessRepository,
-    UserRepository};
+    UserRepository,
+    TrustedOrgRepository
+};
 
 
 class AppServiceProvider extends ServiceProvider
@@ -107,6 +117,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(PublicationServiceInterface::class, PublicationService::class);
         $this->app->bind(UserServiceInterface::class, UserService::class);
         $this->app->bind(NotificationServiceInterface::class, NotificationService::class);
+        $this->app->bind(TrustedOrgServiceInterface::class, TrustedOrgService::class);
 
         /**
          * REPOSITORIES
@@ -124,6 +135,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(PublicationInterestRepositoryInterface::class, PublicationInterestRepository::class);
         $this->app->bind(PublicationAccessRepositoryInterface::class, PublicationAccessRepository::class);
         $this->app->bind(UserRepositoryInterface::class, UserRepository::class);
+        $this->app->bind(TrustedOrgRepositoryInterface::class, TrustedOrgRepository::class);
 
 
     }
@@ -142,6 +154,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Profile::class, ProfilePolicy::class);
         Gate::policy(User::class, UserPolicy::class);
         Gate::policy(Notification::class, NotificationPolicy::class);
+        Gate::policy(TrustedOrg::class, TrustedOrgPolicy::class);
 
         // CORS override (you will change this later)
 
@@ -151,8 +164,7 @@ class AppServiceProvider extends ServiceProvider
         if ($this->app->environment('production')) {
             URL::forceScheme('https');
             Config::set('cors.allowed_origins', ['https://cdatosunicauca.org', 'https://www.cdatosunicauca.org']);
-        }
-        else{
+        } else {
             Config::set('cors.allowed_origins', ['http://localhost:5173']);
         }
     }

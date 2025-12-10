@@ -4,6 +4,7 @@ namespace App\Services\Implementations;
 
 use App\Exceptions\DuplicatedResourceException;
 use App\Models\Article;
+use App\Models\TrustedOrg;
 use App\Models\User;
 use App\Repositories\Contracts\ArticleRepositoryInterface;
 use App\Services\Contracts\ArticleServiceInterface;
@@ -15,15 +16,11 @@ use InvalidArgumentException;
 
 class ArticleService implements ArticleServiceInterface
 {
-    /** @var array<string> */
-    private array $trustedOrganizations;
-
     protected ArticleRepositoryInterface $articleRepository;
 
     public function __construct(ArticleRepositoryInterface $articleRepository)
     {
         $this->articleRepository = $articleRepository;
-        $this->trustedOrganizations = config('trusted_publications.organizations', []);
     }
 
     /**
@@ -134,9 +131,9 @@ class ArticleService implements ArticleServiceInterface
             throw new InvalidArgumentException('The provided publication URL is invalid.');
         }
 
-        // Check if the domain matches a trusted organization
-        $isTrusted = collect($this->trustedOrganizations)
-            ->contains(fn($trusted) => Str::endsWith($domain, $trusted));
+        // Check if the domain matches a trusted organization from database
+        $trustedOrgs = TrustedOrg::trustedForPublication()->pluck('org');
+        $isTrusted = $trustedOrgs->contains(fn($trusted) => Str::endsWith($domain, $trusted));
 
         if (!$isTrusted) {
             throw new InvalidArgumentException(
@@ -201,6 +198,6 @@ class ArticleService implements ArticleServiceInterface
      */
     public function getAllTrustedOrganizations(): array
     {
-        return $this->trustedOrganizations;
+        return TrustedOrg::trustedForPublication()->pluck('org')->toArray();
     }
 }
