@@ -42,7 +42,7 @@ interface TrustedOrgServiceInterface
     /**
      * Get trusted organizations filtered by type.
      *
-     * @param string $type The type: 'certificate', 'event', or 'publication'
+     * @param string $type The type: 'certificate', 'external_event', or 'article'
      * @return Collection<int, TrustedOrg>
      */
     public function getTrustedOrgsByType(string $type): Collection;

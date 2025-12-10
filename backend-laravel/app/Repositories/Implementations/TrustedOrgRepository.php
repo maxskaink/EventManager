@@ -73,8 +73,8 @@ class TrustedOrgRepository implements TrustedOrgRepositoryInterface
     {
         $column = match($type) {
             'certificate' => 'trusted_for_certificate',
-            'event' => 'trusted_for_event',
-            'publication' => 'trusted_for_publication',
+            'external_event' => 'trusted_for_event',
+            'article' => 'trusted_for_publication',
             default => throw new \InvalidArgumentException("Invalid type: {$type}")
         };
 
