@@ -4,10 +4,20 @@ import { Input } from "../../ui/input";
 import { Label } from "../../ui/label";
 import { Checkbox } from "../../ui/checkbox";
 import { CheckCircle2, Loader2 } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../../ui/select";
+
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { certificateQueries } from "@/services/react-query/queries";
 
 // Zod validation schema
 const certificateSchema = z.object({
@@ -80,6 +90,9 @@ export const AddCertificateDialog = ({ open, onOpenChange, onAddCertificate, isP
         watch,
         formState: { errors },
         reset,
+        setValue,
+        setError,
+        clearErrors,
     } = useForm<CertificateFormData>({
         resolver: zodResolver(certificateSchema),
         defaultValues: {
@@ -93,14 +106,22 @@ export const AddCertificateDialog = ({ open, onOpenChange, onAddCertificate, isP
         },
     });
 
+    const [selectedOrg, setSelectedOrg] = useState<string>("");
+
     const doesNotExpire = watch("does_not_expire");
+
+    const trustedOrgsQuery = useQuery(certificateQueries.trustedOrganizations());
+
+    const trustedOrganizations = trustedOrgsQuery.data ?? [];
 
     // Reset form when dialog closes
     useEffect(() => {
         if (!open) {
             reset();
+            setSelectedOrg("");
         }
     }, [open, reset]);
+
 
     const onSubmit = (data: CertificateFormData) => {
         onAddCertificate(data);
@@ -200,17 +221,77 @@ export const AddCertificateDialog = ({ open, onOpenChange, onAddCertificate, isP
 
                     <div>
                         <Label htmlFor="cert-credential-url">URL de credencial (opcional)</Label>
-                        <Input
-                            id="cert-credential-url"
-                            type="url"
-                            {...register("credential_url")}
-                            disabled={isPending}
-                            className={errors.credential_url ? "border-destructive" : ""}
-                            placeholder="Ej: https://ejemplo.com/credencial"
-                        />
-                        {errors.credential_url && (
-                            <p className="text-sm text-destructive mt-1">{errors.credential_url.message}</p>
-                        )}
+                        <div className="flex gap-2 items-start mt-1">
+                            <Select
+                                value={selectedOrg}
+                                onValueChange={(value) => {
+                                    setSelectedOrg(value);
+                                    setValue("credential_url", value);
+                                }}
+                            >
+                                <SelectTrigger className="w-[140px]">
+                                    <SelectValue placeholder="Org." />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {trustedOrganizations.map((org) => (
+                                        <SelectItem key={org} value={org}>
+                                            {org}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <div className="flex-1">
+                                <Input
+                                    id="cert-credential-url"
+                                    type="text"
+                                    {...(() => {
+                                        const { onBlur, ...rest } = register("credential_url");
+                                        return {
+                                            ...rest,
+                                            onBlur: (e: React.FocusEvent<HTMLInputElement>) => {
+                                                onBlur(e);
+                                                const val = e.target.value;
+                                                
+                                                if (!val) {
+                                                    setSelectedOrg("");
+                                                    return;
+                                                }
+
+                                                try {
+                                                    const urlToCheck = /^https?:\/\//i.test(val) ? val : `https://${val}`;
+                                                    new URL(urlToCheck);
+                                                    
+                                                    const matched = trustedOrganizations.find((org) =>
+                                                        val.toLowerCase().includes(org.toLowerCase())
+                                                    );
+                                                    
+                                                    if (matched) {
+                                                        setSelectedOrg(matched);
+                                                        clearErrors("credential_url");
+                                                    } else {
+                                                        setSelectedOrg("");
+                                                        setError("credential_url", {
+                                                            type: "manual",
+                                                            message: "La organización no está en la lista de confianza"
+                                                        });
+                                                    }
+                                                } catch {
+                                                    // Invalid URL, let Zod schema handle it or ignore
+                                                }
+                                            },
+                                        };
+                                    })()}
+                                    disabled={isPending}
+                                    className={errors.credential_url ? "border-destructive" : ""}
+                                    placeholder="Ej: https://ejemplo.com/credencial"
+                                />
+                                {errors.credential_url && (
+                                    <p className="text-sm text-destructive mt-1">
+                                        {errors.credential_url.message}
+                                    </p>
+                                )}
+                            </div>
+                        </div>
                     </div>
 
                     <div className="flex flex-col-reverse sm:flex-row gap-2 justify-end pt-4">

@@ -132,4 +132,11 @@ export const certificateQueries = {
                 return data.certificates ?? [];
             },
         }),
+    trustedOrganizations: () => queryOptions({
+        queryKey: ["certificates", "trusted-organizations"],
+        queryFn: async () => {
+            const data = await CertificateAPI.listTrustedOrganizations();
+            return data.trusted_organizations || [];
+        },
+    }),
 }
