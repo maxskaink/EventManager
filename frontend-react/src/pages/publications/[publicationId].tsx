@@ -45,6 +45,7 @@ const PublicationDetailPage = () => {
             // Cargar participaciones del evento
             try {
               const participations = await EventAPI.listEnrollmentsByEvent(pub.event_id);
+              console.log(participations);
               setEnrolledCount(participations.length);
             } catch (err) {
               console.error("Failed to fetch enrollments count", err);
@@ -54,7 +55,7 @@ const PublicationDetailPage = () => {
             if (user) {
               try {
                 const enrollments = await EventAPI.listEnrollmentsByUser(user.id);
-                const enrolled = enrollments.some((e) => e.event_id === pub.event_id && e.status === "active");
+                const enrolled = enrollments.some((e) => e.event_id === pub.event_id );
                 setIsEnrolled(enrolled);
               } catch (err) {
                 console.error("Failed to fetch enrollments", err);
