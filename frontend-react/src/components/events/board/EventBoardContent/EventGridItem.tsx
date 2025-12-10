@@ -38,11 +38,11 @@ const EventGridItem = ({
   const isEvent = item.kind === 'event';
   const occupancy = isEvent && item.capacity && item.enrolled ? getOccupancyLevel(item.enrolled, item.capacity) : null;
 
-  const eventDate = new Date(item.date);
-  const currentDate = new Date();
+  //const eventDate = new Date(item.date);
+  //const currentDate = new Date();
 
   // Check if event has ended
-  const hasEnded = isEvent && (eventDate < currentDate);
+  //const hasEnded = isEvent && (eventDate < currentDate);
 
   // Check if event has publication OR if publication has event
   const hasPublication = item.original?.publication_id !== null && item.original?.publication_id !== undefined;
@@ -80,14 +80,8 @@ const EventGridItem = ({
                   <>
                     <DropdownMenuItem onClick={() => onAttendance(item)} className="cursor-pointer">
                         <Users className="h-4 w-4 mr-2" />
-                        Ver participantes
+                        Ver asistentes
                     </DropdownMenuItem>
-                    {hasEnded && (
-                      <DropdownMenuItem onClick={() => onAttendance(item)} className="cursor-pointer">
-                        <Users className="h-4 w-4 mr-2" />
-                        Asistencia
-                      </DropdownMenuItem>
-                    )}
                   </>
                 )}
                 {/* Show event edit if it's an event OR if it's a publication with an event */}

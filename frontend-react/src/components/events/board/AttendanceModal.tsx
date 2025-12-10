@@ -4,7 +4,8 @@ import { Button } from "../../ui/button";
 import { Checkbox } from "../../ui/checkbox";
 import { ScrollArea } from "../../ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "../../ui/avatar";
-import { User } from "lucide-react";
+import { User, Download } from "lucide-react";
+import { exportEmailsToTxt } from "../../../utils/file-export";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { EventAPI, UserAPI } from "../../../services/api";
 import { toast } from "sonner";
@@ -118,14 +119,31 @@ export function AttendanceModal({ isOpen, onOpenChange, eventId }: AttendanceMod
     markAbsenceMutation.mutate();
   };
 
+  const handleExportEmails = () => {
+    if (!enrollments.length) {
+      toast.error("No hay participantes para exportar");
+      return;
+    }
+
+    const emails: string[] = [];
+    enrollments.forEach((enrollment) => {
+      const user = userById.get(enrollment.user_id);
+      if (user?.email) {
+        emails.push(user.email);
+      }
+    });
+
+    exportEmailsToTxt(emails, `asistencia_evento_${eventId}_${new Date().toISOString().split("T")[0]}.txt`);
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px] w-[calc(100vw-2rem)] max-h-[90vh]">
+      <DialogContent className="sm:max-w-[500px] w-[calc(100vw-2rem)] max-h-[90vh] flex flex-col">
         <DialogHeader>
           <DialogTitle className="text-base sm:text-lg">Asistencia</DialogTitle>
         </DialogHeader>
 
-        <div className="py-2 sm:py-4">
+        <div className="flex-1 min-h-0 flex flex-col py-2 sm:py-4">
           <div className="flex items-center justify-between mb-4 gap-2">
             <div className="flex items-center space-x-2 flex-1 min-w-0">
               <Checkbox 
@@ -144,7 +162,7 @@ export function AttendanceModal({ isOpen, onOpenChange, eventId }: AttendanceMod
             </span>
           </div>
 
-          <ScrollArea className="h-[250px] sm:h-[300px] border rounded-md p-2 sm:p-4">
+          <ScrollArea className="flex-1 border rounded-md p-2 sm:p-4">
             {isLoading ? (
               <div className="text-center py-8 text-xs sm:text-sm">Cargando participantes...</div>
             ) : enrollments.length === 0 ? (
@@ -188,6 +206,7 @@ export function AttendanceModal({ isOpen, onOpenChange, eventId }: AttendanceMod
           </ScrollArea>
         </div>
 
+        <div className="shrink-0 space-y-2">
         <DialogFooter className="flex-col sm:flex-row gap-2">
           <Button 
             variant="destructive" 
@@ -205,6 +224,19 @@ export function AttendanceModal({ isOpen, onOpenChange, eventId }: AttendanceMod
             {markAttendanceMutation.isPending ? "Marcando..." : "Marcar Asistencia"}
           </Button>
         </DialogFooter>
+        <div>
+             <Button
+                variant="outline"
+                size="sm"
+                className="w-full"
+                onClick={handleExportEmails}
+                disabled={isLoading || enrollments.length === 0}
+              >
+                <Download className="mr-2 h-4 w-4" />
+                Exportar Lista de Correos
+              </Button>
+        </div>
+        </div>
       </DialogContent>
     </Dialog>
   );

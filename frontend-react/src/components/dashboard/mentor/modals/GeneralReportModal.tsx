@@ -4,9 +4,10 @@ import { Badge } from '../../../ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '../../../ui/avatar';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '../../../ui/dialog';
 import { Users, Award } from 'lucide-react';
-import { toast } from 'sonner';
+
 import { translateUserRole } from '../../../../features/users/users.helpers';
 import { USER_ROLES } from '../../../../features/users/user.contants';
+import { exportEmailsToTxt } from '../../../../utils/file-export';
 
 type Submission = { id: string; status: string; }; // Tipo simplificado
 
@@ -24,32 +25,8 @@ export const GeneralReportModal: React.FC<GeneralReportModalProps> = ({
   const getStat = (role: API.UserRole) => users.filter(u => u.role === role).length;
 
   const handleDownloadEmails = () => {
-    // Obtener todos los correos únicos
-    const emails = [...new Set(users.map(u => u.email).filter(Boolean))];
-    
-    // Crear contenido del archivo: correos separados por comas y saltos de línea
-    const content = emails.join(',\n');
-    
-    // Crear un Blob con el contenido
-    const blob = new Blob([content], { type: 'text/plain' });
-    
-    // Crear URL de descarga
-    const url = window.URL.createObjectURL(blob);
-    
-    // Crear elemento <a> para descargar
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `usuarios_${new Date().toISOString().split('T')[0]}.txt`;
-    
-    // Disparar descarga
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    
-    // Liberar memoria
-    window.URL.revokeObjectURL(url);
-    
-    toast.success(`📥 Descargado: ${emails.length} correos`);
+    const emails = users.map(u => u.email).filter((email): email is string => !!email);
+    exportEmailsToTxt(emails, `usuarios_${new Date().toISOString().split('T')[0]}.txt`);
   };
 
   return (
