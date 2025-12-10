@@ -26,7 +26,7 @@ export const RecommendedEventsSection = ({
           <Button
             variant="outline"
             onClick={() => navigate("/publications")}
-            className="h-9 rounded-md px-4 py-2 text-sm font-medium"
+            className="h-9 rounded-md px-4 py-2 text-sm font-medium mb-3"
           >
             Ver todos
           </Button>

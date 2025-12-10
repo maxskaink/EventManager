@@ -17,6 +17,7 @@ import {
 import { getErrorMessageForToast } from "../../features/errors/error.helpers";
 import { useAuthStore } from "../../stores/auth.store";
 import { HideOnScrollWrapper } from "@/components/layout/HideOnScrollWrapper";
+import { MentorPrimaryActions } from "@/components/dashboard/mentor/MentorPrimaryActions";
 
 export function MentorDashboardPage() {
   const user = useAuthStore(s => s.user)
@@ -95,6 +96,8 @@ export function MentorDashboardPage() {
           onOpenGeneralReport={() => setIsGeneralReportOpen(true)}
           onOpenInterests={() => setIsInterestModalOpen(true)}
         />
+
+        <MentorPrimaryActions />
 
         {/* Métricas */}
         <MentorMetrics users={users} loading={loading} />

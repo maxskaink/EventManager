@@ -66,6 +66,7 @@ export function MemberDashboard() {
         <UnifiedHeader
           title={`Hola, ${user?.name}`}
           subtitle="Integrante del semillero"
+          user={user}
         />
       </HideOnScrollWrapper>
 

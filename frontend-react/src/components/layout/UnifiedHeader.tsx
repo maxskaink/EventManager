@@ -6,6 +6,7 @@ import { useAuthStore } from "../../stores/auth.store";
 import { NotificationPopover } from "../notifications/NotificationPopover";
 import { LogoutConfirmDialog } from "../auth/LogoutConfirmDialog";
 import { useState } from "react";
+import brainImage from "@/assets/brain.png";
 import { useNavigate } from "react-router";
 import {
     DropdownMenu,
@@ -15,8 +16,11 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
+import { Badge } from "../ui/badge";
+import { translateUserRole } from "@/features/users/users.helpers";
 
 interface UnifiedHeaderProps {
+    leftImage?: boolean;
     title?: string;
     subtitle?: string;
     onGoBack?: () => void;
@@ -27,6 +31,7 @@ interface UnifiedHeaderProps {
 }
 
 export const UnifiedHeader: React.FC<UnifiedHeaderProps> = ({
+    leftImage = false,
     title,
     subtitle,
     onGoBack,
@@ -55,6 +60,13 @@ export const UnifiedHeader: React.FC<UnifiedHeaderProps> = ({
 
                 {/* Left Section: Back Button Only (Avatar moved to right) */}
                 <div className="flex items-center gap-4 min-w-0">
+                    {leftImage && (
+                        <img
+                  alt="Logo del Semillero"
+                  className="h-10 w-10 rounded-full bg-white object-contain"
+                  src={brainImage}
+                />
+                    )}
                     {onGoBack && (
                         <Button
                             variant="ghost"
@@ -91,6 +103,7 @@ export const UnifiedHeader: React.FC<UnifiedHeaderProps> = ({
 
                     {/* User Dropdown */}
                     {showAvatar && user ? (
+                        <div className="flex items-center gap-2">
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" className="relative h-10 w-10 rounded-full p-0 border-2 border-white/20 hover:bg-transparent">
@@ -123,6 +136,11 @@ export const UnifiedHeader: React.FC<UnifiedHeaderProps> = ({
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
+                        <span className="hidden text-sm sm:inline">{user?.name}</span>
+                        <Badge className="border-0 bg-white/20 text-white hover:bg-white/30 hidden sm:inline">
+                            {translateUserRole(user?.role)}
+                        </Badge>
+                        </div>
                     ) : null}
                 </div>
             </div>
