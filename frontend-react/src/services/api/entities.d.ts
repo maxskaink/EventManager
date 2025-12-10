@@ -51,6 +51,7 @@ namespace API {
     virtual_url: string | null;
     status: EventStatus;
     capacity: number | null;
+    enrolled_participants: number | null;
     created_at: string;
     updated_at: string;
   }
@@ -58,6 +59,7 @@ namespace API {
   interface EventParticipation {
     id: number;
     event_id: number;
+    event: Event;
     user_id: number;
     status: string;
     created_at: string;
