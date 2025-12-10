@@ -1,4 +1,4 @@
-# Deployment Guide (Extended)
+# Deployment Guide 
 
 This guide explains how to deploy the application from scratch, how to update it, how to handle common errors, and how to correctly serve images and assets in production.
 
