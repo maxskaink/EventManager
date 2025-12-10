@@ -4,6 +4,7 @@ namespace App\Services\Implementations;
 
 use App\Exceptions\DuplicatedResourceException;
 use App\Models\Certificate;
+use App\Models\TrustedOrg;
 use App\Models\User;
 use App\Repositories\Contracts\CertificateRepositoryInterface;
 use App\Services\Contracts\CertificateServiceInterface;
@@ -19,13 +20,9 @@ class CertificateService implements CertificateServiceInterface
 {
     private CertificateRepositoryInterface $certificateRepository;
 
-    /** @var array<string> */
-    private array $trustedOrganizations;
-
     public function __construct(CertificateRepositoryInterface $certificateRepository)
     {
         $this->certificateRepository = $certificateRepository;
-        $this->trustedOrganizations = config('trusted_certificates.organizations', []);
     }
 
     /**
@@ -148,9 +145,9 @@ class CertificateService implements CertificateServiceInterface
             throw new InvalidArgumentException('The provided credential URL is invalid.');
         }
 
-        // Check if the domain matches a trusted organization
-        $isTrusted = collect($this->trustedOrganizations)
-            ->contains(fn($trusted) => Str::endsWith($domain, $trusted));
+        // Check if the domain matches a trusted organization from database
+        $trustedOrgs = TrustedOrg::trustedForCertificate()->pluck('org');
+        $isTrusted = $trustedOrgs->contains(fn($trusted) => Str::endsWith($domain, $trusted));
 
         if (!$isTrusted) {
             throw new InvalidArgumentException(
@@ -215,6 +212,6 @@ class CertificateService implements CertificateServiceInterface
      */
     public function getAllTrustedOrganizations(): array
     {
-        return $this->trustedOrganizations;
+        return TrustedOrg::trustedForCertificate()->pluck('org')->toArray();
     }
 }

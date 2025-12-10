@@ -4,6 +4,7 @@ namespace App\Services\Implementations;
 
 use App\Exceptions\DuplicatedResourceException;
 use App\Models\ExternalEvent;
+use App\Models\TrustedOrg;
 use App\Models\User;
 use App\Repositories\Contracts\ExternalEventRepositoryInterface;
 use App\Services\Contracts\ExternalEventServiceInterface;
@@ -18,13 +19,9 @@ class ExternalEventService implements ExternalEventServiceInterface
 {
     private ExternalEventRepositoryInterface $repository;
 
-    /** @var array<string> */
-    private array $trustedOrganizations;
-
     public function __construct(ExternalEventRepositoryInterface $repository)
     {
         $this->repository = $repository;
-        $this->trustedOrganizations = config('trusted_events.organizations', []);
     }
 
     /**
@@ -188,7 +185,7 @@ class ExternalEventService implements ExternalEventServiceInterface
 
     public function getAllTrustedOrganizations(): array
     {
-        return $this->trustedOrganizations;
+        return TrustedOrg::trustedForEvent()->pluck('org')->toArray();
     }
 
     private function validateDates(array $data, bool $partial = false): void
@@ -205,9 +202,9 @@ class ExternalEventService implements ExternalEventServiceInterface
 
     private function validateHostOrganization(string $organization): void
     {
-        // Check if organization matches trusted list (case-insensitive partial match)
-        $isTrusted = collect($this->trustedOrganizations)
-            ->contains(fn($trusted) => Str::contains(Str::lower($organization), Str::lower($trusted)));
+        // Check if organization matches trusted list (case-insensitive partial match) from database
+        $trustedOrgs = TrustedOrg::trustedForEvent()->pluck('org');
+        $isTrusted = $trustedOrgs->contains(fn($trusted) => Str::contains(Str::lower($organization), Str::lower($trusted)));
 
         if (!$isTrusted) {
             throw new InvalidArgumentException(
@@ -224,9 +221,9 @@ class ExternalEventService implements ExternalEventServiceInterface
             throw new InvalidArgumentException('The provided participation URL is invalid.');
         }
 
-        // Check if domain is in trusted list
-        $isTrusted = collect($this->trustedOrganizations)
-            ->contains(fn($trusted) => Str::endsWith($domain, $trusted));
+        // Check if domain is in trusted list from database
+        $trustedOrgs = TrustedOrg::trustedForEvent()->pluck('org');
+        $isTrusted = $trustedOrgs->contains(fn($trusted) => Str::endsWith($domain, $trusted));
 
         if (!$isTrusted) {
             throw new InvalidArgumentException(
