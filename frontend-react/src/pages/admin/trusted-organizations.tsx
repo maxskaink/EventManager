@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router";
 import { useForm } from "react-hook-form";
@@ -77,7 +77,7 @@ export default function TrustedOrganizationsPage() {
   // Dialog States
   const [isCreateOpen, setIsCreateOpen] = useState(false);
 
-  const [editingOrg, setEditingOrg] = useState<API.TrustedOrg | null>(null);
+  const [selectedOrganization, setSelectedOrganization] = useState<API.TrustedOrg | null>(null);
   const [deletingOrg, setDeletingOrg] = useState<API.TrustedOrg | null>(null);
 
   // Queries
@@ -114,7 +114,7 @@ export default function TrustedOrganizationsPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["trusted-orgs"] });
       toast.success("Organización actualizada exitosamente");
-      setEditingOrg(null);
+      setSelectedOrganization(null);
     },
     onError: () => toast.error("Error al actualizar organización"),
   });
@@ -152,11 +152,23 @@ export default function TrustedOrganizationsPage() {
       </HideOnScrollWrapper>
 
       <div className="container mx-auto px-4 md:px-6 py-8 max-w-7xl space-y-6">
+        {/* Legend */}
+        <div className="flex flex-wrap gap-4 md:gap-6 text-sm text-gray-500 bg-white/50 p-3 rounded-lg border border-dashed">
+          <span className="flex items-center gap-2">
+            <Calendar className="w-4 h-4 text-blue-500" /> Eventos
+          </span>
+          <span className="flex items-center gap-2">
+            <FileText className="w-4 h-4 text-orange-500" /> Artículos
+          </span>
+          <span className="flex items-center gap-2">
+            <BadgeCheck className="w-4 h-4 text-green-500" /> Certificados
+          </span>
+        </div>
         
         {/* Toolbar */}
         <div className="flex flex-col md:flex-row gap-4 justify-between items-center bg-white p-4 rounded-xl border shadow-sm">
-          <div className="flex flex-1 w-full gap-4 items-center">
-            <div className="relative flex-1 max-w-md">
+          <div className="flex flex-col sm:flex-row flex-1 w-full gap-4 items-center">
+            <div className="relative flex-1 w-full sm:max-w-md">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
               <Input 
                 placeholder="Buscar organización..." 
@@ -169,7 +181,7 @@ export default function TrustedOrganizationsPage() {
             value={filterType} 
             onValueChange={(val) => setFilterType(val as API.TrustedOrgType | "all")}
             >
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className="w-full sm:w-[180px]">
                 <Filter className="w-4 h-4 mr-2" />
                 <SelectValue placeholder="Filtrar por tipo" />
               </SelectTrigger>
@@ -187,92 +199,83 @@ export default function TrustedOrganizationsPage() {
           </Button>
         </div>
 
-        {/* Legend */}
-        <div className="flex gap-6 text-sm text-gray-500 bg-white/50 p-3 rounded-lg border border-dashed">
-          <span className="flex items-center gap-2">
-            <Calendar className="w-4 h-4 text-blue-500" /> Eventos
-          </span>
-          <span className="flex items-center gap-2">
-            <FileText className="w-4 h-4 text-orange-500" /> Artículos
-          </span>
-          <span className="flex items-center gap-2">
-            <BadgeCheck className="w-4 h-4 text-green-500" /> Certificados
-          </span>
-        </div>
+        
 
         {/* Table */}
         <div className="border rounded-xl bg-white shadow-sm overflow-hidden">
-          <Table>
-            <TableHeader>
-              <TableRow className="bg-gray-50/50">
-                <TableHead className="w-[40%]">Organización</TableHead>
-                <TableHead>Permisos de Confianza</TableHead>
-                <TableHead className="text-right">Acciones</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {isLoading ? (
-                <TableRow>
-                  <TableCell colSpan={3} className="h-24 text-center">
-                    <Loader2 className="w-6 h-6 animate-spin mx-auto text-gray-400" />
-                  </TableCell>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-gray-50/50">
+                  <TableHead className="w-[40%] min-w-[200px]">Organización</TableHead>
+                  <TableHead className="min-w-[150px]">Permisos de Confianza</TableHead>
+                  <TableHead className="text-right min-w-[100px]">Acciones</TableHead>
                 </TableRow>
-              ) : filteredOrgs.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={3} className="h-24 text-center text-gray-500">
-                    No se encontraron organizaciones.
-                  </TableCell>
-                </TableRow>
-              ) : (
-                filteredOrgs.map((org) => (
-                  <TableRow key={org.id}>
-                    <TableCell className="font-medium">{org.org}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        <TrustIcon 
-                          active={org.trusted_for_event} 
-                          icon={Calendar} 
-                          color="text-blue-500" 
-                          label="Eventos Externos"
-                        />
-                        <TrustIcon 
-                          active={org.trusted_for_article} 
-                          icon={FileText} 
-                          color="text-orange-500" 
-                          label="Artículos y Papers"
-                        />
-                        <TrustIcon 
-                          active={org.trusted_for_certificate} 
-                          icon={BadgeCheck} 
-                          color="text-green-500" 
-                          label="Certificados"
-                        />
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => setEditingOrg(org)}
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="text-destructive hover:text-destructive/90 hover:bg-destructive/10"
-                          onClick={() => setDeletingOrg(org)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
+              </TableHeader>
+              <TableBody>
+                {isLoading ? (
+                  <TableRow>
+                    <TableCell colSpan={3} className="h-24 text-center">
+                      <Loader2 className="w-6 h-6 animate-spin mx-auto text-gray-400" />
                     </TableCell>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+                ) : filteredOrgs.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={3} className="h-24 text-center text-gray-500">
+                      No se encontraron organizaciones.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredOrgs.map((org) => (
+                    <TableRow key={org.id}>
+                      <TableCell className="font-medium">{org.org}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <TrustIcon 
+                            active={org.trusted_for_event} 
+                            icon={Calendar} 
+                            color="text-blue-500" 
+                            label="Eventos Externos"
+                          />
+                          <TrustIcon 
+                            active={org.trusted_for_article} 
+                            icon={FileText} 
+                            color="text-orange-500" 
+                            label="Artículos y Papers"
+                          />
+                          <TrustIcon 
+                            active={org.trusted_for_certificate} 
+                            icon={BadgeCheck} 
+                            color="text-green-500" 
+                            label="Certificados"
+                          />
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setSelectedOrganization(org)}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="text-destructive hover:text-destructive/90 hover:bg-destructive/10"
+                            onClick={() => setDeletingOrg(org)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
         </div>
       </div>
 
@@ -287,16 +290,16 @@ export default function TrustedOrganizationsPage() {
 
       {/* Edit Dialog */}
       <OrgFormDialog
-        open={!!editingOrg}
-        onOpenChange={(open) => !open && setEditingOrg(null)}
+        open={!!selectedOrganization}
+        onOpenChange={(open) => !open && setSelectedOrganization(null)}
         title="Editar Organización"
-        initialData={editingOrg ? {
-            org: editingOrg.org,
-            trusted_for_article: editingOrg.trusted_for_article,
-            trusted_for_event: editingOrg.trusted_for_event,
-            trusted_for_certificate: editingOrg.trusted_for_certificate,
-        } : undefined}
-        onSubmit={(data) => editingOrg && updateMutation.mutate({ id: editingOrg.id, data })}
+        initialData={useMemo(() => selectedOrganization ? {
+            org: selectedOrganization.org,
+            trusted_for_article: selectedOrganization.trusted_for_article,
+            trusted_for_event: selectedOrganization.trusted_for_event,
+            trusted_for_certificate: selectedOrganization.trusted_for_certificate,
+        } : undefined, [selectedOrganization])}
+        onSubmit={(data) => selectedOrganization && updateMutation.mutate({ id: selectedOrganization.id, data })}
         isPending={updateMutation.isPending}
       />
 
@@ -368,10 +371,13 @@ const OrgFormDialog = ({ open, onOpenChange, title, initialData, onSubmit, isPen
     });
 
     // Reset when opening with new data
-    useState(() => {
-        if(open && initialData) reset(initialData);
-        if(open && !initialData) reset({ org: "", trusted_for_article: false, trusted_for_event: false, trusted_for_certificate: false });
-    }); // This is a bit hacky for reset but simpler than useEffect for now
+    useEffect(() => {
+        if(open && initialData) {
+            reset(initialData);
+        } else if (open && !initialData) {
+            reset({ org: "", trusted_for_article: false, trusted_for_event: false, trusted_for_certificate: false });
+        }
+    }, [open, initialData, reset]);
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>

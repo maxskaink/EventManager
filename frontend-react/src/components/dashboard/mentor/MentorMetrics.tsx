@@ -15,7 +15,7 @@ export const MentorMetrics: React.FC<MentorMetricsProps> = ({ users, loading }) 
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <Card className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border-l-4 border-l-blue-500">
         <CardContent className="p-6">
           <div className="flex items-center gap-4">
