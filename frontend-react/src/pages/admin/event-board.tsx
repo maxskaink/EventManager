@@ -13,7 +13,13 @@ import { EditPublicationDialog } from "../../components/events/board/EditPublica
 import { getErrorMessageForToast } from "../../features/errors/error.helpers";
 import { SharePublicationDialog } from "../../components/events/board/SharePublicationDialog";
 
-import { type ContentItem, type ItemToDelete, isEventType, mapEventsToContentItems, mapPublicationsToContentItems } from "../../features/events";
+import {
+  type ContentItem,
+  type ItemToDelete,
+  isEventType,
+  mapEventsToContentItems,
+  mapPublicationsToContentItems,
+} from "../../features/events";
 import { PublishContentModal } from "../../components/events/board/PublishContentModal";
 import { AttendanceModal } from "../../components/events/board/AttendanceModal";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/tabs";
@@ -21,10 +27,10 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { eventQueries, publicationQueries } from "../../services/react-query/queries";
 import { useAuthStore } from "@/stores/auth.store";
 import { UnifiedHeader } from "@/components/layout/UnifiedHeader";
+import { HideOnScrollWrapper } from "@/components/layout/HideOnScrollWrapper";
 
 export function EventBoardScreen() {
-
-  const user = useAuthStore(s => s.user);
+  const user = useAuthStore((s) => s.user);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
@@ -46,8 +52,10 @@ export function EventBoardScreen() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isPublishModalOpen, setIsPublishModalOpen] = useState(false);
   const [isAttendanceModalOpen, setIsAttendanceModalOpen] = useState(false);
-  const [selectedEventForAttendance, setSelectedEventForAttendance] = useState<{ id: number; title: string } | null>(null);
-  
+  const [selectedEventForAttendance, setSelectedEventForAttendance] = useState<{ id: number; title: string } | null>(
+    null,
+  );
+
   // Edit state
   const [isEditEventOpen, setIsEditEventOpen] = useState(false);
   const [isEditPublicationOpen, setIsEditPublicationOpen] = useState(false);
@@ -67,27 +75,34 @@ export function EventBoardScreen() {
   // We typed this response as any temp because we are changing the API response structure
   // Ideally this should be properly typed with PaginatedResponse
   const publicationQuery = useQuery({
-     ...publicationQueries.all({ page: publicationPage })
+    ...publicationQueries.all({ page: publicationPage }),
   });
 
   const { data: publicationsResponse, isLoading: isLoadingPublications } = publicationQuery;
-  
+
   // Safe type handling
   const isPaginated = (data: unknown): data is PaginatedResponse<API.Publication> => {
-    return !!data && typeof data === 'object' && 'data' in data && Array.isArray((data as PaginatedResponse<API.Publication>).data);
+    return (
+      !!data &&
+      typeof data === "object" &&
+      "data" in data &&
+      Array.isArray((data as PaginatedResponse<API.Publication>).data)
+    );
   };
 
-  const publicationsData = isPaginated(publicationsResponse) 
-      ? publicationsResponse.data 
-      : (Array.isArray(publicationsResponse) ? publicationsResponse : []);
-      
+  const publicationsData = isPaginated(publicationsResponse)
+    ? publicationsResponse.data
+    : Array.isArray(publicationsResponse)
+      ? publicationsResponse
+      : [];
+
   const publicationMeta = isPaginated(publicationsResponse)
-      ? {
-          current_page: publicationsResponse.current_page,
-          last_page: publicationsResponse.last_page,
-          total: publicationsResponse.total
-        }
-      : null;
+    ? {
+        current_page: publicationsResponse.current_page,
+        last_page: publicationsResponse.last_page,
+        total: publicationsResponse.total,
+      }
+    : null;
 
   const loading = isLoadingEvents || isLoadingPublications;
 
@@ -97,7 +112,7 @@ export function EventBoardScreen() {
       await EventAPI.deleteEvent(eventId);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['events'] });
+      queryClient.invalidateQueries({ queryKey: ["events"] });
       toast.success("✅ Evento eliminado exitosamente");
       setIsDeleteDialogOpen(false);
       setItemToDelete(null);
@@ -105,7 +120,7 @@ export function EventBoardScreen() {
     onError: (error) => {
       console.error("Error deleting event:", error);
       toast.error(getErrorMessageForToast(error, "Error al eliminar evento"));
-    }
+    },
   });
 
   const deleteArticleMutation = useMutation({
@@ -113,7 +128,7 @@ export function EventBoardScreen() {
       await ArticleAPI.deleteArticle(articleId);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['publications'] });
+      queryClient.invalidateQueries({ queryKey: ["publications"] });
       toast.success("✅ Publicación eliminada exitosamente");
       setIsDeleteDialogOpen(false);
       setItemToDelete(null);
@@ -121,15 +136,15 @@ export function EventBoardScreen() {
     onError: (error) => {
       console.error("Error deleting publication:", error);
       toast.error(getErrorMessageForToast(error, "Error al eliminar publicación"));
-    }
+    },
   });
 
   const updateEventMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: number; data: Partial<API.Event>}) => {
+    mutationFn: async ({ id, data }: { id: number; data: Partial<API.Event> }) => {
       await EventAPI.updateEvent(id, data);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['events'] });
+      queryClient.invalidateQueries({ queryKey: ["events"] });
       toast.success("✅ Evento actualizado exitosamente");
       setIsEditEventOpen(false);
       setSelectedEventForEdit(null);
@@ -143,10 +158,13 @@ export function EventBoardScreen() {
   const updatePublicationMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: APIPayloads.UpdatePublication & { image?: File } }) => {
       // TODO: handle image upload if dirty (laravel does not support uploading files on patch)
-      await PublicationAPI.updatePublication(id, data);
+      await Promise.all([
+        PublicationAPI.updatePublication(id, data),
+        data.image && PublicationAPI.setPublicationImage(id, data.image),
+      ]);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['publications'] });
+      queryClient.invalidateQueries({ queryKey: ["publications"] });
       toast.success("✅ Publicación actualizada exitosamente");
       setIsEditPublicationOpen(false);
       setSelectedPublicationForEdit(null);
@@ -185,7 +203,8 @@ export function EventBoardScreen() {
   const sortedEvents = filterAndSort(eventItems);
   const sortedPublications = filterAndSort(publicationItems);
 
-  const totalContent = sortedPublications.reduce((acc, item) => acc + (item.type === "evento" ? 0 : 1), 0) + sortedEvents.length;
+  const totalContent =
+    sortedPublications.reduce((acc, item) => acc + (item.type === "evento" ? 0 : 1), 0) + sortedEvents.length;
 
   // Handlers de Modales
   const handleViewDetails = (item: ContentItem) => {
@@ -212,7 +231,7 @@ export function EventBoardScreen() {
   };
 
   const handleSharePublication = (item: ContentItem) => {
-    if (item.kind === 'publication' && item.original) {
+    if (item.kind === "publication" && item.original) {
       setSelectedPublicationForShare(item.original as API.Publication);
       setIsShareDialogOpen(true);
     }
@@ -220,16 +239,16 @@ export function EventBoardScreen() {
 
   const handleEditEvent = (item: ContentItem) => {
     // Check if it's an event or a publication with an event
-    if (item.kind === 'event') {
+    if (item.kind === "event") {
       // It's an event
       const eventId = Number(item.id);
-      const event = safeEvents.find(e => e.id === eventId);
-      
+      const event = safeEvents.find((e) => e.id === eventId);
+
       if (event) {
         setSelectedEventForEdit(event);
         setIsEditEventOpen(true);
       }
-    } else if (item.kind === 'publication' && item.original?.event) {
+    } else if (item.kind === "publication" && item.original?.event) {
       // It's a publication with an associated event
       const event = item.original.event;
       setSelectedEventForEdit(event);
@@ -239,23 +258,23 @@ export function EventBoardScreen() {
 
   const handleEditPublication = (item: ContentItem) => {
     // This is called when editing a publication
-    if (item.kind === 'publication') {
+    if (item.kind === "publication") {
       // It's a direct publication
       const idMatch = item.id.match(/(\d+)$/);
       if (idMatch) {
         const publicationId = Number(idMatch[1]);
-        const publication = safePublications.find(p => p.id === publicationId);
-        
+        const publication = safePublications.find((p) => p.id === publicationId);
+
         if (publication) {
           setSelectedPublicationForEdit(publication);
           setIsEditPublicationOpen(true);
         }
       }
-    } else if (item.kind === 'event' && item.original?.publication_id) {
+    } else if (item.kind === "event" && item.original?.publication_id) {
       // It's an event with a publication
       const publicationId = item.original.publication_id;
-      const publication = safePublications.find(p => p.id === publicationId);
-      
+      const publication = safePublications.find((p) => p.id === publicationId);
+
       if (publication) {
         setSelectedPublicationForEdit(publication);
         setIsEditPublicationOpen(true);
@@ -286,15 +305,17 @@ export function EventBoardScreen() {
   };
 
   return (
-    <div className="min-h-screen pb-20 bg-gray-50/50">
-      <UnifiedHeader 
-        user={user}
-        onGoBack={() => navigate(-1)}
-        title="Contenido del semillero"
-        subtitle="Administra eventos y publicaciones"
-      />
+    <div className="min-h-screen bg-gray-50/50 pb-20">
+      <HideOnScrollWrapper>
+        <UnifiedHeader
+          user={user}
+          onGoBack={() => navigate(-1)}
+          title="Contenido del semillero"
+          subtitle="Administra eventos y publicaciones"
+        />
+      </HideOnScrollWrapper>
 
-      <div className="max-w-7xl mx-auto p-4 md:p-6 space-y-8">
+      <div className="mx-auto max-w-7xl space-y-8 p-4 md:p-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <EventBoardStats
             loading={loading}
@@ -314,7 +335,7 @@ export function EventBoardScreen() {
             onViewModeChange={setViewMode}
           />
 
-          <TabsList className="grid w-full grid-cols-2 mb-4">
+          <TabsList className="mb-4 grid w-full grid-cols-2">
             <TabsTrigger value="events">Eventos</TabsTrigger>
             <TabsTrigger value="publications">Publicaciones</TabsTrigger>
           </TabsList>

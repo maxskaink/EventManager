@@ -4,24 +4,12 @@ import { toast } from "sonner";
 import { EventAPI, PublicationAPI } from "../../services/api";
 import { useAuthStore } from "../../stores/auth.store";
 import { getDashboardRouteFromRole } from "../../services/navigation/redirects";
-import { CreateEventForm, type PublicationFormData } from "../../components/events/create";
+import { CreateEventForm, type PublicationFormData, type EventFormData } from "../../components/events/create";
 import { getErrorMessageForToast } from "../../features/errors/error.helpers";
 import { UnifiedHeader } from "../../components/layout/UnifiedHeader";
+import { HideOnScrollWrapper } from "@/components/layout/HideOnScrollWrapper";
 
 // Definir el tipo para el estado del formulario
-type EventFormData = {
-  name: string;
-  description: string;
-  start_date: string;
-  start_time: string;
-  end_date: string;
-  end_time: string;
-  event_type: string;
-  modality: API.EventModality;
-  location: string;
-  capacity: string;
-  status: API.EventStatus;
-};
 
 export default function CreateEventPage() {
   const navigate = useNavigate();
@@ -46,6 +34,7 @@ export default function CreateEventPage() {
     event_type: "charla", // Valor inicial
     modality: "presencial",
     location: "",
+    virtual_url: "",
     capacity: "",
     status: "pendiente",
   });
@@ -148,15 +137,15 @@ export default function CreateEventPage() {
 
   // Renderizar el formulario de creación
   return (
-    <div className="space-y-6">
-      <div className="bg-white border-b sticky top-0 z-10 shadow-sm">
+    <div >
+      <HideOnScrollWrapper>
         <UnifiedHeader
           title="Crear Nuevo Evento"
           subtitle="Completa la información para registrar un evento"
-          onGoBack={() => navigate(getDashboardRouteFromRole(user?.role || ""))}
+          onGoBack={() => navigate("/event-board")}
           loading={loading}
         />
-      </div>
+      </HideOnScrollWrapper>
       <div className="max-w-4xl mx-auto p-0 md:p-6 space-y-8 md:space-y-8">
         <div className="bg-white md:rounded-3xl shadow-none md:shadow-lg border-0 md:border p-0 md:p-8 min-h-[calc(100vh-200px)] md:min-h-auto">
           <CreateEventForm

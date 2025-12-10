@@ -273,21 +273,20 @@ export function CreatePublicationPage() {
               </div>
 
               {/* Botones */}
-              <div className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-3 pt-4 sm:pt-6 border-t border-slate-200 px-2 sm:px-4 md:px-0 pb-2 sm:pb-0">
+              <div className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-3 pt-4 sm:pt-6 border-t px-2 sm:px-4 md:px-0 pb-2 sm:pb-0">
                 <Button
-                  type="button"
                   variant="outline"
                   onClick={handleCancel}
                   disabled={isLoading}
-                  className="w-full sm:w-auto flex items-center justify-center gap-2 border-slate-200 hover:bg-slate-50 text-xs sm:text-sm py-2 sm:py-auto h-auto sm:h-9"
+                  className="w-full sm:w-auto flex items-center justify-center gap-2text-xs sm:text-sm py-2 sm:py-auto h-auto sm:h-9"
                 >
                   <ArrowLeft className="h-4 w-4" />
                   Cancelar
                 </Button>
                 <Button
-                  type="submit"
+                  
                   disabled={isLoading}
-                  className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-md hover:shadow-lg transition-all text-xs sm:text-sm py-2 sm:py-auto h-auto sm:h-9"
+                  className="w-full sm:w-auto font-semibold shadow-md hover:shadow-lg transition-all text-xs sm:text-sm py-2 sm:py-auto h-auto sm:h-9"
                 >
                   {isLoading ? "Creando..." : "Crear Publicación"}
                 </Button>

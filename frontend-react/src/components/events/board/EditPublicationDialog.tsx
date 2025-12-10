@@ -10,7 +10,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useEffect, useState } from "react";
 import { Alert, AlertDescription } from "../../ui/alert";
-import { Checkbox } from "../../ui/checkbox";
 
 const publicationSchema = z.object({
   title: z.string()
@@ -48,7 +47,6 @@ export const EditPublicationDialog = ({
 }: EditPublicationDialogProps) => {
   const [image, setImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [saveAsDraft, setSaveAsDraft] = useState(false);
 
   const {
     register,
@@ -56,12 +54,9 @@ export const EditPublicationDialog = ({
     control,
     formState: { errors },
     reset,
-    watch,
   } = useForm<PublicationFormData>({
     resolver: zodResolver(publicationSchema),
   });
-
-  const currentStatus = watch("status");
 
   // Reset form when dialog opens with publication data
   useEffect(() => {
@@ -78,8 +73,6 @@ export const EditPublicationDialog = ({
       if (publication.image_url) {
         setImagePreview(publication.image_url);
       }
-      
-      setSaveAsDraft(publication.status === "borrador");
     }
   }, [open, publication, reset]);
 
@@ -88,7 +81,6 @@ export const EditPublicationDialog = ({
     if (!open) {
       setImage(null);
       setImagePreview(null);
-      setSaveAsDraft(false);
     }
   }, [open]);
 
@@ -122,12 +114,17 @@ export const EditPublicationDialog = ({
     setImagePreview(publication?.image_url || null);
   };
 
-  const onSubmit = (data: PublicationFormData) => {
+  const onSubmit = (data: PublicationFormData, isDraft: boolean) => {
     onUpdatePublication({
       ...data,
+      status: isDraft ? "borrador" : "activo",
       image: image || undefined,
-      saveAsDraft,
+      saveAsDraft: isDraft,
     });
+  };
+
+  const handleSubmitWithStatus = (isDraft: boolean) => {
+    return handleSubmit((data) => onSubmit(data, isDraft));
   };
 
   const isEventPublication = publication?.type === "evento";
@@ -151,7 +148,7 @@ export const EditPublicationDialog = ({
           </Alert>
         )}
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-3 sm:space-y-4 overflow-x-hidden">
+        <div className="space-y-3 sm:space-y-4 overflow-x-hidden">
           <div className="w-full">
             <Label htmlFor="pub-title">Título *</Label>
             <Input
@@ -224,53 +221,28 @@ export const EditPublicationDialog = ({
             )}
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 w-full">
-            <div className="w-full min-w-0">
-              <Label htmlFor="pub-visibility">Visibilidad *</Label>
-              <Controller
-                name="visibility"
-                control={control}
-                render={({ field }) => (
-                  <Select
-                    onValueChange={field.onChange}
-                    value={field.value}
-                    disabled={isPending}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="public">Pública</SelectItem>
-                      <SelectItem value="private">Privada</SelectItem>
-                      <SelectItem value="role_based">Por Rol</SelectItem>
-                    </SelectContent>
-                  </Select>
-                )}
-              />
-            </div>
-
-            <div className="w-full min-w-0">
-              <Label htmlFor="pub-status">Estado *</Label>
-              <Controller
-                name="status"
-                control={control}
-                render={({ field }) => (
-                  <Select
-                    onValueChange={field.onChange}
-                    value={field.value}
-                    disabled={isPending}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="borrador">Borrador</SelectItem>
-                      <SelectItem value="activo">Activo</SelectItem>
-                    </SelectContent>
-                  </Select>
-                )}
-              />
-            </div>
+          <div className="w-full">
+            <Label htmlFor="pub-visibility">Visibilidad *</Label>
+            <Controller
+              name="visibility"
+              control={control}
+              render={({ field }) => (
+                <Select
+                  onValueChange={field.onChange}
+                  value={field.value}
+                  disabled={isPending}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="public">Pública</SelectItem>
+                    <SelectItem value="private">Privada</SelectItem>
+                    <SelectItem value="role_based">Por Rol</SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
+            />
           </div>
 
           <div className="w-full">
@@ -316,23 +288,6 @@ export const EditPublicationDialog = ({
             )}
           </div>
 
-          {currentStatus === "activo" && (
-            <div className="flex items-center space-x-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-              <Checkbox
-                id="save-as-draft"
-                checked={saveAsDraft}
-                onCheckedChange={(checked) => setSaveAsDraft(checked as boolean)}
-                disabled={isPending}
-              />
-              <label
-                htmlFor="save-as-draft"
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-              >
-                Guardar como borrador (no publicar los cambios inmediatamente)
-              </label>
-            </div>
-          )}
-
           <div className="flex flex-col-reverse sm:flex-row gap-2 justify-end pt-4">
             <Button
               type="button"
@@ -343,7 +298,30 @@ export const EditPublicationDialog = ({
             >
               Cancelar
             </Button>
-            <Button type="submit" disabled={isPending} className="w-full sm:w-auto">
+            
+            <Button 
+                type="button" 
+                variant="secondary"
+                disabled={isPending} 
+                className="w-full sm:w-auto"
+                onClick={handleSubmitWithStatus(true)}
+            >
+               {isPending ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Guardando...
+                </>
+              ) : (
+                "Guardar como borrador"
+              )}
+            </Button>
+
+            <Button 
+                type="button" 
+                disabled={isPending} 
+                className="w-full sm:w-auto"
+                onClick={handleSubmitWithStatus(false)}
+            >
               {isPending ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -357,7 +335,7 @@ export const EditPublicationDialog = ({
               )}
             </Button>
           </div>
-        </form>
+        </div>
       </DialogContent>
     </Dialog>
   );
