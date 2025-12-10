@@ -9,6 +9,7 @@ import { UnifiedHeader } from "../../components/layout/UnifiedHeader";
 import { HideOnScrollWrapper } from "../../components/layout/HideOnScrollWrapper";
 import { InfiniteScrollTrigger } from "../../components/common/InfiniteScrollTrigger";
 import { userQueries } from "../../services/react-query/queries";
+import { translateUserRole } from "@/features/users/users.helpers";
 
 export const UserSearchScreen = () => {
   const navigate = useNavigate();
@@ -79,7 +80,7 @@ export const UserSearchScreen = () => {
                     </Avatar>
                     <div className="flex flex-col">
                       <CardTitle className="text-base font-bold text-gray-800 group-hover:text-primary transition-colors">{user.name}</CardTitle>
-                      <span className="text-xs text-muted-foreground">{user.role}</span>
+                      <span className="text-xs text-muted-foreground">{translateUserRole(user.role)}</span>
                     </div>
                   </CardHeader>
                   <CardContent>

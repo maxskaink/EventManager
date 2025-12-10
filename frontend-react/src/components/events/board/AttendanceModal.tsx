@@ -169,15 +169,21 @@ export function AttendanceModal({ isOpen, onOpenChange, eventId }: AttendanceMod
               <div className="text-center py-8 text-xs sm:text-sm text-muted-foreground">No hay participantes inscritos.</div>
             ) : (
               <div className="space-y-2 sm:space-y-4">
-                {enrollments.map((enrollment) => (
-                  <div key={enrollment.id} className="flex items-center gap-2 sm:gap-4">
+                {enrollments.map((enrollment) => {
+                  const isSelected = selectedUsers.includes(enrollment.user_id);
+                  return (
+                  <div 
+                    key={enrollment.id} 
+                    className={`flex items-center gap-2 sm:gap-4 p-2 rounded-lg transition-colors cursor-pointer ${isSelected ? "bg-primary/10 border border-primary/20" : "hover:bg-muted/50 border border-transparent"}`}
+                    onClick={() => toggleUser(enrollment.user_id)}
+                  >
                     <Checkbox 
                       id={`user-${enrollment.user_id}`} 
-                      checked={selectedUsers.includes(enrollment.user_id)}
+                      checked={isSelected}
                       onCheckedChange={() => toggleUser(enrollment.user_id)}
                       className="size-3 sm:size-4 shrink-0"
                     />
-                    <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+                    <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0 pointer-events-none">
                       <Avatar className="h-6 sm:h-8 w-6 sm:w-8 shrink-0">
                         <AvatarImage src={userById.get(enrollment.user_id)?.avatar || undefined} />
                         <AvatarFallback><User className="h-3 sm:h-4 w-3 sm:w-4" /></AvatarFallback>
@@ -200,7 +206,8 @@ export function AttendanceModal({ isOpen, onOpenChange, eventId }: AttendanceMod
                       </div>
                     </div>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </ScrollArea>
