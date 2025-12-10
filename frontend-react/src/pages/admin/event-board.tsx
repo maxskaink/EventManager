@@ -321,7 +321,7 @@ export function EventBoardScreen() {
             loading={loading}
             totalContent={totalContent} // Total overall
             totalEvents={safeEvents.length}
-            totalPinned={0}
+            totalPublications={safePublications.length}
           />
 
           <EventBoardFilters

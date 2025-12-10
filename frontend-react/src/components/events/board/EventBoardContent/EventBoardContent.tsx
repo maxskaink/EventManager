@@ -142,7 +142,7 @@ const EventBoardContent = ({
                             <Plus className="mr-2 h-4 w-4 shrink-0" /> <span className="hidden sm:inline">Nuevo Evento</span><span className="sm:hidden">Evento</span>
                         </Button>
                         <Button variant="outline" onClick={onCreatePublication} className="text-xs sm:text-sm px-2 sm:px-4 py-2 h-auto sm:h-9">
-                            <Plus className="mr-2 h-4 w-4 shrink-0" /> <span className="hidden sm:inline">Nueva Publicación</span><span className="sm:hidden">Publicación</span>
+                            <Plus className="mr-2 h-4 w-4 shrink-0" /> <span className="hidden sm:inline">Nuevo anuncio</span><span className="sm:hidden">Anuncio</span>
                         </Button>
                     </div>
                 </div>

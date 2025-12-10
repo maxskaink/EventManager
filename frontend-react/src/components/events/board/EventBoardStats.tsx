@@ -5,14 +5,14 @@ type Props = {
   loading: boolean;
   totalContent: number;
   totalEvents: number;
-  totalPinned: number;
+  totalPublications: number;
 };
 
 export function EventBoardStats({
   loading,
   totalContent,
   totalEvents,
-  totalPinned,
+  totalPublications,
 }: Props) {
   const statValue = (value: number) => (loading ? "..." : value);
 
@@ -43,8 +43,8 @@ export function EventBoardStats({
           <div className="p-1.5 md:p-3 bg-orange-50 rounded-lg md:rounded-xl w-fit mx-auto mb-1.5 md:mb-3">
             <Pin className="h-5 w-5 md:h-8 md:w-8 text-purple-600" />
           </div>
-          <h3 className="text-xl md:text-3xl font-bold text-gray-800">{statValue(totalPinned)}</h3>
-          <p className="text-[10px] md:text-sm text-muted-foreground font-medium mt-0.5 md:mt-1">Destacados</p>
+          <h3 className="text-xl md:text-3xl font-bold text-gray-800">{statValue(totalPublications)}</h3>
+          <p className="text-[10px] md:text-sm text-muted-foreground font-medium mt-0.5 md:mt-1">Anuncios</p>
         </CardContent>
       </Card>
     </section>

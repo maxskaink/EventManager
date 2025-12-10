@@ -38,11 +38,11 @@ const EventGridItem = ({
   const isEvent = item.kind === 'event';
   const occupancy = isEvent && item.capacity && item.enrolled ? getOccupancyLevel(item.enrolled, item.capacity) : null;
 
-  //const eventDate = new Date(item.date);
-  //const currentDate = new Date();
+  const eventDate = new Date(item.date);
+  const currentDate = new Date();
 
   // Check if event has ended
-  //const hasEnded = isEvent && (eventDate < currentDate);
+  const hasEnded = isEvent && (eventDate < currentDate);
 
   // Check if event has publication OR if publication has event
   const hasPublication = item.original?.publication_id !== null && item.original?.publication_id !== undefined;
@@ -159,10 +159,19 @@ const EventGridItem = ({
             onClick={() => onViewDetails(item)}
           >
             <Eye className="h-3.5 w-3.5 mr-1 shrink-0" />
-            <span className="hidden sm:inline">Ver</span>
-            <span className="sm:hidden">Ver</span>
+            <span>Ver</span>
           </Button>
           {/* Solo mostrar botón "Publicar" si es un evento */}
+          {isEvent && hasEnded && (
+            <Button 
+              size="sm" 
+              variant="outline" 
+              className="text-xs sm:text-sm h-8 px-2 transition-all hover:bg-emerald-50 hover:border-emerald-300 hover:text-emerald-700"
+              onClick={() => onAttendance(item)}
+            >
+              <Users className="h-3.5 w-3.5 shrink-0"/>
+            </Button>
+          )}
           {isEvent && (
             <TooltipProvider>
               <Tooltip>
