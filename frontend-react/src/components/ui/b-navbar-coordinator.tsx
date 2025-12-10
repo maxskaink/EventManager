@@ -20,7 +20,7 @@ const BNavBarCoordinator = () => {
     },
     {
       icon: MessageSquare,
-      label: "Publicaciones",
+      label: "Anuncios",
       onClick: () => navigate("/publications"),
       isActive: location.pathname === "/publications",
     },

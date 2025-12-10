@@ -31,7 +31,7 @@ export function RecentPublicationsSection({
         </>
         if (!isLoading && publicationsToShow.length === 0 && !error) return <>
             <div className="col-span-full text-muted-foreground">
-                No hay publicaciones recientes por ahora.
+                No hay anuncios recientes por ahora.
             </div>
         </>
 

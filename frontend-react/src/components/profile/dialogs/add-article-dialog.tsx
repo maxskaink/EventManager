@@ -93,7 +93,7 @@ export const AddArticleDialog = ({ open, onOpenChange, onAddArticle, isPending =
             <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto p-4 sm:p-6">
                 <DialogHeader>
                     <DialogTitle>Agregar Nuevo Artículo</DialogTitle>
-                    <DialogDescription>Registra una publicación en la que hayas participado.</DialogDescription>
+                    <DialogDescription>Registra una anuncio en la que hayas participado.</DialogDescription>
                 </DialogHeader>
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                     <div>
@@ -136,7 +136,7 @@ export const AddArticleDialog = ({ open, onOpenChange, onAddArticle, isPending =
                     </div>
 
                     <div>
-                        <Label htmlFor="article-date">Fecha de publicación *</Label>
+                        <Label htmlFor="article-date">Fecha de anuncio *</Label>
                         <Input
                             id="article-date"
                             type="date"
@@ -150,7 +150,7 @@ export const AddArticleDialog = ({ open, onOpenChange, onAddArticle, isPending =
                     </div>
 
                     <div>
-                        <Label htmlFor="article-url">URL de publicación *</Label>
+                        <Label htmlFor="article-url">URL de anuncio *</Label>
                         <Input
                             id="article-url"
                             type="url"

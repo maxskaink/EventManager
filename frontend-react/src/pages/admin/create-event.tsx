@@ -101,14 +101,14 @@ export default function CreateEventPage() {
         modality: formData.modality,
         location: formData.modality === "virtual" ? null : formData.location,
         virtual_url: formData.modality === "presencial" ? null : formData.location,
-        status: "pendiente", // El evento en sí puede quedar pendiente o activo, pero la publicación es lo que importa
+        status: "pendiente", // El evento en sí puede quedar pendiente o activo, pero la anuncio es lo que importa
         capacity: formData.capacity ? parseInt(formData.capacity) : null,
       };
 
       // 1. Crear Evento
       const createdEvent = await EventAPI.addEvent(eventData);
 
-      // 2. Si se seleccionó publicar, crear la publicación
+      // 2. Si se seleccionó publicar, crear la anuncio
       if (publishImmediately && createdEvent.id) {
         const pubPayload = {
           title: formData.name,
@@ -121,7 +121,7 @@ export default function CreateEventPage() {
         };
 
         await PublicationAPI.addEventPublication(createdEvent.id, pubPayload);
-        toast.success("🎉 Evento y publicación creados exitosamente");
+        toast.success("🎉 Evento y anuncio creados exitosamente");
       } else {
         toast.success("🎉 Evento creado exitosamente");
       }

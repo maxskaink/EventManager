@@ -87,7 +87,7 @@ export function CreatePublicationPage() {
       toast.success("✅ Publicación creada exitosamente");
       navigate("/publications");
     } catch (error) {
-      const message = getErrorMessageForToast(error, "Error al crear la publicación");
+      const message = getErrorMessageForToast(error, "Error al crear la anuncio");
       toast.error(message);
       console.error("Error creating publication:", error);
     } finally {
@@ -104,7 +104,7 @@ export function CreatePublicationPage() {
       <HideOnScrollWrapper>
         <UnifiedHeader
           title="Crear Publicación"
-          subtitle="Crea una publicación simple (aviso, comunicado o material educativo)"
+          subtitle="Crea una anuncio simple (aviso, comunicado o material educativo)"
           onGoBack={handleCancel}
         />
       </HideOnScrollWrapper>
@@ -127,7 +127,7 @@ export function CreatePublicationPage() {
                 <Input
                   id="title"
                   name="title"
-                  placeholder="Título de la publicación"
+                  placeholder="Título de la anuncio"
                   value={formData.title}
                   onChange={handleInputChange}
                   className="border-slate-200 focus:border-blue-500 focus:ring-blue-500"
@@ -208,7 +208,7 @@ export function CreatePublicationPage() {
                 <Textarea
                   id="content"
                   name="content"
-                  placeholder="Escribe el contenido de la publicación..."
+                  placeholder="Escribe el contenido de la anuncio..."
                   value={formData.content}
                   onChange={handleInputChange}
                   rows={6}
@@ -225,7 +225,7 @@ export function CreatePublicationPage() {
                 <Textarea
                   id="summary"
                   name="summary"
-                  placeholder="Breve resumen de la publicación..."
+                  placeholder="Breve resumen de la anuncio..."
                   value={formData.summary}
                   onChange={handleInputChange}
                   rows={3}

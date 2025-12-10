@@ -9,11 +9,11 @@ import { toast } from "sonner";
 import { ImagePlus, X, Loader2 } from "lucide-react";
 // Asumiendo que ContentItem y la API están en estas rutas
 import {
-  // Una lista con todos los estados de publicación
+  // Una lista con todos los estados de anuncio
   PUBLICATION_STATUSES,
-  // Una lista con todos los tipos de publicación
+  // Una lista con todos los tipos de anuncio
   PUBLICATION_TYPES,
-  // Una lista con todos los tipos de visibilidad de publicación
+  // Una lista con todos los tipos de visibilidad de anuncio
   PUBLICATION_VISIBILITIES,
   translatePublicationStatus,
   translatePublicationType,
@@ -141,7 +141,7 @@ export function PublishContentModal({ isOpen, onOpenChange, item, onPublish }: P
         <DialogHeader>
           <DialogTitle>Publicar Contenido</DialogTitle>
           <DialogDescription>
-            Añade detalles de publicación para: <span className="font-semibold">{item.title}</span>
+            Añade detalles de anuncio para: <span className="font-semibold">{item.title}</span>
           </DialogDescription>
         </DialogHeader>
 

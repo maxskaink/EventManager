@@ -63,7 +63,7 @@ const PublicationDetailPage = () => {
           }
         } catch (error) {
           console.error(error);
-          toast.error("Error al cargar la publicación.");
+          toast.error("Error al cargar la anuncio.");
         } finally {
           setLoading(false);
         }
@@ -120,7 +120,7 @@ const PublicationDetailPage = () => {
         <Card>
           <CardContent className="p-8 text-center">
             <p className="text-muted-foreground mb-4">Publicación no encontrada</p>
-            <Button onClick={handleBack}>Volver a publicaciones</Button>
+            <Button onClick={handleBack}>Volver a anuncios</Button>
           </CardContent>
         </Card>
       </div>
@@ -140,7 +140,7 @@ const PublicationDetailPage = () => {
       try {
         await navigator.share({
           title: publication.title,
-          text: publication.summary || "Mira esta publicación",
+          text: publication.summary || "Mira esta anuncio",
           url: window.location.href,
         });
       } catch (error) {

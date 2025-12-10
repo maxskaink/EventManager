@@ -31,7 +31,7 @@ export const DashboardPrimaryActions: React.FC = () => {
           </CardContent>
         </Card>
 
-        {/* Crear publicación */}
+        {/* Crear anuncio */}
         <Card className="bg-gradient-to-br from-emerald-50 to-emerald-100 border border-emerald-200 hover:shadow-lg transition-all duration-300">
           <CardContent className="p-6 text-center">
             <div className="p-3 bg-gradient-to-br from-emerald-600 to-emerald-700 rounded-xl w-fit mx-auto mb-4 shadow-md">

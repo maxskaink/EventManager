@@ -31,6 +31,10 @@ import BottomNavbarWrapper from "../nav/BottomNavbarWrapper";
 import { useAuthStore } from "../../stores/auth.store";
 import { publicationQueries } from "../../services/react-query/queries";
 
+
+/**
+ * @deprecated This is deprecated, use PublicationsScreen in pages/publications instead
+ */
 export function PublicationsScreen() {
 
   const user = useAuthStore(s => s.user);
@@ -147,7 +151,7 @@ export function PublicationsScreen() {
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div className="flex-1">
-            <h1>Mis Publicaciones</h1>
+            <h1>Mis Anuncios</h1>
             <p className="text-white/80">
               Gestiona tus comunicados y artículos
             </p>
@@ -173,7 +177,7 @@ export function PublicationsScreen() {
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
-                      placeholder="Buscar publicaciones..."
+                      placeholder="Buscar anuncios..."
                       value={searchQuery}
                       onChange={(e) =>
                         setSearchQuery(e.target.value)
@@ -244,7 +248,7 @@ export function PublicationsScreen() {
                 {publications.length}
               </h3>
               <p className="text-sm text-muted-foreground">
-                Total Publicaciones
+                Total Anuncios
               </p>
             </CardContent>
           </Card>
@@ -302,7 +306,7 @@ export function PublicationsScreen() {
           </Card>
         </section>
 
-        {/* Lista de publicaciones */}
+        {/* Lista de anuncios */}
         <section>
           <div className="space-y-4">
             {filteredPublications.map((publication: any) => (
@@ -399,13 +403,13 @@ export function PublicationsScreen() {
             <Card>
               <CardContent className="p-8 text-center">
                 <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <h3>No se encontraron publicaciones</h3>
+                <h3>No se encontraron anuncios</h3>
                 <p className="text-muted-foreground mb-4">
                   {searchQuery ||
                   filterType !== "all" ||
                   filterStatus !== "all"
                     ? "Intenta ajustar los filtros de búsqueda"
-                    : "Aún no tienes publicaciones. ¡Crea tu primera publicación!"}
+                    : "Aún no tienes anuncios. ¡Crea tu primera anuncio!"}
                 </p>
                 <Button
                   onClick={() =>

@@ -19,7 +19,7 @@ export const DashboardContentManagement: React.FC = () => {
             <div className="flex-1">
               <h4 className="font-semibold text-slate-900 mb-1">Contenido del Semillero</h4>
               <p className="text-sm text-slate-600">
-                Gestionar eventos y publicaciones
+                Gestionar eventos y anuncios
               </p>
             </div>
             <Button

@@ -95,7 +95,7 @@ export const EditEventDialog = ({
           <Alert className="bg-blue-50 border-blue-200">
             <AlertCircle className="h-4 w-4 text-blue-600" />
             <AlertDescription className="text-blue-800">
-              Este evento tiene una publicación asociada. Los cambios aquí no afectarán la publicación.
+              Este evento tiene una anuncio asociada. Los cambios aquí no afectarán la anuncio.
             </AlertDescription>
           </Alert>
         )}

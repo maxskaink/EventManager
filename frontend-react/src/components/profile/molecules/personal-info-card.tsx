@@ -3,7 +3,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "../../ui/avatar";
 import { Badge } from "../../ui/badge";
 import { Button } from "../../ui/button";
 import { Card, CardContent } from "../../ui/card";
-import { Plus, X } from "lucide-react";
+import { Edit, Plus, Save, X } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -63,13 +63,13 @@ export const PersonalInfoCard = ({
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <label className="font-medium">Mis Intereses</label>
-              <Button
-                variant="ghost"
+              <Button                
                 size="sm"
                 onClick={() => setIsEditing(!isEditing)}
                 className="rounded-full hover:bg-muted"
               >
-                {isEditing ? "Listo" : "Editar"}
+                {isEditing ? <Save className="mr-2 h-4 w-4 shrink-0" /> : <Edit className="mr-2 h-4 w-4 shrink-0" />}
+                {isEditing ? "Listo" : "Guardar"}
               </Button>
             </div>
 

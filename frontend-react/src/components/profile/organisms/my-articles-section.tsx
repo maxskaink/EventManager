@@ -66,7 +66,7 @@ export const MyArticlesSection = ({ articles, onAddArticle, onEditArticle, onDel
                       rel="noopener noreferrer"
                       className="text-sm text-sky-700 hover:underline flex items-center gap-1"
                     >
-                      Ver publicación <ExternalLink className="h-3 w-3" />
+                      Ver anuncio <ExternalLink className="h-3 w-3" />
                     </a>
                   </div>
                   <div className="flex flex-col gap-2 shrink-0">

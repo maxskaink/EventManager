@@ -28,7 +28,7 @@ const BNavBarInterested = () => {
           className="flex h-auto flex-col items-center gap-1 py-2"
         >
           <CalendarDays className="h-5 w-5" />
-          <span className="text-xs">Publicaciones</span>
+          <span className="text-xs">Anuncios</span>
         </Button>
         <Button
           variant="ghost"

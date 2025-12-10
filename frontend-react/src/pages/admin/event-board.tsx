@@ -135,7 +135,7 @@ export function EventBoardScreen() {
     },
     onError: (error) => {
       console.error("Error deleting publication:", error);
-      toast.error(getErrorMessageForToast(error, "Error al eliminar publicación"));
+      toast.error(getErrorMessageForToast(error, "Error al eliminar anuncio"));
     },
   });
 
@@ -171,7 +171,7 @@ export function EventBoardScreen() {
     },
     onError: (error) => {
       console.error("Error updating publication:", error);
-      toast.error(getErrorMessageForToast(error, "Error al actualizar publicación"));
+      toast.error(getErrorMessageForToast(error, "Error al actualizar anuncio"));
     },
   });
 
@@ -296,7 +296,7 @@ export function EventBoardScreen() {
       // It's a publication
       const idMatch = itemToDelete.id.match(/(\d+)$/);
       if (!idMatch) {
-        toast.error("ID de publicación no válido");
+        toast.error("ID de anuncio no válido");
         return;
       }
       const articleId = Number(idMatch[1]);
@@ -311,7 +311,7 @@ export function EventBoardScreen() {
           user={user}
           onGoBack={() => navigate(-1)}
           title="Contenido del semillero"
-          subtitle="Administra eventos y publicaciones"
+          subtitle="Administra eventos y anuncios"
         />
       </HideOnScrollWrapper>
 
@@ -337,7 +337,7 @@ export function EventBoardScreen() {
 
           <TabsList className="mb-4 grid w-full grid-cols-2">
             <TabsTrigger value="events">Eventos</TabsTrigger>
-            <TabsTrigger value="publications">Publicaciones</TabsTrigger>
+            <TabsTrigger value="publications">Anuncios</TabsTrigger>
           </TabsList>
 
           <TabsContent value="events" className="mt-0">

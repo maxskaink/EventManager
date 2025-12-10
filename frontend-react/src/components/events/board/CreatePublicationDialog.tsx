@@ -19,7 +19,7 @@ const publicationSchema = z.object({
     .min(10, "El contenido debe tener al menos 10 caracteres")
     .max(5000, "El contenido no puede exceder 5000 caracteres"),
   type: z.enum(["aviso", "comunicado", "material"], {
-    message: "Selecciona un tipo de publicación",
+    message: "Selecciona un tipo de anuncio",
   }),
   summary: z.string()
     .max(500, "El resumen no puede exceder 500 caracteres")
@@ -116,7 +116,7 @@ export const CreatePublicationDialog = ({
         <DialogHeader>
           <DialogTitle>Crear Publicación</DialogTitle>
           <DialogDescription>
-            Crea una publicación simple (aviso, comunicado o material educativo).
+            Crea una anuncio simple (aviso, comunicado o material educativo).
           </DialogDescription>
         </DialogHeader>
 
@@ -128,7 +128,7 @@ export const CreatePublicationDialog = ({
               {...register("title")}
               disabled={isPending}
               className={errors.title ? "border-destructive" : ""}
-              placeholder="Título de la publicación"
+              placeholder="Título de la anuncio"
             />
             {errors.title && (
               <p className="text-sm text-destructive mt-1">{errors.title.message}</p>
@@ -136,7 +136,7 @@ export const CreatePublicationDialog = ({
           </div>
 
           <div className="w-full">
-            <Label htmlFor="pub-type">Tipo de publicación *</Label>
+            <Label htmlFor="pub-type">Tipo de anuncio *</Label>
             <Controller
               name="type"
               control={control}
@@ -169,7 +169,7 @@ export const CreatePublicationDialog = ({
               {...register("content")}
               disabled={isPending}
               className={errors.content ? "border-destructive" : ""}
-              placeholder="Escribe el contenido de la publicación..."
+              placeholder="Escribe el contenido de la anuncio..."
               rows={4}
             />
             {errors.content && (
@@ -184,7 +184,7 @@ export const CreatePublicationDialog = ({
               {...register("summary")}
               disabled={isPending}
               className={errors.summary ? "border-destructive" : ""}
-              placeholder="Breve resumen de la publicación..."
+              placeholder="Breve resumen de la anuncio..."
               rows={2}
             />
             {errors.summary && (

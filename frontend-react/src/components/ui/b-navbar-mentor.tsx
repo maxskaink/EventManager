@@ -20,7 +20,7 @@ const BNavBarMentor = () => {
     },
     {
       icon: CalendarDays,
-      label: "Publicaciones",
+      label: "Anuncios",
       onClick: () => navigate("/publications"),
       isActive: location.pathname === "/publications",
     },

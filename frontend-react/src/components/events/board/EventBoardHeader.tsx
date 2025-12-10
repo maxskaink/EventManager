@@ -39,7 +39,7 @@ export function EventBoardHeader({ userRole, onNavigate }: Props) {
         <div className="flex-1 min-w-0">
           <h1 className="text-lg sm:text-xl font-semibold">Contenido del Semillero</h1>
           <p className="text-xs sm:text-sm text-primary-foreground/80">
-            Administra eventos y publicaciones
+            Administra eventos y anuncios
           </p>
         </div>
         <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">

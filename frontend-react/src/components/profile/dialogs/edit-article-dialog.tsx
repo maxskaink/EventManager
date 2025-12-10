@@ -24,7 +24,7 @@ const articleSchema = z.object({
     .refine((date) => {
       const parsed = new Date(date);
       return !isNaN(parsed.getTime());
-    }, "Fecha de publicación inválida"),
+    }, "Fecha de anuncio inválida"),
   publicationUrl: z.string()
     .min(1, "La URL es requerida")
     .transform((url) => {
@@ -145,7 +145,7 @@ export const EditArticleDialog = ({ open, onOpenChange, onEditArticle, isPending
           </div>
 
           <div>
-            <Label htmlFor="edit-article-date">Fecha de publicación *</Label>
+            <Label htmlFor="edit-article-date">Fecha de anuncio *</Label>
             <Input
               id="edit-article-date"
               type="date"
@@ -159,7 +159,7 @@ export const EditArticleDialog = ({ open, onOpenChange, onEditArticle, isPending
           </div>
 
           <div>
-            <Label htmlFor="edit-article-url">URL de publicación *</Label>
+            <Label htmlFor="edit-article-url">URL de anuncio *</Label>
             <Input
               id="edit-article-url"
               type="url"

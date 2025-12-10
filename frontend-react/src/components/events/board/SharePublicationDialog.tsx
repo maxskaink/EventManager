@@ -134,7 +134,7 @@ export function SharePublicationDialog({ open, onOpenChange, publication }: Shar
         <DialogHeader>
           <DialogTitle>Compartir "{publication.title}"</DialogTitle>
           <DialogDescription>
-            Gestiona quién puede ver esta publicación.
+            Gestiona quién puede ver esta anuncio.
           </DialogDescription>
         </DialogHeader>
 

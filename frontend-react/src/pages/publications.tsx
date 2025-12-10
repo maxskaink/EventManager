@@ -99,7 +99,7 @@ export function PublicationsScreen() {
     }
 
     if (isError) {
-      return <p className="text-center text-destructive">Error al cargar las publicaciones.</p>;
+      return <p className="text-center text-destructive">Error al cargar las anuncios.</p>;
     }
 
     if (sortedItems.length === 0) {
@@ -122,7 +122,7 @@ export function PublicationsScreen() {
     <div className="min-h-screen pb-20 bg-gray-50/50">
       <HideOnScrollWrapper>
         <UnifiedHeader
-          title="Publicaciones"
+          title="Anuncios"
           onGoBack={() => navigate(dashboardRoute)}
         />
       </HideOnScrollWrapper>

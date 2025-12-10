@@ -7,7 +7,7 @@ namespace API {
   type EventModality = 'presencial' | 'virtual' | 'mixta';
   type Role = UserRole;
   type PublicationType = "articulo" | "aviso" | "comunicado" | "material" | "evento";
-  // TODO: verificar los estados de una publicación 
+  // TODO: verificar los estados de una anuncio 
   type PublicationStatus = "activo" | "inactivo" | "borrador" | "pendiente";
   type PublicationVisibility = "public" | "private" | "role_based";
   type EventModality = "presencial" | "virtual" | "mixta";
