@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Repositories\Contracts\PublicationRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\DB;
 
 class PublicationRepository implements PublicationRepositoryInterface
 {
@@ -91,30 +92,28 @@ class PublicationRepository implements PublicationRepositoryInterface
     {
         $query = Publication::query()
             ->where('status', 'activo')
-            ->orderByDesc('created_at')
             ->with('event');
 
-        // Unauthenticated user -> public only
+        // Apply visibility logic
         if ($user === null) {
-            return $query->where('visibility', 'public')->paginate($perPage);
-        }
-
-        // Roles with full access
-        if (in_array($user->role, ['mentor', 'coordinator'], true)) {
-            return $query->paginate($perPage);
-        }
-
-        // Standard user -> public or explicitly granted access
-        return $query
-            ->where(function ($q) use ($user) {
+            // Unauthenticated users see only public publications
+            $query->where('visibility', 'public');
+        } elseif (in_array($user->role, ['mentor', 'coordinator'], true)) {
+            // Mentors and coordinators see all publications (no additional filter)
+        } else {
+            // Other authenticated users see public OR publications they have explicit access to
+            $query->where(function ($q) use ($user) {
                 $q->where('visibility', 'public')
                     ->orWhereExists(function ($sub) use ($user) {
-                        $sub->from('publication_accesses')
+                        $sub->select(DB::raw(1))
+                            ->from('publication_accesses')
                             ->whereColumn('publication_accesses.publication_id', 'publications.id')
                             ->where('publication_accesses.profile_id', $user->id);
                     });
-            })
-            ->paginate($perPage);
+            });
+        }
+
+        return $query->orderByDesc('created_at')->paginate($perPage);
     }
 
     /**
@@ -124,10 +123,9 @@ class PublicationRepository implements PublicationRepositoryInterface
     {
         $query = Publication::query()
             ->where('status', 'activo')
-            ->orderByDesc('created_at')
             ->with('event');
 
-        // Apply filters
+        // Apply filters first
         if (!empty($filters['type'])) {
             $query->where('type', $filters['type']);
         }
@@ -147,25 +145,37 @@ class PublicationRepository implements PublicationRepositoryInterface
             });
         }
 
-        // Visibility logic (same as listPublishedForUser)
+        // Apply visibility logic after filters
         if ($user === null) {
-            return $query->where('visibility', 'public')->paginate($perPage);
-        }
-
-        if (in_array($user->role, ['mentor', 'coordinator'], true)) {
-            return $query->paginate($perPage);
-        }
-
-        return $query
-            ->where(function ($q) use ($user) {
+            // Unauthenticated users see only public publications
+            $query->where('visibility', 'public');
+        } elseif (in_array($user->role, ['mentor', 'coordinator'], true)) {
+            // Mentors and coordinators see all publications (no additional filter)
+        } else {
+            // Other authenticated users see public OR publications they have explicit access to
+            $userId = $user->id;
+            \Log::info('PublicationRepository::listFiltered - Applying access filter', [
+                'user_id' => $userId,
+                'user_role' => $user->role,
+            ]);
+            
+            $query->where(function ($q) use ($userId) {
                 $q->where('visibility', 'public')
-                    ->orWhereExists(function ($sub) use ($user) {
-                        $sub->from('publication_accesses')
+                    ->orWhereExists(function ($sub) use ($userId) {
+                        $sub->select(DB::raw(1))
+                            ->from('publication_accesses')
                             ->whereColumn('publication_accesses.publication_id', 'publications.id')
-                            ->where('publication_accesses.profile_id', $user->id);
+                            ->where('publication_accesses.profile_id', $userId);
                     });
-            })
-            ->paginate($perPage);
+            });
+            
+            \Log::info('PublicationRepository::listFiltered - SQL', [
+                'sql' => $query->toSql(),
+                'bindings' => $query->getBindings(),
+            ]);
+        }
+
+        return $query->orderByDesc('created_at')->paginate($perPage);
     }
 
     /**
