@@ -79,7 +79,7 @@ export function AttendanceModal({ isOpen, onOpenChange, eventId }: AttendanceMod
       await EventAPI.markAttendance(eventId, selectedUsers);
     },
     onSuccess: () => {
-      toast.success("✅ Asistencia marcada exitosamente");
+      toast.success(" Asistencia marcada exitosamente");
       onOpenChange(false);
       queryClient.invalidateQueries({ queryKey: ['eventEnrollments', eventId] });
     },
@@ -94,7 +94,7 @@ export function AttendanceModal({ isOpen, onOpenChange, eventId }: AttendanceMod
       await EventAPI.markAbscense(eventId, selectedUsers);
     },
     onSuccess: () => {
-      toast.success("✅ Inasistencia marcada exitosamente");
+      toast.success(" Inasistencia marcada exitosamente");
       onOpenChange(false);
       queryClient.invalidateQueries({ queryKey: ['eventEnrollments', eventId] });
     },

@@ -109,7 +109,7 @@ const EventListItem = ({
             </Button>
 
             {/* Solo mostrar botón "Publicar" si es un evento */}
-            {isEvent && (
+            {isEvent && !hasPublication && (
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>

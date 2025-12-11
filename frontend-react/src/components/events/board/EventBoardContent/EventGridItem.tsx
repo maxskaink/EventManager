@@ -172,7 +172,7 @@ const EventGridItem = ({
               <Users className="h-3.5 w-3.5 shrink-0"/>
             </Button>
           )}
-          {isEvent && (
+          {isEvent && !hasPublication && (
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>

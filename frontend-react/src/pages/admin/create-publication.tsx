@@ -64,28 +64,20 @@ export function CreatePublicationPage() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!formData.title.trim() || !formData.content.trim()) {
-      toast.error("Por favor, completa los campos requeridos");
-      return;
-    }
-
+  const createPublication = async (saved_as: "borrador" | "activo") => {
     setIsLoading(true);
-
     try {
       await PublicationAPI.createPublication({
         title: formData.title,
         content: formData.content,
         type: formData.type as API.PublicationType,
-        status: formData.status as API.PublicationStatus,
+        status: saved_as,
         visibility: formData.visibility as API.PublicationVisibility,
         summary: formData.summary || "",
         image: formData.image || undefined,
       });
 
-      toast.success("✅ Anuncio creada exitosamente");
+      toast.success("Anuncio creada exitosamente");
       navigate("/publications");
     } catch (error) {
       const message = getErrorMessageForToast(error, "Error al crear la anuncio");
@@ -94,6 +86,19 @@ export function CreatePublicationPage() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    
+
+    if (!formData.title.trim() || !formData.content.trim()) {
+      toast.error("Por favor, completa los campos requeridos");
+      return;
+    }
+
+    createPublication("activo");
   };
 
   const handleCancel = () => {
@@ -190,25 +195,6 @@ export function CreatePublicationPage() {
                 </Alert>
               )}
 
-              {/* Estado */}
-              <div className="space-y-2">
-                <Label htmlFor="status" className="text-slate-700 font-semibold">
-                  Estado <span className="text-red-500">*</span>
-                </Label>
-                <Select
-                  value={formData.status}
-                  onValueChange={(value) => handleSelectChange("status", value)}
-                  disabled={isLoading}
-                >
-                  <SelectTrigger className="border-slate-200 focus:border-blue-500 focus:ring-blue-500">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="borrador">Borrador</SelectItem>
-                    <SelectItem value="activo">Activo</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
 
               {/* Contenido */}
               <div className="space-y-2">
@@ -294,7 +280,14 @@ export function CreatePublicationPage() {
                   Cancelar
                 </Button>
                 <Button
-                  
+                  onClick={() => createPublication("borrador")}
+                  variant="secondary"
+                  disabled={isLoading}
+                  className="w-full sm:w-auto font-semibold shadow-md hover:shadow-lg transition-all text-xs sm:text-sm py-2 sm:py-auto h-auto sm:h-9"
+                >
+                  {isLoading ? "Creando..." : "Crear Como Borrador"}
+                </Button>
+                <Button
                   disabled={isLoading}
                   className="w-full sm:w-auto font-semibold shadow-md hover:shadow-lg transition-all text-xs sm:text-sm py-2 sm:py-auto h-auto sm:h-9"
                 >

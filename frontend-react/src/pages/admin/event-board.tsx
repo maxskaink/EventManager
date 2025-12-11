@@ -113,7 +113,7 @@ export function EventBoardScreen() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["events"] });
-      toast.success("✅ Evento eliminado exitosamente");
+      toast.success(" Evento eliminado exitosamente");
       setIsDeleteDialogOpen(false);
       setItemToDelete(null);
     },
@@ -129,7 +129,7 @@ export function EventBoardScreen() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["publications"] });
-      toast.success("✅ Anuncio eliminada exitosamente");
+      toast.success(" Anuncio eliminada exitosamente");
       setIsDeleteDialogOpen(false);
       setItemToDelete(null);
     },
@@ -145,7 +145,7 @@ export function EventBoardScreen() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["events"] });
-      toast.success("✅ Evento actualizado exitosamente");
+      toast.success(" Evento actualizado exitosamente");
       setIsEditEventOpen(false);
       setSelectedEventForEdit(null);
     },
@@ -165,7 +165,7 @@ export function EventBoardScreen() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["publications"] });
-      toast.success("✅ Anuncio actualizada exitosamente");
+      toast.success(" Anuncio actualizada exitosamente");
       setIsEditPublicationOpen(false);
       setSelectedPublicationForEdit(null);
     },
