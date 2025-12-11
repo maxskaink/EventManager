@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 
 // Ruta pública, sin autenticación
 Route::get('publication/active', [PublicationController::class, 'listPublishedPublications']);
+Route::get('publication/filter', [PublicationController::class, 'listFilteredPublications']); // Added route
 
 // Rutas protegidas
 Route::middleware('auth:sanctum')->prefix('publication')->group(function () {
@@ -12,7 +13,7 @@ Route::middleware('auth:sanctum')->prefix('publication')->group(function () {
     Route::post('/event/{eventId}', [PublicationController::class, 'addEventPublication']);
     Route::get('/all', [PublicationController::class, 'listAllPublications']);
     Route::get('/draft', [PublicationController::class, 'listDraftPublications']);
-    Route::get('/filter', [PublicationController::class, 'listFilteredPublications']); // Added route
+
     Route::patch('{publicationId}', [PublicationController::class, 'updatePublication']);
     Route::post('{publicationId}/interests', [PublicationController::class, 'addPublicationInterests']);
     Route::delete('{publicationId}/interests', [PublicationController::class, 'removePublicationInterests']);
