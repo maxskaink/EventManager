@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "../../../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../../../ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "../../../ui/avatar";
@@ -23,14 +23,10 @@ interface UserProgress {
 export const ProgressTrackingTab: React.FC<ProgressTrackingTabProps> = ({
   users,
   loadingUsers,
-  onViewProfile,
   onGenerateReport,
 }) => {
   // Memoizar memberUsers para evitar recalcular en cada render
-  const memberUsers = useMemo(
-    () => users.filter((user) => user.role === "active-member" || user.role === "seed" || user.role === "interested"),
-    [users]
-  );
+  const memberUsers = users;
   
   const [userProgressMap, setUserProgressMap] = useState<Record<number, UserProgress>>({});
 
@@ -119,7 +115,7 @@ export const ProgressTrackingTab: React.FC<ProgressTrackingTabProps> = ({
         ) : memberUsers.length === 0 ? (
           <p>No hay integrantes registrados.</p>
         ) : (
-          <div className="space-y-6">
+          <div className="space-y-3">
             {memberUsers.map((user) => {
               const progress = userProgressMap[user.id] || {
                 eventsAttended: 0,
@@ -137,66 +133,56 @@ export const ProgressTrackingTab: React.FC<ProgressTrackingTabProps> = ({
               } as MemberProgressData;
 
               return (
-                <div key={user.id} className="border rounded-lg p-4">
-                  {/* Mobile S: flex-col (avatar + info vertical), md+: flex-row (avatar + info horizontal) */}
-                  <div className="flex flex-col items-center gap-3 mb-4 sm:flex-row sm:items-start sm:justify-between">
-                    <div className="flex flex-col items-center gap-3 sm:flex-row sm:items-center">
-                      <Avatar className="h-10 w-10">
-                        <AvatarImage src={user.avatar ?? undefined} />
-                        <AvatarFallback>
-                          {user.name?.split(" ").map((n) => n[0]).join("") ||
-                            "?"}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="text-center sm:text-left">
-                        <h3 className="font-medium">
-                          {user.name || "Sin nombre"}
-                        </h3>
-                        <p className="text-sm text-muted-foreground">
-                          {user.email}
-                        </p>
+                <div
+                  key={user.id}
+                  className="border rounded-lg p-3 flex flex-col md:flex-row md:items-center gap-4 transition-all hover:bg-muted/5"
+                >
+                  <div className="flex items-center gap-3 overflow-hidden">
+                    <Avatar className="h-9 w-9 border">
+                      <AvatarImage src={user.avatar ?? undefined} />
+                      <AvatarFallback>
+                        {user.name?.split(" ").map((n) => n[0]).join("") || "?"}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="min-w-0">
+                      <h3 className="font-medium text-sm truncate">
+                        {user.name || "Sin nombre"}
+                      </h3>
+                      <p className="text-xs text-muted-foreground truncate">
+                        {user.email}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-6 text-sm md:ml-auto">
+                    <div className="flex items-center gap-2 min-w-[100px]">
+                      <Calendar className="h-4 w-4 text-primary" />
+                      <div className="flex flex-col leading-none">
+                        <span className="text-xs text-muted-foreground">Eventos</span>
+                        <span className="font-semibold">
+                          {progress.loading ? "..." : progress.eventsAttended}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 min-w-[120px]">
+                      <Award className="h-4 w-4 text-primary" />
+                      <div className="flex flex-col leading-none">
+                        <span className="text-xs text-muted-foreground">Certificados</span>
+                        <span className="font-semibold">
+                          {progress.loading ? "..." : progress.certificatesEarned}
+                        </span>
                       </div>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="text-center p-3 bg-muted rounded-lg">
-                      <Calendar className="h-6 w-6 mx-auto mb-2 text-primary" />
-                      <p className="text-sm text-muted-foreground">
-                        Eventos Asistidos
-                      </p>
-                      <p className="text-lg font-semibold">
-                        {progress.loading ? "..." : progress.eventsAttended}
-                      </p>
-                    </div>
-                    <div className="text-center p-3 bg-muted rounded-lg">
-                      <Award className="h-6 w-6 mx-auto mb-2 text-primary" />
-                      <p className="text-sm text-muted-foreground">
-                        Certificados
-                      </p>
-                      <p className="text-lg font-semibold">
-                        {progress.loading ? "..." : progress.certificatesEarned}
-                      </p>
-                    </div>
-
-                  </div>
-
-                  <div className="mt-4 flex flex-col gap-2 sm:flex-row">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => onViewProfile(memberData)}
-                      className="w-full sm:w-auto"
-                    >
-                      Ver Perfil Completo
-                    </Button>
+                  <div className="flex items-center gap-2 pt-2 md:pt-0 border-t md:border-t-0 mt-2 md:mt-0">
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => onGenerateReport(memberData)}
-                      className="w-full sm:w-auto"
+                      className="h-8 text-xs"
                     >
-                      Generar Reporte
+                      Reporte
                     </Button>
                   </div>
                 </div>
