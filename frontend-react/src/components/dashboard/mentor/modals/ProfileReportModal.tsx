@@ -3,6 +3,7 @@ import { Button } from '../../../ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '../../../ui/dialog';
 import { Users, BarChart3, Calendar, Award } from 'lucide-react';
 import { toast } from 'sonner';
+import { generateUserReport } from '../../../../features/pdf/pdf.generator';
 
 type MemberProgressData = (API.User & {
   joinDate: string;
@@ -63,8 +64,11 @@ export const ProfileReportModal: React.FC<ReportModalProps> = ({ open, onOpenCha
           <div className="flex gap-2 justify-end">
             <Button variant="outline" onClick={() => onOpenChange(false)}>Cerrar</Button>
             <Button onClick={() => {
-              toast.success("📄 Reporte generado correctamente");
-              onOpenChange(false);
+              if (member) {
+                generateUserReport(member);
+                toast.success("📄 Reporte generado correctamente");
+                onOpenChange(false);
+              }
             }}>
               Descargar PDF
             </Button>

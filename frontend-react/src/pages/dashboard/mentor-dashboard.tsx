@@ -18,6 +18,7 @@ import { getErrorMessageForToast } from "../../features/errors/error.helpers";
 import { useAuthStore } from "../../stores/auth.store";
 import { HideOnScrollWrapper } from "@/components/layout/HideOnScrollWrapper";
 import { MentorPrimaryActions } from "@/components/dashboard/mentor/MentorPrimaryActions";
+import { generateTotalReport } from "../../features/pdf/pdf.generator";
 
 export function MentorDashboardPage() {
   const user = useAuthStore(s => s.user)
@@ -79,6 +80,23 @@ export function MentorDashboardPage() {
     setIsReportModalOpen(true);
   };
 
+  const handleGenerateTotalReport = () => {
+    try {
+      if (users.length === 0) {
+        toast.info("No hay usuarios para generar el reporte");
+        return;
+      }
+      
+      // En un caso ideal, aquí obtendríamos las estadísticas completas de todos los usuarios
+      // Por ahora, generamos el reporte con la información disponible en la lista de usuarios
+      generateTotalReport(users);
+      toast.success(" Reporte general generado correctamente");
+    } catch (error) {
+      console.error("Error generating report:", error);
+      toast.error("Error al generar el reporte");
+    }
+  };
+
   if (!user) return null;
 
   return (
@@ -96,7 +114,7 @@ export function MentorDashboardPage() {
           onOpenInterests={() => setIsInterestModalOpen(true)}
         />
 
-        <MentorPrimaryActions />
+        <MentorPrimaryActions onGenerateTotalReport={handleGenerateTotalReport} />
 
         {/* Métricas */}
         <MentorMetrics users={users} loading={loading} />
