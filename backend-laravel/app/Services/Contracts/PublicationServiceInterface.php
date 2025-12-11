@@ -120,12 +120,14 @@ interface PublicationServiceInterface
 
     /**
      * Get a specific publication by ID.
+     * If user is null, only public publications can be accessed.
+     * If user is authenticated, they can access public publications and private ones they have access to.
      *
      * @param int $id
-     * @param User $user
+     * @param User|null $user
      * @return Publication
      */
-    public function getPublicationById(int $id, User $user): Publication;
+    public function getPublicationById(int $id, ?User $user): Publication;
 
     /**
      * Upload and set an image for a publication.
