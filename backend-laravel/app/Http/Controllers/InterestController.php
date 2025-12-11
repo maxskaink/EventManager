@@ -51,9 +51,6 @@ class InterestController extends Controller
      */
     public function listAllInterests(): JsonResponse
     {
-        // Authorization: check if the user can view interests
-        $this->authorize('viewAny', Interest::class);
-
         $interests = $this->interestService->getAllInterests();
 
         return response()->json([
