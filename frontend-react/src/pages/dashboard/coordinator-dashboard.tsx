@@ -113,6 +113,10 @@ export function CoordinatorDashboardPage() {
 
       {/* Contenedor principal del contenido */}
       <div className="mx-auto max-w-6xl space-y-8 px-4 py-8 sm:px-6 lg:px-8">
+        {/* 6. Administración */}
+        <DashboardAdminActions />
+        {/* 3. Acciones Principales */}
+        <DashboardPrimaryActions />
         {/* 2. Métricas */}
         <DashboardMetrics
           totalEvents={totalEvents}
@@ -120,8 +124,7 @@ export function CoordinatorDashboardPage() {
           averageParticipation={averageParticipation}
         />
 
-        {/* 3. Acciones Principales */}
-        <DashboardPrimaryActions />
+        
 
         {/* 4. Gestión de Contenido */}
         <DashboardContentManagement />
@@ -129,8 +132,7 @@ export function CoordinatorDashboardPage() {
         {/* 5. Próximos Eventos */}
         <DashboardUpcomingEvents events={upcomingContent} />
 
-        {/* 6. Administración */}
-        <DashboardAdminActions />
+        
       </div>
     </div>
   );
