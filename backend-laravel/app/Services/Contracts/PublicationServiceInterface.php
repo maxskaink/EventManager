@@ -91,6 +91,14 @@ interface PublicationServiceInterface
     public function addPublicationInterests(int $publicationId, array $interestIds): array;
 
     /**
+     * Get all interests associated with a publication.
+     *
+     * @param int $publicationId
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public function getPublicationInterests(int $publicationId): Collection;
+
+    /**
      * Grant access to a publication for specific users or roles.
      *
      * @param int $publicationId

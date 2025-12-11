@@ -265,6 +265,14 @@ class PublicationService implements PublicationServiceInterface
 
     /**
      * {@inheritDoc}
+     */
+    public function getPublicationInterests(int $publicationId): Collection
+    {
+        return $this->interestRepo->getByPublication($publicationId);
+    }
+
+    /**
+     * {@inheritDoc}
      *
      * @throws ResourceNotFoundException
      * @throws InvalidActionException

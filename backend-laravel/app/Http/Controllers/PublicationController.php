@@ -224,6 +224,21 @@ class PublicationController extends Controller
     }
 
     /**
+     * Get all interests associated with a publication.
+     *
+     * @param int $publicationId The ID of the publication.
+     * @return JsonResponse A list of interests.
+     */
+    public function getPublicationInterests(int $publicationId): JsonResponse
+    {
+        $interests = $this->publicationService->getPublicationInterests($publicationId);
+
+        return response()->json([
+            'interests' => $interests,
+        ]);
+    }
+
+    /**
      * Grant special access to a private publication.
      *
      * @param int $publicationId The ID of the publication.
@@ -381,69 +396,7 @@ class PublicationController extends Controller
         ]);
     }
 
-    /**
-     * DEBUG: Check publication access for current user
-     */
-    public function debugAccess(int $publicationId): JsonResponse
-    {
-        $user = request()->user();
-        
-        // Check with and without soft deletes
-        $publication = Publication::query()->find($publicationId);
-        $publicationWithTrashed = Publication::withTrashed()->find($publicationId);
-        
-        if (!$publication && !$publicationWithTrashed) {
-            return response()->json(['error' => 'Publication not found'], 404);
-        }
 
-        $hasAccess = \DB::table('publication_accesses')
-            ->where('publication_id', $publicationId)
-            ->where('profile_id', $user->id)
-            ->exists();
-
-        $allAccesses = \DB::table('publication_accesses')
-            ->where('publication_id', $publicationId)
-            ->get();
-
-        // Test the actual query that should be used
-        $testQuery = Publication::query()
-            ->where('status', 'activo')
-            ->where(function ($q) use ($user) {
-                $q->where('visibility', 'public')
-                    ->orWhereExists(function ($sub) use ($user) {
-                        $sub->select(\DB::raw(1))
-                            ->from('publication_accesses')
-                            ->whereColumn('publication_accesses.publication_id', 'publications.id')
-                            ->where('publication_accesses.profile_id', $user->id);
-                    });
-            })
-            ->where('id', $publicationId);
-
-        $testSql = $testQuery->toSql();
-        $testBindings = $testQuery->getBindings();
-        $testResult = $testQuery->exists();
-
-        return response()->json([
-            'user_id' => $user->id,
-            'user_role' => $user->role,
-            'publication_id' => $publicationId,
-            'publication_visibility' => $publicationWithTrashed ? $publicationWithTrashed->visibility : null,
-            'publication_status' => $publicationWithTrashed ? $publicationWithTrashed->status : null,
-            'publication_deleted_at' => $publicationWithTrashed ? $publicationWithTrashed->deleted_at : null,
-            'publication_exists_without_trashed' => $publication !== null,
-            'publication_exists_with_trashed' => $publicationWithTrashed !== null,
-            'has_access_in_db' => $hasAccess,
-            'all_accesses_for_publication' => $allAccesses,
-            'test_query_sql' => $testSql,
-            'test_query_bindings' => $testBindings,
-            'test_query_finds_publication' => $testResult,
-            'should_see_publication' => (
-                ($publication && $publication->visibility === 'public') ||
-                in_array($user->role, ['mentor', 'coordinator']) ||
-                $hasAccess
-            )
-        ]);
-    }
 
 }
 
