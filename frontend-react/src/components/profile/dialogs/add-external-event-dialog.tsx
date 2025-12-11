@@ -10,7 +10,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { ExternalEventsAPI } from "../../../services/api";
+import { externalEventQueries } from "@/services/react-query/queries";
 
 // Zod validation schema
 const externalEventSchema = z.object({
@@ -95,13 +95,8 @@ export const AddExternalEventDialog = ({ open, onOpenChange, onAddEvent, isPendi
     const modality = watch("modality");
 
     // Fetch trusted organizations
-    const { data: organizationsData, isLoading: isLoadingOrganizations } = useQuery({
-        queryKey: ["trusted-organizations"],
-        queryFn: ExternalEventsAPI.getTrustedDomains,
-        enabled: open,
-    });
-
-    const trustedOrganizations = organizationsData?.trusted_organizations ?? [];
+    const trustedOrgsQuery = useQuery(externalEventQueries.trustedDomains(open));
+    const trustedOrganizations = trustedOrgsQuery.data ?? [];
 
     // Reset form when dialog closes
     useEffect(() => {
@@ -214,10 +209,10 @@ export const AddExternalEventDialog = ({ open, onOpenChange, onAddEvent, isPendi
                                 <Select
                                     onValueChange={field.onChange}
                                     value={field.value}
-                                    disabled={isPending || isLoadingOrganizations}
+                                    disabled={isPending || trustedOrgsQuery.isLoading}
                                 >
                                     <SelectTrigger className={errors.host_organization ? "border-destructive" : ""}>
-                                        <SelectValue placeholder={isLoadingOrganizations ? "Cargando organizaciones..." : "Selecciona organización"} />
+                                        <SelectValue placeholder={trustedOrgsQuery.isLoading ? "Cargando organizaciones..." : "Selecciona organización"} />
                                     </SelectTrigger>
                                     <SelectContent>
                                         {trustedOrganizations.length > 0 ? (

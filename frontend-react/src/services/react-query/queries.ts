@@ -1,5 +1,5 @@
 import { queryOptions, infiniteQueryOptions } from "@tanstack/react-query";
-import { ArticleAPI, CertificateAPI, EventAPI, ProfileAPI, PublicationAPI, UserAPI } from "../api";
+import { ArticleAPI, CertificateAPI, EventAPI, ExternalEventsAPI, ProfileAPI, PublicationAPI, UserAPI } from "../api";
 
 export const eventQueries = {
     all: () =>
@@ -149,4 +149,16 @@ export const articleQueries = {
             return data.sort((a, b) => a.localeCompare(b)) || [];
         },
     }),
+}
+
+
+export const externalEventQueries = {
+    trustedDomains: (enabled?: boolean) => queryOptions({
+        queryKey: ["external-events", "trusted-domains"],
+        queryFn: async () => {
+            const data = await ExternalEventsAPI.getTrustedDomains();
+            return data.trusted_organizations.sort((a, b) => a.localeCompare(b)) || [];
+        },
+        enabled: enabled ?? true,
+    }),   
 }
