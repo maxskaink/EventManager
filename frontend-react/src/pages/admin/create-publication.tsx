@@ -20,6 +20,8 @@ import { ImagePlus, ArrowLeft, Info } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { getErrorMessageForToast } from "@/features/errors/error.helpers";
 import { PUBLICATION_VISIBILITIES, translatePublicationVisibility } from "@/features/events";
+import { InterestsAPI } from "@/services/api";
+import { MultiSelect } from "@/components/ui/multi-select";
 
 export function CreatePublicationPage() {
   const navigate = useNavigate();
@@ -34,8 +36,17 @@ export function CreatePublicationPage() {
     image: null as File | null,
   });
 
+
+  const [allInterests, setAllInterests] = useState<API.Interest[]>([]);
+  const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
+
   useEffect(() => {
     window.scrollTo(0, 0);
+
+    // Fetch interests
+    InterestsAPI.listInterests()
+      .then((data) => setAllInterests(data.interests))
+      .catch((err) => console.error("Failed to load interests", err));
   }, []);
 
   const handleInputChange = (
@@ -68,7 +79,7 @@ export function CreatePublicationPage() {
   const createPublication = async (saved_as: "borrador" | "activo") => {
     setIsLoading(true);
     try {
-      await PublicationAPI.createPublication({
+      const pub = await PublicationAPI.createPublication({
         title: formData.title,
         content: formData.content,
         type: formData.type as API.PublicationType,
@@ -77,6 +88,10 @@ export function CreatePublicationPage() {
         summary: formData.summary || "",
         image: formData.image || undefined,
       });
+
+      if (selectedInterests.length > 0) {
+        await PublicationAPI.addPublicationInterests(pub.id, selectedInterests.map(Number));
+      }
 
       toast.success("Anuncio creado exitosamente");
       navigate("/event-board");
@@ -269,6 +284,20 @@ export function CreatePublicationPage() {
                       <span className="text-sm text-green-700">{formData.image.name}</span>
                     </div>
                   )}
+
+
+              {/* Intereses */}
+              <div className="space-y-2">
+                <Label className="text-slate-700 font-semibold">
+                  Intereses
+                </Label>
+                <MultiSelect
+                    options={allInterests.map(i => ({ label: i.keyword, value: i.id.toString() }))}
+                    selected={selectedInterests}
+                    onChange={setSelectedInterests}
+                    placeholder="Seleccionar intereses..."
+                />
+              </div>
                 </div>
               </div>
 

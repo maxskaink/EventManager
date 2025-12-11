@@ -26,6 +26,11 @@ async function listDraftPublications() {
   return response.data.publications;
 }
 
+async function listPublicationInterests(publication_id: number) {
+  const response = await axiosInstance.get<PublicationAPI.ListInterestsRes>(`/publication/${publication_id}/interests`);
+  return response.data.interests;
+}
+
 // POST
 async function createPublication(publication: APIPayloads.CreatePublication) {
 
@@ -96,4 +101,5 @@ export default {
   revokePublicationAccess,
   listPublicationsByFilters,
   getPublicationAccessUsers,
+  listPublicationInterests
 };

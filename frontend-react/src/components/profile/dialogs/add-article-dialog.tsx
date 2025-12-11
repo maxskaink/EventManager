@@ -78,7 +78,6 @@ export const AddArticleDialog = ({ open, onOpenChange, onAddArticle, isPending =
         formState: { errors },
         reset,
         setValue,
-        setError,
         clearErrors,
     } = useForm<ArticleFormData>({
         resolver: zodResolver(articleSchema),

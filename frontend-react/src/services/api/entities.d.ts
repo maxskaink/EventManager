@@ -166,4 +166,11 @@ namespace API {
     created_at: string;
     updated_at: string;
   }
+  interface PublicationInterest {
+    id: number
+    publication_id: number
+    interest_id: number
+    created_at: string
+    updated_at: string
+  }
 }

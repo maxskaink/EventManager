@@ -124,6 +124,10 @@ namespace PublicationAPI {
     publications: PaginatedResponse<API.Publication>;
   }
 
+  type ListInterestsRes = {
+    interests: API.PublicationInterest[];
+  }
+
   type ListPublicationsFilters = {
     search?: string;
     date_from?: string;

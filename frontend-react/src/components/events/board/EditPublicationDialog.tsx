@@ -11,6 +11,8 @@ import { z } from "zod";
 import { useEffect, useState } from "react";
 import { Alert, AlertDescription } from "../../ui/alert";
 import { PUBLICATION_VISIBILITIES, translatePublicationVisibility } from "@/features/events";
+import { InterestsAPI, PublicationAPI } from "@/services/api"; // Added APIs
+import { MultiSelect } from "@/components/ui/multi-select"; // Added MultiSelect
 
 const publicationSchema = z.object({
   title: z.string()
@@ -48,6 +50,9 @@ export const EditPublicationDialog = ({
 }: EditPublicationDialogProps) => {
   const [image, setImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [allInterests, setAllInterests] = useState<API.Interest[]>([]); // Store all available interests
+  const [selectedInterests, setSelectedInterests] = useState<string[]>([]); // Store selected interest IDs as strings
+  const [initialInterests, setInitialInterests] = useState<string[]>([]); // Store initial interests for diffing
 
   const {
     register,
@@ -77,6 +82,27 @@ export const EditPublicationDialog = ({
       if (publication.image_url) {
         setImagePreview(publication.image_url);
       }
+
+      // Fetch interests
+      const fetchInterests = async () => {
+        try {
+          const [interestsRes, pubInterestsRes] = await Promise.all([
+            InterestsAPI.listInterests(),
+            PublicationAPI.listPublicationInterests(publication.id)
+          ]);
+          
+          setAllInterests(interestsRes.interests);
+          
+          // Map publication interests to IDs
+          const currentIds = pubInterestsRes.map(pi => pi.interest_id.toString());
+          setSelectedInterests(currentIds);
+          setInitialInterests(currentIds);
+        } catch (error) {
+          console.error("Error loading interests:", error);
+        }
+      };
+      
+      fetchInterests();
     }
   }, [open, publication, reset]);
 
@@ -118,7 +144,28 @@ export const EditPublicationDialog = ({
     setImagePreview(publication?.image_url || null);
   };
 
-  const onSubmit = (data: PublicationFormData, isDraft: boolean) => {
+  const onSubmit = async (data: PublicationFormData, isDraft: boolean) => {
+    // Handle Interests Update
+    if (publication) {
+        const currentIds = selectedInterests.map(Number);
+        const initialIds = initialInterests.map(Number);
+        
+        const toAdd = currentIds.filter(id => !initialIds.includes(id));
+        const toRemove = initialIds.filter(id => !currentIds.includes(id));
+        
+        try {
+            if (toAdd.length > 0) {
+                await PublicationAPI.addPublicationInterests(publication.id, toAdd);
+            }
+            if (toRemove.length > 0) {
+                await PublicationAPI.removePublicationInterests(publication.id, toRemove);
+            }
+        } catch (error) {
+            console.error("Error updating interests:", error);
+            // Optionally show toast error here
+        }
+    }
+
     onUpdatePublication({
       ...data,
       status: isDraft ? "borrador" : "activo",
@@ -247,6 +294,17 @@ export const EditPublicationDialog = ({
                 </Select>
               )}
             />
+          </div>
+
+          <div className="w-full">
+             <Label htmlFor="pub-interests">Intereses</Label>
+             <MultiSelect
+                options={allInterests.map(i => ({ label: i.keyword, value: i.id.toString() }))}
+                selected={selectedInterests}
+                onChange={setSelectedInterests}
+                placeholder="Seleccionar intereses..."
+                className="mt-1"
+             />
           </div>
 
           {visibility === "private" && (

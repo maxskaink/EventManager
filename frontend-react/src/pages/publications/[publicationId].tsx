@@ -1,7 +1,7 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Calendar, Clock, MapPin, Users, Share2 } from "lucide-react";
-import { PublicationAPI, EventAPI } from "../../services/api";
+import { PublicationAPI, EventAPI, InterestsAPI } from "../../services/api";
 import { toast } from "sonner";
 import PublicationDetailSkeleton from "../../components/publications/PublicationDetailSkeleton";
 import BottomNavbarWrapper from "../../components/nav/BottomNavbarWrapper";
@@ -18,6 +18,7 @@ const PublicationDetailPage = () => {
   const { publicationId } = useParams<{ publicationId: string }>();
   const [publication, setPublication] = useState<API.Publication | null>(null);
   const [event, setEvent] = useState<API.Event | null>(null);
+  const [publicationInterests, setPublicationInterests] = useState<API.Interest[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const { user } = useAuthStore();
@@ -36,8 +37,17 @@ const PublicationDetailPage = () => {
       const fetchData = async () => {
         try {
           setLoading(true);
-          const pub = await PublicationAPI.getPublicationById(Number(publicationId));
+          const [pub, interestsRes, pubInterestsRes] = await Promise.all([
+            PublicationAPI.getPublicationById(Number(publicationId)),
+            InterestsAPI.listInterests(),
+            PublicationAPI.listPublicationInterests(Number(publicationId))
+          ]);
           setPublication(pub);
+          
+          const relevantInterests = interestsRes.interests.filter(i => 
+            pubInterestsRes.some(pi => pi.interest_id === i.id)
+          );
+          setPublicationInterests(relevantInterests);
 
           if (pub.type === "evento" && pub.event_id) {
             const eventData = await EventAPI.getEventById(pub.event_id);
@@ -242,9 +252,19 @@ const PublicationDetailPage = () => {
                       if (diffDays <= 5) return <Badge className="bg-orange-500 shadow-sm">¡Pronto!</Badge>;
                       return <Badge className="bg-blue-500 shadow-sm">Próximo</Badge>;
                     })()}
-                </div>
+                  </div>
               )}
               <h1 className="text-3xl leading-tight font-bold text-gray-900">{publication.title}</h1>
+              
+              {publicationInterests.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-2 mb-2">
+                  {publicationInterests.map(interest => (
+                    <Badge key={interest.id} variant="outline" className="text-xs">
+                      {interest.keyword}
+                    </Badge>
+                  ))}
+                </div>
+              )}
             </div>
             {publication.summary && (
               <p className="text-muted-foreground text-lg leading-relaxed">{publication.summary}</p>
