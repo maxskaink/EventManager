@@ -98,8 +98,12 @@ class EventService implements EventServiceInterface
             throw new ResourceNotFoundException("The event with ID {$id} was not found.");
         }
 
-        if (isset($data['name']) && $this->eventRepository->findByName($data['name'])) {
-            throw new DuplicatedResourceException("A resource with the name: {$data['name']} already exists");
+        // Only check for duplicate name if the name is being changed
+        if (isset($data['name']) && $data['name'] !== $event->name) {
+            $existing = $this->eventRepository->findByName($data['name']);
+            if ($existing) {
+                throw new DuplicatedResourceException("A resource with the name: {$data['name']} already exists");
+            }
         }
 
         return $this->eventRepository->update($id, $data);

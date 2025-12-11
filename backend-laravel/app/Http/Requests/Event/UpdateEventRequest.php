@@ -5,6 +5,7 @@ namespace App\Http\Requests\Event;
 use App\Models\User;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateEventRequest extends FormRequest
 {
@@ -28,8 +29,15 @@ class UpdateEventRequest extends FormRequest
      */
     public function rules(): array
     {
+        $eventId = $this->route('eventId'); // Get the event ID from the route parameter
+
         return [
-            'name' => ['sometimes', 'string', 'max:255'],
+            'name' => [
+                'sometimes',
+                'string',
+                'max:255',
+                Rule::unique('events', 'name')->ignore($eventId),
+            ],
             'description' => ['sometimes', 'string', 'max:1000'],
             'start_date' => ['sometimes', 'date', 'before_or_equal:end_date'],
             'end_date' => ['sometimes', 'date', 'after_or_equal:start_date'],
@@ -50,6 +58,7 @@ class UpdateEventRequest extends FormRequest
     public function messages(): array
     {
         return [
+            'name.unique' => 'An event with this name already exists.',
             'start_date.before_or_equal' => 'The start date must be before or equal to the end date.',
             'end_date.after_or_equal' => 'The end date must be after or equal to the start date.',
             'modality.in' => 'The modality must be one of: presencial, virtual, or mixta.',
