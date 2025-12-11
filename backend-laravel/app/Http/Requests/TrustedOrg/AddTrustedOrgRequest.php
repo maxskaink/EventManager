@@ -32,7 +32,7 @@ class AddTrustedOrgRequest extends FormRequest
             'org' => ['required', 'string', 'max:255'],
             'trusted_for_certificate' => ['sometimes', 'boolean'],
             'trusted_for_event' => ['sometimes', 'boolean'],
-            'trusted_for_publication' => ['sometimes', 'boolean'],
+            'trusted_for_article' => ['sometimes', 'boolean'],
         ];
     }
 
@@ -48,7 +48,7 @@ class AddTrustedOrgRequest extends FormRequest
             'org.max' => 'The organization name/domain may not exceed 255 characters.',
             'trusted_for_certificate.boolean' => 'The trusted for certificate field must be true or false.',
             'trusted_for_event.boolean' => 'The trusted for event field must be true or false.',
-            'trusted_for_publication.boolean' => 'The trusted for publication field must be true or false.',
+            'trusted_for_article.boolean' => 'The trusted for article field must be true or false.',
         ];
     }
 }
