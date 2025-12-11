@@ -37,7 +37,7 @@ export const DashboardPrimaryActions: React.FC = () => {
             <div className="p-3 bg-gradient-to-br from-emerald-600 to-emerald-700 rounded-xl w-fit mx-auto mb-4 shadow-md">
               <Edit3 className="h-6 w-6 text-white" />
             </div>
-            <h4 className="font-bold text-slate-900 mb-2">Nueva Anuncio</h4>
+            <h4 className="font-bold text-slate-900 mb-2">Nuevo Anuncio</h4>
             <p className="text-sm text-slate-600 mb-4">
               Redacta comunicados y artículos
             </p>

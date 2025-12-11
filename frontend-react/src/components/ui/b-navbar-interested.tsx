@@ -16,7 +16,7 @@ const BNavBarInterested = () => {
       <div className="max-w-4xl mx-auto flex justify-around">
         <Button
           variant="ghost"
-          onClick={() => navigate("/dashboard-interested")}
+          onClick={() => navigate("/dashboard-guest")}
           className="flex flex-col items-center gap-1 h-auto py-2"
         >
           <Home className="h-5 w-5" />
