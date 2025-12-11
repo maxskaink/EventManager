@@ -40,6 +40,7 @@ export function GuestDashboard() {
       {/* Header Personalizado */}
       <HideOnScrollWrapper>
         <UnifiedHeader
+        leftImage
         title={`Panel de ${translateUserRole(user?.role ?? "")}`}
         subtitle="Explora nuestros eventos y actividades"
         user={user}

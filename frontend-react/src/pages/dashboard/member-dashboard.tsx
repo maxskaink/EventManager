@@ -64,6 +64,7 @@ export function MemberDashboard() {
       {/* Header */}
       <HideOnScrollWrapper>
         <UnifiedHeader
+          leftImage
           title={`Hola, ${user?.name}`}
           subtitle="Integrante del semillero"
           user={user}
