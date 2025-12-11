@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "../../ui/dialog";
 import { Button } from "../../ui/button";
 import { Checkbox } from "../../ui/checkbox";
-import { ScrollArea } from "../../ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "../../ui/avatar";
 import { User, Download } from "lucide-react";
 import { exportEmailsToTxt } from "../../../utils/file-export";
@@ -162,7 +161,7 @@ export function AttendanceModal({ isOpen, onOpenChange, eventId }: AttendanceMod
             </span>
           </div>
 
-          <ScrollArea className="flex-1 border rounded-md p-2 sm:p-4">
+          <div className="flex-1 border rounded-md p-2 sm:p-4 overflow-y-auto">
             {isLoading ? (
               <div className="text-center py-8 text-xs sm:text-sm">Cargando participantes...</div>
             ) : enrollments.length === 0 ? (
@@ -210,7 +209,7 @@ export function AttendanceModal({ isOpen, onOpenChange, eventId }: AttendanceMod
                 })}
               </div>
             )}
-          </ScrollArea>
+          </div>
         </div>
 
         <div className="shrink-0 space-y-2">
