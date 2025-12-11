@@ -242,6 +242,13 @@ class EventService implements EventServiceInterface
                     $results[$userId] = 'User not enrolled.';
                     continue;
                 }
+                
+                // Check if user has cancelled enrollment
+                if ($p->status === 'cancelado') {
+                    $results[$userId] = 'Cannot mark attendance for cancelled enrollment.';
+                    continue;
+                }
+                
                 $p->update(['status' => 'asistio']);
                 $results[$userId] = 'Marked as attended.';
             }
@@ -270,6 +277,13 @@ class EventService implements EventServiceInterface
                     $results[$userId] = 'User not enrolled.';
                     continue;
                 }
+                
+                // Check if user has cancelled enrollment
+                if ($p->status === 'cancelado') {
+                    $results[$userId] = 'Cannot mark attendance for cancelled enrollment.';
+                    continue;
+                }
+                
                 $p->update(['status' => 'ausente']);
                 $results[$userId] = 'Marked as absent.';
             }
