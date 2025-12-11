@@ -10,10 +10,37 @@ import { useNotificationStore } from "../../stores/notification.store";
 import { useEffect, useState } from "react";
 import { Badge } from "../ui/badge";
 import { cn } from "../ui/utils";
+import { useNavigate } from "react-router";
+
+
+const getNotificationdData = (notification: API.Notification) => {
+  if (notification.type === "App\\Notifications\\NewPublicationNotification") {
+    const data = notification.data as {
+      title: string
+      publication_id: number,
+      publication_title: string,
+      author_id: number,
+      author_name: string,
+      message: string
+    }
+    return {
+      message: `Podría interesarte: ${data.publication_title}...`,
+      redirectTo: `/publications/${data.publication_id}`
+    }
+  }
+
+  return {
+    message: notification.data?.message as string ?? "Nueva notificación",
+    redirectTo: undefined
+  }
+}
 
 export function NotificationPopover() {
+
   const { notifications, unreadCount, fetchNotifications, markAsRead, markAllAsRead } = useNotificationStore();
   const [isOpen, setIsOpen] = useState(false);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchNotifications();
@@ -25,6 +52,8 @@ export function NotificationPopover() {
   const handleMarkAsRead = (id: string) => {
       markAsRead(id);
   };
+
+  console.log(notifications)
 
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
@@ -60,20 +89,26 @@ export function NotificationPopover() {
             </div>
           ) : (
             <div className="divide-y">
-              {notifications.map((notification) => (
+              {notifications.map((notification) => {
+                const { message, redirectTo } = getNotificationdData(notification);
+                return(
                 <div
                   key={notification.id}
                   className={cn(
                     "p-4 hover:bg-muted/50 transition-colors cursor-pointer",
                     !notification.read_at && "bg-blue-50/50 dark:bg-blue-900/10"
                   )}
-                  onClick={() => handleMarkAsRead(notification.id)}
+                  onClick={() => {
+                    handleMarkAsRead(notification.id)
+                    if (redirectTo) {
+                      navigate(redirectTo)
+                    }
+                  }}
                 >
                   <div className="flex gap-3">
                     <div className="flex-1 space-y-1">
                       <p className={cn("text-sm", !notification.read_at && "font-medium")}>
-                        {/* @ts-ignore - data might be untyped */}
-                        {notification.data?.message || "Nueva notificación"}
+                        {message}
                       </p>
                       <p className="text-xs text-muted-foreground">
                         {new Date(notification.created_at).toLocaleDateString()}
@@ -84,7 +119,7 @@ export function NotificationPopover() {
                     )}
                   </div>
                 </div>
-              ))}
+              )})}
             </div>
           )}
         </ScrollArea>
