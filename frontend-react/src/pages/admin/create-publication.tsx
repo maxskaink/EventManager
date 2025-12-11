@@ -19,6 +19,7 @@ import {
 import { ImagePlus, ArrowLeft, Info } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { getErrorMessageForToast } from "@/features/errors/error.helpers";
+import { PUBLICATION_VISIBILITIES, translatePublicationVisibility } from "@/features/events";
 
 export function CreatePublicationPage() {
   const navigate = useNavigate();
@@ -77,8 +78,8 @@ export function CreatePublicationPage() {
         image: formData.image || undefined,
       });
 
-      toast.success("Anuncio creada exitosamente");
-      navigate("/publications");
+      toast.success("Anuncio creado exitosamente");
+      navigate("/event-board");
     } catch (error) {
       const message = getErrorMessageForToast(error, "Error al crear la anuncio");
       toast.error(message);
@@ -178,9 +179,11 @@ export function CreatePublicationPage() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="public">Pública</SelectItem>
-                      <SelectItem value="private">Privada</SelectItem>
-                      <SelectItem value="role_based">Por Rol</SelectItem>
+                      {PUBLICATION_VISIBILITIES.map((visibility) => (
+                        <SelectItem key={visibility} value={visibility}>
+                          {translatePublicationVisibility(visibility)}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -190,7 +193,8 @@ export function CreatePublicationPage() {
                 <Alert className="bg-blue-50 text-blue-800 border-blue-200">
                   <Info className="h-4 w-4" />
                   <AlertDescription>
-                    Al establecer la visibilidad como <strong>Privada</strong>, deberá configurar los permisos de acceso en las opciones de la publicación (Compartir).
+                    Al establecer la visibilidad como 
+                    <strong>{translatePublicationVisibility("private")}</strong>, deberá configurar los permisos de acceso en las opciones de la publicación (Compartir).
                   </AlertDescription>
                 </Alert>
               )}

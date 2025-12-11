@@ -27,16 +27,21 @@ const eventSchema = z.object({
   location: z.string().optional(),
   virtual_url: z.string().url("URL inválida").optional().or(z.literal("")),
   start_date: z.string().min(1, "La fecha de inicio es requerida"),
+  start_time: z.string().min(1, "La hora de inicio es requerida"),
   end_date: z.string().min(1, "La fecha de fin es requerida"),
+  end_time: z.string().min(1, "La hora de fin es requerida"),
   capacity: z.number().min(1, "La capacidad debe ser al menos 1").optional(),
 });
 
 type EventFormData = z.infer<typeof eventSchema>;
 
+type OnUpdateData = Omit<EventFormData, "start_time" | "end_time">;
+
 interface EditEventDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onUpdateEvent: (data: EventFormData) => void;
+  // We use any or a partial type here because we reconstruct the object before sending
+  onUpdateEvent: (data: OnUpdateData) => void; 
   isPending?: boolean;
   event: API.Event | null;
   hasPublication: boolean;
@@ -63,22 +68,61 @@ export const EditEventDialog = ({
   // Reset form when dialog opens with event data
   useEffect(() => {
     if (open && event) {
+      // Extract date and time from ISO strings
+      // Assuming ISO format YYYY-MM-DDTHH:mm:ss...
+      const startParts = event.start_date.split('T');
+      const endParts = event.end_date.split('T');
+      
+      const startDate = startParts[0];
+      const startTime = startParts[1] ? startParts[1].substring(0, 5) : "00:00"; // Take HH:mm
+
+      const endDate = endParts[0];
+      const endTime = endParts[1] ? endParts[1].substring(0, 5) : "00:00";
+
       reset({
         name: event.name,
         description: event.description,
-        event_type: event.event_type as any,
+        event_type: event.event_type as "charla" | "taller" | "conferencia" | "semillero",
         modality: event.modality,
         location: event.location || "",
         virtual_url: event.virtual_url || "",
-        start_date: event.start_date.split("T")[0],
-        end_date: event.end_date.split("T")[0],
+        start_date: startDate,
+        start_time: startTime,
+        end_date: endDate,
+        end_time: endTime,
         capacity: event.capacity || undefined,
       });
     }
   }, [open, event, reset]);
 
   const onSubmit = (data: EventFormData) => {
-    onUpdateEvent(data);
+    // Combine date and time back to ISO string
+    // Format: YYYY-MM-DDTHH:mm:00
+    const formattedData = {
+      ...data,
+      start_date: `${data.start_date}T${data.start_time}:00`,
+      end_date: `${data.end_date}T${data.end_time}:00`,
+    };
+    
+    // Remove the temporary time fields to match API expectation (mostly)
+    // Although simply passing extra fields usually doesn't hurt if we cast or pick
+    // But let's be clean.
+    // However, TypeScript might complain if we try to delete properties from a typed object.
+    // So we create a new object.
+    
+    const finalData: OnUpdateData= {
+      name: formattedData.name,
+      description: formattedData.description,
+      event_type: formattedData.event_type,
+      modality: formattedData.modality,
+      location: formattedData.location,
+      virtual_url: formattedData.virtual_url,
+      start_date: formattedData.start_date,
+      end_date: formattedData.end_date,
+      capacity: formattedData.capacity,
+    };
+
+    onUpdateEvent(finalData);
   };
 
   return (
@@ -223,31 +267,57 @@ export const EditEventDialog = ({
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 w-full">
-            <div className="w-full min-w-0">
-              <Label htmlFor="event-start-date">Fecha de inicio *</Label>
-              <Input
-                id="event-start-date"
-                type="date"
-                {...register("start_date")}
-                disabled={isPending}
-                className={errors.start_date ? "border-destructive" : ""}
-              />
-              {errors.start_date && (
-                <p className="text-sm text-destructive mt-1">{errors.start_date.message}</p>
+            <div className="w-full min-w-0 space-y-2">
+              <Label>Fecha de inicio *</Label>
+              <div className="flex gap-2">
+                <div className="flex-grow">
+                  <Input
+                    type="date"
+                    {...register("start_date")}
+                    disabled={isPending}
+                    className={errors.start_date ? "border-destructive" : ""}
+                  />
+                </div>
+                <div className="w-24">
+                  <Input
+                    type="time"
+                    {...register("start_time")}
+                    disabled={isPending}
+                    className={errors.start_time ? "border-destructive" : ""}
+                  />
+                </div>
+              </div>
+              {(errors.start_date || errors.start_time) && (
+                <p className="text-sm text-destructive">
+                  {errors.start_date?.message || errors.start_time?.message}
+                </p>
               )}
             </div>
 
-            <div className="w-full min-w-0">
-              <Label htmlFor="event-end-date">Fecha de fin *</Label>
-              <Input
-                id="event-end-date"
-                type="date"
-                {...register("end_date")}
-                disabled={isPending}
-                className={errors.end_date ? "border-destructive" : ""}
-              />
-              {errors.end_date && (
-                <p className="text-sm text-destructive mt-1">{errors.end_date.message}</p>
+            <div className="w-full min-w-0 space-y-2">
+              <Label>Fecha de fin *</Label>
+              <div className="flex gap-2">
+                <div className="flex-grow">
+                  <Input
+                    type="date"
+                    {...register("end_date")}
+                    disabled={isPending}
+                    className={errors.end_date ? "border-destructive" : ""}
+                  />
+                </div>
+                <div className="w-24">
+                  <Input
+                    type="time"
+                    {...register("end_time")}
+                    disabled={isPending}
+                    className={errors.end_time ? "border-destructive" : ""}
+                  />
+                </div>
+              </div>
+              {(errors.end_date || errors.end_time) && (
+                <p className="text-sm text-destructive">
+                  {errors.end_date?.message || errors.end_time?.message}
+                </p>
               )}
             </div>
           </div>
