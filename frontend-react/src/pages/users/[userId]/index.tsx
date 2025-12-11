@@ -1,21 +1,38 @@
 import { useParams, useNavigate } from "react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { UnifiedHeader } from "../../../components/layout/UnifiedHeader";
 import { Avatar, AvatarFallback, AvatarImage } from "../../../components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../../components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "../../../components/ui/card";
 import { Badge } from "../../../components/ui/badge";
-import { User, Award, CalendarDays, FileText, ExternalLink } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "../../../components/ui/alert-dialog";
+import { Button } from "../../../components/ui/button";
+import { User, Award, CalendarDays, FileText, ExternalLink, Trash2 } from "lucide-react";
 import userAPI from "../../../services/api/endpoints/user";
 import certificateAPI from "../../../services/api/endpoints/certificate";
 import externalEventAPI from "../../../services/api/endpoints/external-events";
 import eventAPI from "../../../services/api/endpoints/event";
 import articleAPI from "../../../services/api/endpoints/article";
+import { useAuthStore } from "../../../stores/auth.store";
+import { toast } from "sonner"; // Assuming sonner is used for toasts based on typical stack, or standard alert
 
 export const UserDetailScreen = () => {
   const { userId } = useParams();
   const navigate = useNavigate();
   const id = Number(userId);
+  const queryClient = useQueryClient();
+  const { user: currentUser } = useAuthStore();
+  const isMentor = currentUser?.role === "mentor";
 
   // 1. Fetch User Details (using listUsersByFilters)
   const { data: usersResponse, isLoading: isLoadingUser } = useQuery({
@@ -59,6 +76,31 @@ export const UserDetailScreen = () => {
     queryKey: ["articles", id],
     queryFn: () => articleAPI.listArticlesByUser(id),
     enabled: !!id,
+  });
+
+  // Mutations
+  const deleteCertificateMutation = useMutation({
+    mutationFn: certificateAPI.deleteCertificate,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["certificates", id] });
+      toast.success("Certificado eliminado correctamente");
+    },
+  });
+
+  const deleteExternalEventMutation = useMutation({
+    mutationFn: externalEventAPI.deleteExternalEvent,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["externalEvents", id] });
+      toast.success("Evento externo eliminado correctamente");
+    },
+  });
+
+  const deleteArticleMutation = useMutation({
+    mutationFn: articleAPI.deleteArticle,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["articles", id] });
+      toast.success("Artículo eliminado correctamente");
+    },
   });
 
   if (isLoadingUser) {
@@ -121,7 +163,14 @@ export const UserDetailScreen = () => {
             {certificates.length === 0 ? (
               <p className="text-muted-foreground py-4 text-center">No hay certificados.</p>
             ) : (
-              certificates.map((cert) => <CertificateCard key={cert.id} certificate={cert} />)
+              certificates.map((cert) => (
+                <CertificateCard
+                  key={cert.id}
+                  certificate={cert}
+                  isMentor={isMentor}
+                  onDelete={() => deleteCertificateMutation.mutate(cert.id)}
+                />
+              ))
             )}
           </TabsContent>
 
@@ -129,7 +178,14 @@ export const UserDetailScreen = () => {
             {externalEvents.length === 0 ? (
               <p className="text-muted-foreground py-4 text-center">No hay eventos externos.</p>
             ) : (
-              externalEvents.map((event) => <ExternalEventCard key={event.id} event={event} />)
+              externalEvents.map((event) => (
+                <ExternalEventCard
+                  key={event.id}
+                  event={event}
+                  isMentor={isMentor}
+                  onDelete={() => deleteExternalEventMutation.mutate(event.id)}
+                />
+              ))
             )}
           </TabsContent>
 
@@ -145,7 +201,14 @@ export const UserDetailScreen = () => {
             {!articles || articles.length === 0 ? (
               <p className="text-muted-foreground py-4 text-center">No hay artículos.</p>
             ) : (
-              articles.map((article) => <ArticleCard key={article.id} article={article} />)
+              articles.map((article) => (
+                <ArticleCard
+                  key={article.id}
+                  article={article}
+                  isMentor={isMentor}
+                  onDelete={() => deleteArticleMutation.mutate(article.id)}
+                />
+              ))
             )}
           </TabsContent>
         </Tabs>
@@ -154,13 +217,58 @@ export const UserDetailScreen = () => {
   );
 };
 
-const CertificateCard = ({ certificate }: { certificate: API.Certificate }) => (
+interface DeleteProps {
+  isMentor: boolean;
+  onDelete: () => void;
+  itemName: string;
+}
+
+const DeleteButton = ({ isMentor, onDelete, itemName }: DeleteProps) => {
+  if (!isMentor) return null;
+
+  return (
+    <AlertDialog>
+      <AlertDialogTrigger asChild>
+        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:bg-destructive/10 hover:text-destructive">
+          <Trash2 className="h-4 w-4" />
+        </Button>
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>¿Eliminar {itemName}?</AlertDialogTitle>
+          <AlertDialogDescription>
+            Esta acción no se puede deshacer. Se eliminará permanentemente de la lista del usuario.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+          <AlertDialogAction onClick={onDelete} className="bg-destructive hover:bg-destructive/90">
+            Eliminar
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+};
+
+const CertificateCard = ({
+  certificate,
+  isMentor,
+  onDelete,
+}: {
+  certificate: API.Certificate;
+  isMentor: boolean;
+  onDelete: () => void;
+}) => (
   <Card key={certificate.id}>
     <CardHeader className="pb-2">
-      <CardTitle className="flex items-center gap-2 text-base">
-        <Award className="text-primary h-4 w-4" />
-        {certificate.name}
-      </CardTitle>
+      <div className="flex items-center justify-between">
+        <CardTitle className="flex items-center gap-2 text-base">
+          <Award className="text-primary h-4 w-4" />
+          {certificate.name}
+        </CardTitle>
+        <DeleteButton isMentor={isMentor} onDelete={onDelete} itemName="certificado" />
+      </div>
     </CardHeader>
     <CardContent>
       <p className="text-muted-foreground text-sm">Emitido por: {certificate.issuing_organization}</p>
@@ -181,14 +289,10 @@ const ParticipationCard = ({ part }: { part: API.EventParticipation }) => (
       {part.event ? (
         <>
           <p className="text-muted-foreground text-sm">
-            {part.event.modality === 'virtual' 
-              ? 'Virtual' 
-              : part.event.location || 'Ubicación no disponible'}
+            {part.event.modality === "virtual" ? "Virtual" : part.event.location || "Ubicación no disponible"}
           </p>
           <div className="flex items-center justify-between mt-2">
-            <p className="text-muted-foreground text-xs">
-              {new Date(part.event.start_date).toLocaleDateString()}
-            </p>
+            <p className="text-muted-foreground text-xs">{new Date(part.event.start_date).toLocaleDateString()}</p>
             <Badge variant="outline" className="capitalize">
               {part.status}
             </Badge>
@@ -196,20 +300,31 @@ const ParticipationCard = ({ part }: { part: API.EventParticipation }) => (
         </>
       ) : (
         <div className="flex items-center justify-between">
-           <Badge variant="outline">{part.status}</Badge>
+          <Badge variant="outline">{part.status}</Badge>
         </div>
       )}
     </CardContent>
   </Card>
 );
 
-const ExternalEventCard = ({ event }: { event: API.ExternalEvent }) => (
+const ExternalEventCard = ({
+  event,
+  isMentor,
+  onDelete,
+}: {
+  event: API.ExternalEvent;
+  isMentor: boolean;
+  onDelete: () => void;
+}) => (
   <Card key={event.id}>
     <CardHeader className="pb-2">
-      <CardTitle className="flex items-center gap-2 text-base">
-        <ExternalLink className="text-primary h-4 w-4" />
-        {event.name}
-      </CardTitle>
+      <div className="flex items-center justify-between">
+        <CardTitle className="flex items-center gap-2 text-base">
+          <ExternalLink className="text-primary h-4 w-4" />
+          {event.name}
+        </CardTitle>
+        <DeleteButton isMentor={isMentor} onDelete={onDelete} itemName="evento externo" />
+      </div>
     </CardHeader>
     <CardContent>
       <p className="text-muted-foreground text-sm">{event.location}</p>
@@ -218,13 +333,24 @@ const ExternalEventCard = ({ event }: { event: API.ExternalEvent }) => (
   </Card>
 );
 
-const ArticleCard = ({ article }: { article: API.Article }) => (
+const ArticleCard = ({
+  article,
+  isMentor,
+  onDelete,
+}: {
+  article: API.Article;
+  isMentor: boolean;
+  onDelete: () => void;
+}) => (
   <Card key={article.id}>
     <CardHeader className="pb-2">
-      <CardTitle className="flex items-center gap-2 text-base">
-        <FileText className="text-primary h-4 w-4" />
-        {article.title}
-      </CardTitle>
+      <div className="flex items-center justify-between">
+        <CardTitle className="flex items-center gap-2 text-base">
+          <FileText className="text-primary h-4 w-4" />
+          {article.title}
+        </CardTitle>
+        <DeleteButton isMentor={isMentor} onDelete={onDelete} itemName="artículo" />
+      </div>
     </CardHeader>
     <CardContent>
       <p className="text-muted-foreground text-sm">{article.description}</p>
