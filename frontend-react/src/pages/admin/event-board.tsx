@@ -127,7 +127,7 @@ export function EventBoardScreen() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["publications"] });
-      toast.success(" Anuncio eliminada exitosamente");
+      toast.success(" Anuncio eliminado exitosamente");
       setIsDeleteDialogOpen(false);
       setItemToDelete(null);
     },
