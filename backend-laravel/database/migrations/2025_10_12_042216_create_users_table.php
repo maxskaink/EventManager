@@ -31,7 +31,7 @@ return new class extends Migration {
             $table->timestamps();
         });
 
-/*         #Could add auth with  password reset tokens , but its just google auth true?
+        #Could add auth with  password reset tokens , but its just google auth true?
         Schema::table('sessions', function (Blueprint $table) {
             $table->string('id')->primary();
             $table->foreignId('user_id')->nullable()->index();
@@ -39,7 +39,7 @@ return new class extends Migration {
             $table->text('user_agent')->nullable();
             $table->longText('payload');
             $table->integer('last_activity')->index();
-        }); */
+        });
     }
 
     /**
@@ -50,5 +50,6 @@ return new class extends Migration {
     public function down(): void
     {
         Schema::dropIfExists('users');
+        Schema::dropIfExists('sessions');
     }
 };
