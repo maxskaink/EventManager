@@ -27,6 +27,7 @@ return new class extends Migration {
             $table->text('summary')->nullable();
             $table->string('visibility', 20)->default('public');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

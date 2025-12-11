@@ -29,6 +29,7 @@ return new class extends Migration {
             $table->integer('capacity')->nullable();
             $table->integer('enrolled_participants')->default(0);
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 
