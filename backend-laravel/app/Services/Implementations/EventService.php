@@ -208,6 +208,11 @@ class EventService implements EventServiceInterface
             throw new ValidationException('Cannot cancel enrollment after the event has started.');
         }
 
+        // Prevent cancellation if user was already marked as attended or absent
+        if (in_array($participation->status, ['asistio', 'ausente'], true)) {
+            throw new ValidationException('Cannot cancel enrollment after attendance has been marked.');
+        }
+
         // Only decrement if the user was actually enrolled (not already cancelled)
         if ($participation->status === 'inscrito') {
             return DB::transaction(function () use ($participation, $event) {
