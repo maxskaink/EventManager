@@ -282,9 +282,10 @@ export function SharePublicationDialog({ open, onOpenChange, publication }: Shar
 
                   {/* Users list */}
                   <div>
-                    <h4 className="text-sm font-semibold mb-2 flex items-center gap-2">
+                    <h4 className="text-sm font-semibold flex items-center gap-2">
                       <User className="h-4 w-4" /> Usuarios con acceso específico
                     </h4>
+                    <p className="text-xs text-muted-foreground mb-2 ">Los mentores y coordinadores pueden accedes a todos los anuncios</p>
                     {currentAccess?.users && currentAccess.users.length > 0 ? (
                       <div className="space-y-2">
                         {currentAccess.users.map((u) => (

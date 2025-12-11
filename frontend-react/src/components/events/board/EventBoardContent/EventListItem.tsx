@@ -3,13 +3,14 @@ import { Button } from "../../../ui/button";
 import { Badge } from "../../../ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../../../ui/dropdown-menu";
 
-import { Trash2, Eye, Pin, Share, Users, MoreVertical, Calendar, MapPin, Users2, Edit, Share2 } from "lucide-react";
+import { Trash2, Eye, Pin, Share, Users, MoreVertical, Calendar, MapPin, Users2, Edit, Share2, Globe, Lock } from "lucide-react";
 import {
   getTypeColor,
   getStatusColor,
   getStatusLabel,
   getOccupancyLevel,
 } from "../../../../features/events/event-board.helpers";
+import { translatePublicationVisibility } from "../../../../features/events/publication.helpers";
 import type { ContentItem } from "../../../../features/events";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../../../ui/tooltip";
 
@@ -64,6 +65,12 @@ const EventListItem = ({
               <div className="flex gap-2 flex-wrap">
                 <Badge className={`text-xs font-medium ${getTypeColor(item.type)}`}>{item.type}</Badge>
                 <Badge className={`text-xs font-medium ${getStatusColor(item.status)}`}>{getStatusLabel(item.status)}</Badge>
+                {item.visibility && (
+                  <Badge variant="outline" className="text-xs font-medium flex items-center gap-1">
+                    {item.visibility === 'public' ? <Globe className="h-3 w-3" /> : <Lock className="h-3 w-3" />}
+                    {translatePublicationVisibility(item.visibility)}
+                  </Badge>
+                )}
               </div>
             </div>
 
@@ -130,6 +137,46 @@ const EventListItem = ({
               </TooltipProvider>
             )}
 
+             {/* Show event edit if it's an event OR if it's a publication with an event */}
+             {(isEvent || hasEvent) && (
+               <TooltipProvider>
+                 <Tooltip>
+                   <TooltipTrigger asChild>
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        className="flex-1 sm:flex-auto text-xs sm:text-sm h-8 px-2 transition-all hover:bg-orange-50 hover:border-orange-300 hover:text-orange-700"
+                        onClick={() => onEditEvent(item)}
+                      >
+                        <Edit className="h-3.5 w-3.5 shrink-0" />
+                        <span className="hidden sm:inline ml-1">Editar Evento</span>
+                      </Button>
+                   </TooltipTrigger>
+                   <TooltipContent sideOffset={5}><p>Editar Evento</p></TooltipContent>
+                 </Tooltip>
+               </TooltipProvider>
+            )}
+
+            {/* Show publication edit if it's a publication OR if it's an event with publication */}
+            {showEditPublication && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      className="flex-1 sm:flex-auto text-xs sm:text-sm h-8 px-2 transition-all hover:bg-indigo-50 hover:border-indigo-300 hover:text-indigo-700"
+                      onClick={() => onEditPublication(item)}
+                    >
+                      <Edit className="h-3.5 w-3.5 shrink-0" />
+                      <span className="hidden sm:inline ml-1">Editar Anuncio</span>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent sideOffset={5}><p>Editar Anuncio</p></TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
+
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button size="sm" variant="ghost" className="h-8 w-8 p-0 transition-opacity">
@@ -153,22 +200,13 @@ const EventListItem = ({
                         Asistencia
                       </DropdownMenuItem>
                     )}
-                  </>
+                </>
                 )}
                 {/* Show event edit if it's an event OR if it's a publication with an event */}
-                {(isEvent || hasEvent) && (
-                  <DropdownMenuItem onClick={() => onEditEvent(item)} className="cursor-pointer">
-                    <Edit className="h-4 w-4 mr-2" />
-                    Editar Evento
-                  </DropdownMenuItem>
-                )}
+                {/* Moved to main actions */}
+                
                 {/* Show publication edit if it's a publication OR if it's an event with publication */}
-                {showEditPublication && (
-                  <DropdownMenuItem onClick={() => onEditPublication(item)} className="cursor-pointer">
-                    <Edit className="h-4 w-4 mr-2" />
-                    Editar Anuncio
-                  </DropdownMenuItem>
-                )}
+                {/* Moved to main actions */}
                 {/* Share Option - Only for draft publications */}
                 {item.kind === 'publication' && item.status === 'borrador' && (
                   <DropdownMenuItem onClick={() => onSharePublication(item)} className="cursor-pointer">

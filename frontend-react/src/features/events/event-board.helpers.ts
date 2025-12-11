@@ -109,7 +109,6 @@ export const mapEventsToContentItems = (events: API.Event[]): ContentItem[] => {
               : "upcoming",
     capacity: event.capacity ?? 0,
     enrolled: event.enrolled_participants ?? 0,
-    views: undefined,
     original: event,
     kind: 'event' as const,
   }));
@@ -134,7 +133,7 @@ export const mapPublicationsToContentItems = (
       description: pub.summary || pub.content || "",
       date: pub.published_at ? pub.published_at.split("T")[0] : pub.created_at.split("T")[0],
       status: pub.status,
-      views: 0,
+      visibility: pub.visibility,
       original: pub,
       location: pub.event?.location ?? pub.event?.virtual_url ?? "",
       capacity: pub.event?.capacity ?? 0,

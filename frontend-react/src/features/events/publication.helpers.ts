@@ -40,7 +40,7 @@ export const translatePublicationVisibility = (visibility: API.PublicationVisibi
         case "role_based":
             return "Role-based";
         default:
-            return defaultValue ?? "No se ha definido una visibilidad";
+            return defaultValue ?? "Restringido (Por permisos)";
     }
 }
 

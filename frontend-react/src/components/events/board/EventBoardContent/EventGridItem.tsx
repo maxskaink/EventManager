@@ -1,4 +1,4 @@
-import { Calendar, MapPin, MoreVertical, Eye, Trash2, Users, Edit, Share2, Users2, Pin, Share } from "lucide-react";
+import { Calendar, MapPin, MoreVertical, Eye, Trash2, Users, Edit, Share2, Users2, Pin, Share, Globe, Lock, Edit2 } from "lucide-react";
 import { Button } from "../../../ui/button";
 import { Card, CardContent } from "../../../ui/card";
 import {
@@ -7,6 +7,7 @@ import {
   getStatusLabel,
   getTypeColor,
 } from "../../../../features/events/event-board.helpers";
+import { translatePublicationVisibility } from "../../../../features/events/publication.helpers";
 import { Badge } from "../../../ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../../../ui/dropdown-menu";
 import type { ContentItem } from "../../../../features/events";
@@ -62,6 +63,12 @@ const EventGridItem = ({
           <div className="flex gap-2 flex-wrap">
             <Badge className={`text-xs font-medium ${getTypeColor(item.type)}`}>{item.type}</Badge>
             <Badge className={`text-xs font-medium ${getStatusColor(item.status)}`}>{getStatusLabel(item.status)}</Badge>
+            {item.visibility && (
+              <Badge variant="outline" className="text-xs font-medium flex items-center gap-1">
+                {item.visibility === 'public' ? <Globe className="h-3 w-3" /> : <Lock className="h-3 w-3" />}
+                {translatePublicationVisibility(item.visibility)}
+              </Badge>
+            )}
           </div>
           <div className="flex items-center gap-1 transition-opacity duration-200">
             {isPinned && <Pin className="h-4 w-4 text-blue-500" />}
@@ -85,19 +92,10 @@ const EventGridItem = ({
                   </>
                 )}
                 {/* Show event edit if it's an event OR if it's a publication with an event */}
-                {(isEvent || hasEvent) && (
-                  <DropdownMenuItem onClick={() => onEditEvent(item)} className="cursor-pointer">
-                    <Edit className="h-4 w-4 mr-2" />
-                    Editar Evento
-                  </DropdownMenuItem>
-                )}
+                {/* Moved to main actions */}
+
                 {/* Show publication edit if it's a publication OR if it's an event with publication */}
-                {showEditPublication && (
-                  <DropdownMenuItem onClick={() => onEditPublication(item)} className="cursor-pointer">
-                    <Edit className="h-4 w-4 mr-2" />
-                    Editar Anuncio
-                  </DropdownMenuItem>
-                )}
+                {/* Moved to main actions */}
                 {/* Share Option - Only for draft publications */}
                 {item.kind === "publication" && (
                   <DropdownMenuItem onClick={() => onSharePublication(item)} className="cursor-pointer">
@@ -146,15 +144,63 @@ const EventGridItem = ({
 
         {/* Action Buttons */}
         <div className="flex gap-2 pt-3 border-t border-slate-100">
-          <Button 
-            size="sm" 
-            variant="outline" 
-            className="flex-1 text-xs sm:text-sm h-8 transition-all hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700"
-            onClick={() => onViewDetails(item)}
-          >
-            <Eye className="h-3.5 w-3.5 mr-1 shrink-0" />
-            <span>Ver</span>
-          </Button>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  className="flex-1 text-xs sm:text-sm h-8 transition-all hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700"
+                  onClick={() => onViewDetails(item)}
+                >
+                  <Eye className="h-3.5 w-3.5 mr-1 shrink-0" />
+                  <span>Ver</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent sideOffset={5}><p>Ver detalles</p></TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+
+          {/* Show event edit if it's an event OR if it's a publication with an event */}
+          {(isEvent || hasEvent) && (
+             <TooltipProvider>
+               <Tooltip>
+                 <TooltipTrigger asChild>
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      className="text-xs sm:text-sm h-8 px-2 transition-all hover:bg-orange-50 hover:border-orange-300 hover:text-orange-700"
+                      onClick={() => onEditEvent(item)}
+                    >
+                      <Edit className="h-3.5 w-3.5 shrink-0" />
+                      E
+                    </Button>
+                 </TooltipTrigger>
+                 <TooltipContent sideOffset={5}><p>Editar Evento</p></TooltipContent>
+               </Tooltip>
+             </TooltipProvider>
+          )}
+
+          {/* Show publication edit if it's a publication OR if it's an event with publication */}
+          {showEditPublication && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button 
+                    size="sm" 
+                    variant="outline"
+                    className="text-xs sm:text-sm h-8 px-2 transition-all hover:bg-indigo-50 hover:border-indigo-300 hover:text-indigo-700"
+                    onClick={() => onEditPublication(item)}
+                  >
+                    <Edit2 className="h-3.5 w-3.5 shrink-0" />
+                    A
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent sideOffset={5}><p>Editar Anuncio</p></TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
+
           {/* Solo mostrar botón "Publicar" si es un evento */}
           {isEvent && hasEnded && (
             <Button 
@@ -166,6 +212,7 @@ const EventGridItem = ({
               <Users className="h-3.5 w-3.5 shrink-0"/>
             </Button>
           )}
+          
           {isEvent && !hasPublication && (
             <TooltipProvider>
               <Tooltip>
