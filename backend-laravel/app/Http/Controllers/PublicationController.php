@@ -290,13 +290,20 @@ class PublicationController extends Controller
 
     /**
      * Get a specific publication by ID.
+     * Public endpoint - authentication is optional.
+     * If authenticated, user can see private publications they have access to.
+     * If not authenticated, only public publications are visible.
      *
      * @param int $id The ID of the publication.
      * @return JsonResponse The publication data.
      */
     public function getPublicationById(int $id): JsonResponse
     {
-        $user = request()->user();
+        // Try to get authenticated user via Sanctum token (optional authentication)
+        $user = \Laravel\Sanctum\PersonalAccessToken::findToken(
+            request()->bearerToken()
+        )?->tokenable;
+
         $publication = $this->publicationService->getPublicationById($id, $user);
 
         return response()->json([

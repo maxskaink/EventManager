@@ -148,7 +148,7 @@ class PublicationService implements PublicationServiceInterface
      * @throws ResourceNotFoundException
      * @throws InvalidActionException
      */
-    public function getPublicationById(int $id, User $user): Publication
+    public function getPublicationById(int $id, ?User $user): Publication
     {
         $publication = $this->publicationRepo->findById($id);
 
@@ -157,19 +157,27 @@ class PublicationService implements PublicationServiceInterface
         }
 
         // Access control: Check if user has permission to view the publication
-        // Public publications are visible to everyone.
-        // Mentors and Coordinators can view all publications.
-        // Other users need explicit access if it's not public.
-        if (
-            $publication->visibility !== 'public' &&
-            $user->role !== 'mentor' &&
-            $user->role !== 'coordinator' &&
-            !$this->accessRepo->exists($publication->id, $user->id)
-        ) {
+        // Public publications are visible to everyone (even unauthenticated users).
+        if ($publication->visibility === 'public') {
+            return $publication->load(['event']);
+        }
+
+        // Private publications require authentication
+        if (!$user) {
             throw new InvalidActionException("You do not have access to this publication.");
         }
 
-        return $publication->load(['event']); // only load event
+        // Mentors and Coordinators can view all publications.
+        // Other authenticated users need explicit access.
+        if (
+            $user->role === 'mentor' ||
+            $user->role === 'coordinator' ||
+            $this->accessRepo->exists($publication->id, $user->id)
+        ) {
+            return $publication->load(['event']);
+        }
+
+        throw new InvalidActionException("You do not have access to this publication.");
     }
 
     /**
