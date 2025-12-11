@@ -142,7 +142,13 @@ export function GuestDashboard() {
       onConfirm={logout}
       />
 
-      <div className="mx-auto max-w-4xl space-y-6 p-4">
+      <div className="mx-auto max-w-6xl space-y-8 px-4 py-8">
+        {/* Welcome Banner */}
+        <div className="rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 p-8 text-white shadow-lg">
+          <h2 className="text-3xl font-bold mb-2">¡Bienvenido, {user?.name?.split(" ")[0]}!</h2>
+          <p className="text-blue-100">Descubre eventos y actividades en el semillero</p>
+        </div>
+
         {/* Eventos Recomendados */}
         <RecommendedEventsSection
           upcomingEvents={upcomingEvents}
