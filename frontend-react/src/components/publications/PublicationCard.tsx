@@ -112,11 +112,11 @@ const PublicationCard: React.FC<PublicationCardProps> = ({ publication }) => {
               {publication.capacity !== undefined && (
                 <div className="flex items-center gap-2">
                   <Users className="h-4 w-4 shrink-0" />
-                  {publication.capacity === 0 || (publication.enrolled ?? 0) >= publication.capacity ? (
+                  {publication.capacity === 0 || (publication.original?.enrolled_participants ?? 0) >= publication.capacity ? (
                     <span className="font-medium text-red-600">🔴 Evento lleno</span>
                   ) : (
                     <span>
-                      {publication.capacity - (publication.enrolled ?? 0)} cupos disponibles
+                      {publication.capacity - (publication.original?.enrolled_participants ?? 0)} cupos disponibles
                     </span>
                   )}
                 </div>

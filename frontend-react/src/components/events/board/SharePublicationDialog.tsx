@@ -53,7 +53,6 @@ export function SharePublicationDialog({ open, onOpenChange, publication }: Shar
     queryKey: ['publication', 'access', publication?.id],
     queryFn: async () => {
       if (!publication?.id) return { users: [], roles: [] };
-      // @ts-ignore - Using the mock function we just added
       return PublicationAPI.getPublicationAccess(publication.id);
     },
     enabled: !!publication?.id && open,
@@ -69,7 +68,7 @@ export function SharePublicationDialog({ open, onOpenChange, publication }: Shar
       const usersPayload = userIds.length > 0 ? userIds : undefined;
       const rolesPayload = selectedRoles.length > 0 ? selectedRoles : undefined;
       
-      await PublicationAPI.grantPublicationAccess(publication.id, usersPayload as any, rolesPayload as any);
+      await PublicationAPI.grantPublicationAccess(publication.id, usersPayload, rolesPayload);
     },
     onSuccess: () => {
       toast.success("Accesos agregados exitosamente");
@@ -240,7 +239,6 @@ export function SharePublicationDialog({ open, onOpenChange, publication }: Shar
                   <SelectContent>
                     <SelectItem value="borrador">Borrador</SelectItem>
                     <SelectItem value="activo">Activo</SelectItem>
-                    <SelectItem value="inactivo">Inactivo</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -306,11 +304,11 @@ export function SharePublicationDialog({ open, onOpenChange, publication }: Shar
                     </h4>
                     {currentAccess?.users && currentAccess.users.length > 0 ? (
                       <div className="space-y-2">
-                        {currentAccess.users.map((u: any) => (
+                        {currentAccess.users.map((u) => (
                           <div key={u.id} className="flex items-center justify-between p-2 border rounded-md">
                             <div className="flex items-center gap-3">
                               <Avatar className="h-8 w-8">
-                                <AvatarImage src={u.avatar} />
+                                <AvatarImage src={u.avatar ?? ""} />
                                 <AvatarFallback>{u.name.substring(0,2).toUpperCase()}</AvatarFallback>
                               </Avatar>
                               <div>

@@ -37,7 +37,7 @@ export function PublishContentModal({ isOpen, onOpenChange, item, onPublish }: P
   // Estado del formulario
   const [summary, setSummary] = useState("");
   const [type, setType] = useState<API.PublicationType>("articulo");
-  const [status, setStatus] = useState<API.PublicationStatus>("borrador");
+  const [status, setStatus] = useState<API.PublicationStatus>("activo");
   const [visibility, setVisibility] = useState<API.PublicationVisibility>("public");
   const [image, setImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -223,7 +223,7 @@ export function PublishContentModal({ isOpen, onOpenChange, item, onPublish }: P
                       <SelectValue placeholder="Estado" />
                     </SelectTrigger>
                     <SelectContent>
-                      {PUBLICATION_STATUSES.filter((status) => status !== "pendiente").map((status) => {
+                      {PUBLICATION_STATUSES.filter((status) => status !== "pendiente" && status !== "inactivo").map((status) => {
                         return (
                           <SelectItem key={status} value={status}>
                             {translatePublicationStatus(status)}

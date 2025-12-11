@@ -257,7 +257,7 @@ export const CreateEventForm: React.FC<Props> = ({
         </CardHeader>
         <CardContent className="space-y-4 px-2 pb-3 sm:px-4 sm:pb-4 md:px-6 md:pb-6">
           <div>
-            <Label htmlFor="capacity">Capacidad Máxima (opcional)</Label>
+            <Label htmlFor="capacity">Capacidad (opcional)</Label>
             <Input
               id="capacity"
               type="number"

@@ -4,7 +4,6 @@ import { Badge } from "../../ui/badge";
 import { Progress } from "../../ui/progress";
 import { 
   Info, 
-  Eye, 
   Clock, 
   MapPin, 
   Users, 
@@ -162,21 +161,6 @@ export function EventDetailModal({ isOpen, onOpenChange, item }: Props) {
               </div>
             )}
 
-            {/* Publication Specific: Views */}
-            {!isEvent && item.views !== undefined && (
-              <div className="flex items-start gap-3">
-                 <div className="p-2.5 bg-background rounded-lg border shadow-sm text-primary">
-                   <Eye className="h-5 w-5" />
-                 </div>
-                 <div className="space-y-1">
-                   <p className="text-sm font-medium text-muted-foreground">Impacto</p>
-                   <p className="font-semibold text-foreground">
-                     {item.views.toLocaleString()} visualizaciones
-                   </p>
-                 </div>
-              </div>
-            )}
-            
             {/* Metadata ID */}
             <div className="flex items-start gap-4 col-span-1 md:col-span-2 pt-2 border-t border-dashed border-border/60">
                 <div className="p-1.5 rounded-full bg-muted text-muted-foreground self-center">

@@ -100,7 +100,7 @@ export default function CreateEventPage() {
         event_type: formData.event_type,
         modality: formData.modality,
         location: formData.modality === "virtual" ? null : formData.location,
-        virtual_url: formData.modality === "presencial" ? null : formData.location,
+        virtual_url: formData.modality === "presencial" ? null : formData.virtual_url,
         status: "pendiente", // El evento en sí puede quedar pendiente o activo, pero la anuncio es lo que importa
         capacity: formData.capacity ? parseInt(formData.capacity) : null,
       };

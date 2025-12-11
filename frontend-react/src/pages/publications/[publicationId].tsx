@@ -18,7 +18,6 @@ const PublicationDetailPage = () => {
   const { publicationId } = useParams<{ publicationId: string }>();
   const [publication, setPublication] = useState<API.Publication | null>(null);
   const [event, setEvent] = useState<API.Event | null>(null);
-  const [enrolledCount, setEnrolledCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const { user } = useAuthStore();
@@ -29,6 +28,8 @@ const PublicationDetailPage = () => {
 
   const [isEnrolled, setIsEnrolled] = useState(false);
   const [canceling, setCanceling] = useState(false);
+
+  const enrolledCount = event?.enrolled_participants ?? 0;
 
   useEffect(() => {
     if (publicationId) {
@@ -42,25 +43,8 @@ const PublicationDetailPage = () => {
             const eventData = await EventAPI.getEventById(pub.event_id);
             setEvent(eventData);
 
-            // Cargar participaciones del evento
-            try {
-              const participations = await EventAPI.listEnrollmentsByEvent(pub.event_id);
-              console.log(participations);
-              setEnrolledCount(participations.length);
-            } catch (err) {
-              console.error("Failed to fetch enrollments count", err);
-            }
-
             // Check enrollment if user is logged in
-            if (user) {
-              try {
-                const enrollments = await EventAPI.listEnrollmentsByUser(user.id);
-                const enrolled = enrollments.some((e) => e.event_id === pub.event_id );
-                setIsEnrolled(enrolled);
-              } catch (err) {
-                console.error("Failed to fetch enrollments", err);
-              }
-            }
+            checkEnrollement(pub);
           }
         } catch (error) {
           console.error(error);
@@ -76,6 +60,18 @@ const PublicationDetailPage = () => {
 
   const handleBack = () => {
     navigate("/publications");
+  };
+
+  const checkEnrollement = async (pub?: API.Publication) => {
+    if (user) {
+      try {
+        const enrollments = await EventAPI.listEnrollmentsByUser(user.id);
+        const enrolled = enrollments.some((e) => e.event_id === pub?.event_id);
+        setIsEnrolled(enrolled);
+      } catch (err) {
+        console.error("Failed to fetch enrollments", err);
+      }
+    }
   };
 
   const handleRegister = async () => {
