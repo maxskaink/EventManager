@@ -141,11 +141,10 @@ class EventPolicy
      * All roles except 'interested' can access this.
      *
      * @param User $authUser
-     * @param string $model
      * @param int $userId
      * @return bool
      */
-    public function listParticipationsByUser(User $authUser, string $model, int $userId): bool
+    public function listParticipationsByUser(User $authUser, int $userId): bool
     {
         return $authUser->role !== 'interested';
     }

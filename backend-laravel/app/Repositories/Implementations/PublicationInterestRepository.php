@@ -74,4 +74,14 @@ class PublicationInterestRepository implements PublicationInterestRepositoryInte
         return $deletedIds;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    public function deleteAllForPublication(int $pubId): int
+    {
+        return PublicationInterest::query()
+            ->where('publication_id', $pubId)
+            ->delete();
+    }
+
 }

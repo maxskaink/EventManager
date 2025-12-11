@@ -20,6 +20,7 @@ return new class extends Migration {
             $table->unsignedBigInteger('user_id');
             $table->enum('status', ['inscrito', 'asistio', 'ausente', 'cancelado'])->default('inscrito');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

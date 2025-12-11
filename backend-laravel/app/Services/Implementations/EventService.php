@@ -57,7 +57,19 @@ class EventService implements EventServiceInterface
             throw new ResourceNotFoundException("The event with ID {$id} was not found.");
         }
 
-        $event->delete();
+        // Use transaction to ensure all related data is cleaned up properly
+        DB::transaction(function () use ($event) {
+            // Delete all participations for this event
+            // Using the participationRepository to delete all records
+            $participations = $this->participationRepository->findByEventId($event->id);
+            foreach ($participations as $participation) {
+                $participation->delete();
+            }
+
+            // Soft delete the event
+            $event->delete();
+        });
+
         return $event;
     }
 
@@ -98,8 +110,12 @@ class EventService implements EventServiceInterface
             throw new ResourceNotFoundException("The event with ID {$id} was not found.");
         }
 
-        if (isset($data['name']) && $this->eventRepository->findByName($data['name'])) {
-            throw new DuplicatedResourceException("A resource with the name: {$data['name']} already exists");
+        // Only check for duplicate name if the name is being changed
+        if (isset($data['name']) && $data['name'] !== $event->name) {
+            $existing = $this->eventRepository->findByName($data['name']);
+            if ($existing) {
+                throw new DuplicatedResourceException("A resource with the name: {$data['name']} already exists");
+            }
         }
 
         return $this->eventRepository->update($id, $data);
@@ -145,14 +161,20 @@ class EventService implements EventServiceInterface
         if ($existing) {
             // If previously cancelled, re-enroll
             if ($existing->status === 'cancelado') {
+                // Re-fetch event to get latest enrolled_participants count
+                $event->refresh();
+                
                 // Check capacity before re-enrollment using enrolled_participants counter
                 if ($event->capacity !== null && $event->enrolled_participants >= $event->capacity) {
                     throw new ValidationException('Los cupos para este evento están llenos.');
                 }
-                $existing->update(['status' => 'inscrito']);
-                // Increment enrolled participants counter
-                $event->increment('enrolled_participants');
-                return $existing->fresh();
+                
+                // Update status and increment counter in a transaction
+                return DB::transaction(function () use ($existing, $event) {
+                    $existing->update(['status' => 'inscrito']);
+                    $event->increment('enrolled_participants');
+                    return $existing->fresh();
+                });
             }
             throw new DuplicatedResourceException('User is already enrolled in this event.');
         }
@@ -202,16 +224,22 @@ class EventService implements EventServiceInterface
             throw new ValidationException('Cannot cancel enrollment after the event has started.');
         }
 
-        // Only decrement if the user was actually enrolled (not already cancelled)
-        if ($participation->status === 'inscrito') {
-            $participation->update(['status' => 'cancelado']);
-            // Decrement enrolled participants counter
-            $event->decrement('enrolled_participants');
-        } else {
-            $participation->update(['status' => 'cancelado']);
+        // Prevent cancellation if user was already marked as attended or absent
+        if (in_array($participation->status, ['asistio', 'ausente'], true)) {
+            throw new ValidationException('Cannot cancel enrollment after attendance has been marked.');
         }
 
-        return $participation->fresh();
+        // Only decrement if the user was actually enrolled (not already cancelled)
+        if ($participation->status === 'inscrito') {
+            return DB::transaction(function () use ($participation, $event) {
+                $participation->update(['status' => 'cancelado']);
+                $event->decrement('enrolled_participants');
+                return $participation->fresh();
+            });
+        }
+
+        // Already cancelled, just return
+        return $participation;
     }
 
     /**
@@ -235,6 +263,13 @@ class EventService implements EventServiceInterface
                     $results[$userId] = 'User not enrolled.';
                     continue;
                 }
+                
+                // Check if user has cancelled enrollment
+                if ($p->status === 'cancelado') {
+                    $results[$userId] = 'Cannot mark attendance for cancelled enrollment.';
+                    continue;
+                }
+                
                 $p->update(['status' => 'asistio']);
                 $results[$userId] = 'Marked as attended.';
             }
@@ -263,6 +298,13 @@ class EventService implements EventServiceInterface
                     $results[$userId] = 'User not enrolled.';
                     continue;
                 }
+                
+                // Check if user has cancelled enrollment
+                if ($p->status === 'cancelado') {
+                    $results[$userId] = 'Cannot mark attendance for cancelled enrollment.';
+                    continue;
+                }
+                
                 $p->update(['status' => 'ausente']);
                 $results[$userId] = 'Marked as absent.';
             }
