@@ -37,24 +37,28 @@ export function RecentPublicationsSection({
             {publicationsToShow.map((publication) => (
                 <Card
                     key={publication.id}
-                    className="flex flex-col p-4 bg-white border border-slate-200 rounded-xl hover:shadow-md transition-all duration-300 cursor-pointer hover:scale-105"
+                    className="flex flex-col bg-white border border-slate-200 rounded-xl hover:shadow-md transition-all duration-300 cursor-pointer hover:scale-105 overflow-hidden"
                     onClick={() => navigate(`/publications/${publication.id}`)}
                 >
-                    {/* Imagen/Placeholder */}
-                    {publication.image_url && (
-                        <div className="w-full h-40 mb-4 rounded-lg overflow-hidden bg-gradient-to-br from-slate-200 to-slate-300">
+                    {/* Imagen o fondo decorativo */}
+                    {publication.image_url ? (
+                        <div className="w-full h-40 bg-gradient-to-br from-slate-200 to-slate-300 overflow-hidden">
                             <ImageWithFallback
                                 src={publication.image_url}
                                 alt={publication.title}
                                 className="w-full h-full object-cover"
                             />
                         </div>
+                    ) : (
+                        <div className="w-full h-24 bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center">
+                            <div className="text-blue-200 text-4xl">📄</div>
+                        </div>
                     )}
 
                     {/* Contenido */}
-                    <div className="flex-1 flex flex-col">
-                        <h3 className="text-base font-bold text-slate-900 line-clamp-2 mb-3">{publication.title}</h3>
-                        <div className="flex flex-row items-center gap-2 text-xs text-slate-600">
+                    <div className="flex-1 flex flex-col p-4">
+                        <h3 className="text-lg font-bold text-slate-900 line-clamp-3 mb-3">{publication.title}</h3>
+                        <div className="flex flex-row items-center gap-2 text-xs text-slate-600 mt-auto">
                             <Badge className="bg-blue-100 text-blue-700 px-2 py-1 text-xs font-semibold">
                                 {publication.type}
                             </Badge>
