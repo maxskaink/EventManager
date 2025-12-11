@@ -9,14 +9,14 @@ import {
 } from "../../../../features/events/event-board.helpers";
 import { Badge } from "../../../ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../../../ui/dropdown-menu";
-import type { ContentItem, ItemToDelete } from "../../../../features/events";
+import type { ContentItem } from "../../../../features/events";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../../../ui/tooltip";
 
 interface EventGridItemProps {
   item: ContentItem;
   isPinned: boolean;
   onViewDetails: (item: ContentItem) => void;
-  onDeleteClick: (item: ItemToDelete) => void;
+  onDeleteClick: (item: ContentItem) => void;
   onPublish: (item: ContentItem) => void;
   onAttendance: (item: ContentItem) => void;
   onEditEvent: (item: ContentItem) => void;
@@ -105,13 +105,7 @@ const EventGridItem = ({
                   </DropdownMenuItem>
                 )}
                 <DropdownMenuItem
-                  onClick={() =>
-                    onDeleteClick({
-                      id: item.id,
-                      type: item.type,
-                      title: item.title,
-                    })
-                  }
+                  onClick={() => onDeleteClick(item)}
                   className="cursor-pointer text-destructive focus:text-destructive"
                 >
                   <Trash2 className="h-4 w-4 mr-2" />

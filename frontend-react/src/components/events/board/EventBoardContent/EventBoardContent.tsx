@@ -1,6 +1,6 @@
 import { Button } from "../../../ui/button";
 import { Plus } from "lucide-react";
-import type { ContentItem, ItemToDelete } from "@/features/events";
+import type { ContentItem } from "@/features/events";
 import EventGridItem from "./EventGridItem";
 import EventListItem from "./EventListItem";
 import {
@@ -19,7 +19,7 @@ interface EventBoardContentProps {
   content: ContentItem[];
   pinnedContent: string[];
   onViewDetails: (item: ContentItem) => void;
-  onDeleteClick: (item: ItemToDelete) => void;
+  onDeleteClick: (item: ContentItem) => void;
   onPublish: (item: ContentItem) => void;
   onAttendance: (item: ContentItem) => void;
   onEditEvent: (item: ContentItem) => void;

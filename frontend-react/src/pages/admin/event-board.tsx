@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
-import { EventAPI, ArticleAPI, PublicationAPI } from "../../services/api";
+import { EventAPI, PublicationAPI } from "../../services/api";
 import { toast } from "sonner";
 import BottomNavbarWrapper from "../../components/nav/BottomNavbarWrapper";
 import { EventBoardFilters } from "../../components/events/board/EventBoardFilters";
@@ -15,8 +15,6 @@ import { SharePublicationDialog } from "../../components/events/board/SharePubli
 
 import {
   type ContentItem,
-  type ItemToDelete,
-  isEventType,
   mapEventsToContentItems,
   mapPublicationsToContentItems,
 } from "../../features/events";
@@ -48,7 +46,7 @@ export function EventBoardScreen() {
   // Estado de Modales y Diálogos
   const [selectedItem, setSelectedItem] = useState<ContentItem | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
-  const [itemToDelete, setItemToDelete] = useState<ItemToDelete | null>(null);
+  const [itemToDelete, setItemToDelete] = useState<ContentItem | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isPublishModalOpen, setIsPublishModalOpen] = useState(false);
   const [isAttendanceModalOpen, setIsAttendanceModalOpen] = useState(false);
@@ -123,9 +121,9 @@ export function EventBoardScreen() {
     },
   });
 
-  const deleteArticleMutation = useMutation({
-    mutationFn: async (articleId: number) => {
-      await ArticleAPI.deleteArticle(articleId);
+  const deletePublicationMutation = useMutation({
+    mutationFn: async (publicationId: number) => {
+      await PublicationAPI.updatePublication(publicationId, { status: "inactivo" });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["publications"] });
@@ -212,7 +210,7 @@ export function EventBoardScreen() {
     setIsDetailModalOpen(true);
   };
 
-  const handleDeleteClick = (item: ItemToDelete) => {
+  const handleDeleteClick = (item: ContentItem) => {
     setItemToDelete(item);
     setIsDeleteDialogOpen(true);
   };
@@ -285,14 +283,14 @@ export function EventBoardScreen() {
   const handleConfirmDelete = () => {
     if (!itemToDelete) return;
 
-    if (isEventType(itemToDelete.type)) {
+    if (itemToDelete.kind === "event") {
       const eventId = Number(itemToDelete.id);
       if (Number.isNaN(eventId)) {
         toast.error("ID de evento no válido");
         return;
       }
       deleteEventMutation.mutate(eventId);
-    } else {
+    } else if (itemToDelete.kind === "publication") {
       // It's a publication
       const idMatch = itemToDelete.id.match(/(\d+)$/);
       if (!idMatch) {
@@ -300,7 +298,7 @@ export function EventBoardScreen() {
         return;
       }
       const articleId = Number(idMatch[1]);
-      deleteArticleMutation.mutate(articleId);
+      deletePublicationMutation.mutate(articleId);
     }
   };
 
