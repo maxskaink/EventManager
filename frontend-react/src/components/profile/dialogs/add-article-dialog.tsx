@@ -32,8 +32,9 @@ const articleSchema = z.object({
             return parsed <= today;
         }, "La fecha no puede ser futura"),
     publicationUrl: z.string()
-        .min(1, "La URL es requerida")
+    
         .transform((url) => {
+            if (!url) return "";
             // Normalize URL: add https:// if no protocol
             const trimmed = url.trim();
             if (!/^https?:\/\//i.test(trimmed)) {
@@ -42,6 +43,7 @@ const articleSchema = z.object({
             return trimmed;
         })
         .refine((url) => {
+            if (!url) return true;
             try {
                 new URL(url);
                 return true;
@@ -136,7 +138,7 @@ export const AddArticleDialog = ({ open, onOpenChange, onAddArticle, isPending =
                     </div>
 
                     <div>
-                        <Label htmlFor="article-date">Fecha de anuncio *</Label>
+                        <Label htmlFor="article-date">Fecha de publicación *</Label>
                         <Input
                             id="article-date"
                             type="date"
@@ -150,7 +152,7 @@ export const AddArticleDialog = ({ open, onOpenChange, onAddArticle, isPending =
                     </div>
 
                     <div>
-                        <Label htmlFor="article-url">URL de anuncio *</Label>
+                        <Label htmlFor="article-url">URL de publicación</Label>
                         <Input
                             id="article-url"
                             type="url"

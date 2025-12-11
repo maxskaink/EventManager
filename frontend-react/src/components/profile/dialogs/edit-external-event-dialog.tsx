@@ -33,11 +33,10 @@ const externalEventSchema = z.object({
     modality: z.enum(["presencial", "virtual", "mixta"]),
     host_organization: z.string().min(1, "Selecciona una organización"),
     location: z.string()
-        .min(3, "La ubicación debe tener al menos 3 caracteres")
         .max(200, "La ubicación no puede exceder 200 caracteres"),
     participation_url: z.string()
-        .min(1, "La URL es requerida")
         .transform((url) => {
+            if (!url) return "";
             const trimmed = url.trim();
             if (!/^https?:\/\//i.test(trimmed)) {
                 return `https://${trimmed}`;
@@ -46,6 +45,7 @@ const externalEventSchema = z.object({
         })
         .refine((url) => {
             try {
+                if (!url) return true;
                 new URL(url);
                 return true;
             } catch {
@@ -76,6 +76,7 @@ export const EditExternalEventDialog = ({ open, onOpenChange, onEditEvent, isPen
         register,
         handleSubmit,
         control,
+        watch,
         formState: { errors },
         reset,
     } = useForm<ExternalEventFormData>({
@@ -91,6 +92,8 @@ export const EditExternalEventDialog = ({ open, onOpenChange, onEditEvent, isPen
             participation_url: "",
         },
     });
+
+    const modality = watch("modality");
 
     // Fetch trusted organizations
     const { data: organizationsData, isLoading: isLoadingOrganizations } = useQuery({
@@ -249,8 +252,9 @@ export const EditExternalEventDialog = ({ open, onOpenChange, onEditEvent, isPen
                         )}
                     </div>
 
+                    {(modality === "presencial" || modality === "mixta") && (
                     <div>
-                        <Label htmlFor="edit-event-location">Ubicación *</Label>
+                        <Label htmlFor="edit-event-location">Ubicación</Label>
                         <Input
                             id="edit-event-location"
                             {...register("location")}
@@ -261,9 +265,11 @@ export const EditExternalEventDialog = ({ open, onOpenChange, onEditEvent, isPen
                             <p className="text-sm text-destructive mt-1">{errors.location.message}</p>
                         )}
                     </div>
+                    )}
 
+                    {(modality === "virtual" || modality === "mixta") && (
                     <div>
-                        <Label htmlFor="edit-event-url">URL de participación *</Label>
+                        <Label htmlFor="edit-event-url">URL de participación</Label>
                         <Input
                             id="edit-event-url"
                             type="url"
@@ -275,7 +281,7 @@ export const EditExternalEventDialog = ({ open, onOpenChange, onEditEvent, isPen
                             <p className="text-sm text-destructive mt-1">{errors.participation_url.message}</p>
                         )}
                     </div>
-
+                    )}
                     <div className="flex flex-col-reverse sm:flex-row gap-2 justify-end pt-4">
                         <Button
                             type="button"
