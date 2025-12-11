@@ -8,6 +8,7 @@ use App\Http\Requests\Event\UpdateEventRequest;
 use App\Models\Event;
 use App\Services\Contracts\EventServiceInterface;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Gate;
 
 class EventController extends Controller
 {
@@ -272,7 +273,7 @@ class EventController extends Controller
     public function listParticipationsByUser(int $userId): JsonResponse
     {
         // Authorization: check if the user can view participations (all roles except interested)
-        $this->authorize('listParticipationsByUser', [Event::class, $userId]);
+        Gate::authorize('listParticipationsByUser', [Event::class, $userId]);
 
         $participations = $this->eventService->listParticipationsByUser($userId);
 
