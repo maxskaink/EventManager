@@ -84,7 +84,7 @@ export function CreatePublicationPage() {
         image: formData.image || undefined,
       });
 
-      toast.success("✅ Publicación creada exitosamente");
+      toast.success("✅ Anuncio creada exitosamente");
       navigate("/publications");
     } catch (error) {
       const message = getErrorMessageForToast(error, "Error al crear la anuncio");
@@ -103,7 +103,7 @@ export function CreatePublicationPage() {
     <div className="min-h-screen bg-gray-50/50 pb-20">
       <HideOnScrollWrapper>
         <UnifiedHeader
-          title="Crear Publicación"
+          title="Crear Anuncio"
           subtitle="Crea una anuncio simple (aviso, comunicado o material educativo)"
           onGoBack={handleCancel}
         />
@@ -137,10 +137,10 @@ export function CreatePublicationPage() {
 
               {/* Tipo y Visibilidad - 2 columnas */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                {/* Tipo de Publicación */}
+                {/* Tipo de Anuncio */}
                 <div className="space-y-2">
                   <Label htmlFor="type" className="text-slate-700 font-semibold">
-                    Tipo de Publicación <span className="text-red-500">*</span>
+                    Tipo de Anuncio <span className="text-red-500">*</span>
                   </Label>
                   <Select
                     value={formData.type}
@@ -288,7 +288,7 @@ export function CreatePublicationPage() {
                   disabled={isLoading}
                   className="w-full sm:w-auto font-semibold shadow-md hover:shadow-lg transition-all text-xs sm:text-sm py-2 sm:py-auto h-auto sm:h-9"
                 >
-                  {isLoading ? "Creando..." : "Crear Publicación"}
+                  {isLoading ? "Creando..." : "Crear Anuncio"}
                 </Button>
               </div>
             </form>

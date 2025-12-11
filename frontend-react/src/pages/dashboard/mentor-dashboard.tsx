@@ -93,7 +93,6 @@ export function MentorDashboardPage() {
       <div className="container mx-auto px-4 md:px-6 py-8 space-y-8 max-w-7xl">
         {/* Acciones Rápidas */}
         <MentorQuickActions
-          onOpenGeneralReport={() => setIsGeneralReportOpen(true)}
           onOpenInterests={() => setIsInterestModalOpen(true)}
         />
 

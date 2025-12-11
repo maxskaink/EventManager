@@ -133,7 +133,7 @@ export const EditPublicationDialog = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-[calc(100vw-2rem)] sm:max-w-2xl max-h-[90vh] overflow-y-auto overflow-x-hidden p-4 sm:p-6">
         <DialogHeader>
-          <DialogTitle>Editar Publicación</DialogTitle>
+          <DialogTitle>Editar Anuncio</DialogTitle>
           <DialogDescription>
             Actualiza la información de la anuncio.
           </DialogDescription>
@@ -330,7 +330,7 @@ export const EditPublicationDialog = ({
               ) : (
                 <>
                   <CheckCircle2 className="h-4 w-4 mr-2" />
-                  Actualizar Publicación
+                  Actualizar Anuncio
                 </>
               )}
             </Button>

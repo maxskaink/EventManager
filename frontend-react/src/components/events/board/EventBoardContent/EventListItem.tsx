@@ -44,7 +44,7 @@ const EventListItem = ({
   const hasPublication = item.original?.publication_id !== null && item.original?.publication_id !== undefined;
   const hasEvent = item.original?.event !== null && item.original?.event !== undefined;
 
-  // Helper to determine if we show "Editar Publicación"
+  // Helper to determine if we show "Editar Anuncio"
   const showEditPublication = !isEvent || (isEvent && hasPublication);
 
   return (
@@ -166,7 +166,7 @@ const EventListItem = ({
                 {showEditPublication && (
                   <DropdownMenuItem onClick={() => onEditPublication(item)} className="cursor-pointer">
                     <Edit className="h-4 w-4 mr-2" />
-                    Editar Publicación
+                    Editar Anuncio
                   </DropdownMenuItem>
                 )}
                 {/* Share Option - Only for draft publications */}

@@ -114,7 +114,7 @@ export const CreatePublicationDialog = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-[calc(100vw-2rem)] sm:max-w-2xl max-h-[90vh] overflow-y-auto overflow-x-hidden p-4 sm:p-6">
         <DialogHeader>
-          <DialogTitle>Crear Publicación</DialogTitle>
+          <DialogTitle>Crear Anuncio</DialogTitle>
           <DialogDescription>
             Crea una anuncio simple (aviso, comunicado o material educativo).
           </DialogDescription>
@@ -303,7 +303,7 @@ export const CreatePublicationDialog = ({
               ) : (
                 <>
                   <CheckCircle2 className="h-4 w-4 mr-2" />
-                  Crear Publicación
+                  Crear Anuncio
                 </>
               )}
             </Button>

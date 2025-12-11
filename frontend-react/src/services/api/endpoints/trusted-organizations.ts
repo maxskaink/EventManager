@@ -44,7 +44,7 @@ const updateTrustedOrganization = async (id: number, body: {
     trusted_for_event: boolean;
     trusted_for_article: boolean;
 }) => {
-    const response = await axiosInstance.put<MessageRes>(`/trusted-org/${id}`, {
+    const response = await axiosInstance.patch<MessageRes>(`/trusted-org/${id}`, {
         ...body,
         // TODO: Delete when fixed in backend
         trusted_for_publication: body.trusted_for_article,

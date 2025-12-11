@@ -212,7 +212,7 @@ export function CreateArticleScreen() {
             </div>
 
             <div>
-              <Label htmlFor="publication_date">Fecha de Publicación *</Label>
+              <Label htmlFor="publication_date">Fecha de Anuncio *</Label>
               <Input
                 id="publication_date"
                 type="date"

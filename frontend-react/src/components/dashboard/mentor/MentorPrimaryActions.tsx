@@ -29,7 +29,7 @@ export const MentorPrimaryActions: React.FC = () => {
             onClick={() => navigate('/create-publication')}
           >
             <Edit3 className="h-6 w-6 text-emerald-500" />
-            <span>Nueva Publicación</span>
+            <span>Nueva Anuncio</span>
             <span className="text-xs text-muted-foreground font-normal">Redacta comunicados</span>
           </Button>
         </div>

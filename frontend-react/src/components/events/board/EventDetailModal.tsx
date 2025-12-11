@@ -12,7 +12,6 @@ import {
   Monitor, 
   CalendarDays
 } from "lucide-react";
-import { toast } from "sonner";
 import {
   getTypeColor,
   getStatusColor,

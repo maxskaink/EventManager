@@ -120,7 +120,7 @@ const PublicationDetailPage = () => {
       <div className="flex min-h-screen items-center justify-center p-4">
         <Card>
           <CardContent className="p-8 text-center">
-            <p className="text-muted-foreground mb-4">Publicación no encontrada</p>
+            <p className="text-muted-foreground mb-4">Anuncio no encontrada</p>
             <Button onClick={handleBack}>Volver a anuncios</Button>
           </CardContent>
         </Card>

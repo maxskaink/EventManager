@@ -271,13 +271,13 @@ export const CreateEventForm: React.FC<Props> = ({
         </CardContent>
       </Card>
 
-      {/* Publicación */}
+      {/* Anuncio */}
       <Card className="rounded-none border-0 border-blue-200 shadow-none transition-shadow duration-300 md:rounded-xl md:border md:shadow-md md:hover:shadow-lg dark:border-blue-800">
         <CardHeader className="px-2 pt-2 pb-2 sm:px-4 sm:pt-3 sm:pb-3 md:px-6 md:pt-6 md:pb-3">
           <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
             <CardTitle className="flex items-center gap-2 text-base text-blue-700 sm:text-lg dark:text-blue-400">
               <FileText className="h-5 w-5 shrink-0" />
-              Publicación
+              Anuncio
             </CardTitle>
             <div className="flex items-center gap-2 whitespace-nowrap">
               <input

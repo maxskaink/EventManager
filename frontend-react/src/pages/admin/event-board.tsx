@@ -129,7 +129,7 @@ export function EventBoardScreen() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["publications"] });
-      toast.success("✅ Publicación eliminada exitosamente");
+      toast.success("✅ Anuncio eliminada exitosamente");
       setIsDeleteDialogOpen(false);
       setItemToDelete(null);
     },
@@ -165,7 +165,7 @@ export function EventBoardScreen() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["publications"] });
-      toast.success("✅ Publicación actualizada exitosamente");
+      toast.success("✅ Anuncio actualizada exitosamente");
       setIsEditPublicationOpen(false);
       setSelectedPublicationForEdit(null);
     },
