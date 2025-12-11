@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('publication/active', [PublicationController::class, 'listPublishedPublications']);
 Route::get('publication/filter', [PublicationController::class, 'listFilteredPublications']);
 Route::get('publication/{publicationId}/interests', [PublicationController::class, 'getPublicationInterests']);
-Route::get('/{publicationId}', [PublicationController::class, 'getPublicationById']);
+Route::get('publication/{publicationId}', [PublicationController::class, 'getPublicationById']);
 
 // Rutas protegidas
 Route::middleware('auth:sanctum')->prefix('publication')->group(function () {
