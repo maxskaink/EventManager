@@ -145,14 +145,20 @@ class EventService implements EventServiceInterface
         if ($existing) {
             // If previously cancelled, re-enroll
             if ($existing->status === 'cancelado') {
+                // Re-fetch event to get latest enrolled_participants count
+                $event->refresh();
+                
                 // Check capacity before re-enrollment using enrolled_participants counter
                 if ($event->capacity !== null && $event->enrolled_participants >= $event->capacity) {
                     throw new ValidationException('Los cupos para este evento están llenos.');
                 }
-                $existing->update(['status' => 'inscrito']);
-                // Increment enrolled participants counter
-                $event->increment('enrolled_participants');
-                return $existing->fresh();
+                
+                // Update status and increment counter in a transaction
+                return DB::transaction(function () use ($existing, $event) {
+                    $existing->update(['status' => 'inscrito']);
+                    $event->increment('enrolled_participants');
+                    return $existing->fresh();
+                });
             }
             throw new DuplicatedResourceException('User is already enrolled in this event.');
         }
@@ -204,14 +210,15 @@ class EventService implements EventServiceInterface
 
         // Only decrement if the user was actually enrolled (not already cancelled)
         if ($participation->status === 'inscrito') {
-            $participation->update(['status' => 'cancelado']);
-            // Decrement enrolled participants counter
-            $event->decrement('enrolled_participants');
-        } else {
-            $participation->update(['status' => 'cancelado']);
+            return DB::transaction(function () use ($participation, $event) {
+                $participation->update(['status' => 'cancelado']);
+                $event->decrement('enrolled_participants');
+                return $participation->fresh();
+            });
         }
 
-        return $participation->fresh();
+        // Already cancelled, just return
+        return $participation;
     }
 
     /**
