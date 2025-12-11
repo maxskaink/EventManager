@@ -238,27 +238,19 @@ class PublicationService implements PublicationServiceInterface
 
         $publication = $this->publicationRepo->findById($publicationId);
 
-        // Find users who have these interests to notify them
-        // Note: This logic seems to get all users if interestIds is not empty, which might be intended or a bug in original code.
-        // Assuming intention is to notify users with matching interests.
-        // The original code logic:
-        // foreach interestId -> get all users (empty roles array means all?) -> merge ids.
-        // This looks like it might be getting ALL users multiple times.
-        // Refined interpretation: It seems to be gathering users to notify.
+        // Find users who have these interests in their profile to notify them
+        $userIds = User::query()
+            ->whereHas('profile.interests', function ($query) use ($interestIds) {
+                $query->whereIn('interests.id', $interestIds);
+            })
+            ->pluck('id')
+            ->unique()
+            ->toArray();
 
-        $userIds = [];
-        foreach ($interestIds as $id) {
-            // This part of the original code seems to fetch all users for each interest, 
-            // but passing empty roles array to getUsersByRoles might return everyone?
-            // Keeping original logic but adding comments.
-            $users = $this->userRepo->getUsersByIds(
-                $this->userRepo->getUsersByRoles([])->pluck('id')->toArray()
-            );
-            $userIds = array_merge($userIds, $users->pluck('id')->toArray());
+        if (!empty($userIds)) {
+            $users = $this->userRepo->getUsersByIds($userIds);
+            Notification::send($users, new NewPublicationNotification($publication));
         }
-
-        $users = $this->userRepo->getUsersByIds($userIds);
-        Notification::send($users, new NewPublicationNotification($publication));
 
         return $this->interestRepo->getByPublication($publicationId)->toArray();
     }

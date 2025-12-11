@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('publication/active', [PublicationController::class, 'listPublishedPublications']);
 Route::get('publication/filter', [PublicationController::class, 'listFilteredPublications']);
 Route::get('publication/{publicationId}/interests', [PublicationController::class, 'getPublicationInterests']);
+Route::get('/{publicationId}', [PublicationController::class, 'getPublicationById']);
 
 // Rutas protegidas
 Route::middleware('auth:sanctum')->prefix('publication')->group(function () {
@@ -22,7 +23,6 @@ Route::middleware('auth:sanctum')->prefix('publication')->group(function () {
     Route::post('{publicationId}/interests', [PublicationController::class, 'addPublicationInterests']);
     Route::delete('{publicationId}/interests', [PublicationController::class, 'removePublicationInterests']);
     Route::post('{publicationId}/image', [PublicationController::class, 'setPublicationImage']);
-    Route::get('/{publicationId}', [PublicationController::class, 'getPublicationById']);
 
     // Access routes
     Route::post('{publicationId}/access/grant', [PublicationController::class, 'grantPublicationAccess']);
