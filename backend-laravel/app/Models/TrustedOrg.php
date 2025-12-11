@@ -16,7 +16,7 @@ use Illuminate\Database\Eloquent\Builder;
  * @property string $org Organization domain/name
  * @property bool $trusted_for_certificate Trusted for certificate issuance
  * @property bool $trusted_for_event Trusted for event management
- * @property bool $trusted_for_publication Trusted for publications
+ * @property bool $trusted_for_article Trusted for articles
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  */
@@ -40,7 +40,7 @@ class TrustedOrg extends Model
         'org',
         'trusted_for_certificate',
         'trusted_for_event',
-        'trusted_for_publication',
+        'trusted_for_article',
     ];
 
     /**
@@ -53,7 +53,7 @@ class TrustedOrg extends Model
         return [
             'trusted_for_certificate' => 'boolean',
             'trusted_for_event' => 'boolean',
-            'trusted_for_publication' => 'boolean',
+            'trusted_for_article' => 'boolean',
         ];
     }
 
@@ -80,13 +80,13 @@ class TrustedOrg extends Model
     }
 
     /**
-     * Scope a query to only include organizations trusted for publications.
+     * Scope a query to only include organizations trusted for articles.
      *
      * @param Builder $query
      * @return Builder
      */
-    public function scopeTrustedForPublication(Builder $query): Builder
+    public function scopeTrustedForArticle(Builder $query): Builder
     {
-        return $query->where('trusted_for_publication', true);
+        return $query->where('trusted_for_article', true);
     }
 }

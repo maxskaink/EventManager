@@ -15,7 +15,7 @@ return new class extends Migration {
             $table->string('org')->unique()->comment('Organization name');
             $table->boolean('trusted_for_certificate')->default(false)->comment('Trusted for certificate issuance');
             $table->boolean('trusted_for_event')->default(false)->comment('Trusted for event management');
-            $table->boolean('trusted_for_publication')->default(false)->comment('Trusted for publications');
+            $table->boolean('trusted_for_article')->default(false)->comment('Trusted for articles');
             $table->timestamps();
         });
     }

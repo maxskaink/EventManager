@@ -32,7 +32,7 @@ return new class extends Migration {
         });
 
         #Could add auth with  password reset tokens , but its just google auth true?
-        Schema::create('sessions', function (Blueprint $table) {
+        Schema::table('sessions', function (Blueprint $table) {
             $table->string('id')->primary();
             $table->foreignId('user_id')->nullable()->index();
             $table->string('ip_address', 45)->nullable();

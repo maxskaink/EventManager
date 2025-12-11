@@ -126,7 +126,7 @@ class TrustedOrgsSeeder extends Seeder
                 [
                     'trusted_for_certificate' => in_array($org, $certificateOrgs),
                     'trusted_for_event' => in_array($org, $eventOrgs),
-                    'trusted_for_publication' => in_array($org, $publicationOrgs),
+                    'trusted_for_article' => in_array($org, $publicationOrgs),
                 ]
             );
         }
