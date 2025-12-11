@@ -48,6 +48,9 @@ const PublicationCard: React.FC<PublicationCardProps> = ({ publication }) => {
   }
 
 
+  console.log(publication.date);
+
+
   const timeCategory = getTimeCategory(publication.date);
 
   return (
@@ -95,7 +98,7 @@ const PublicationCard: React.FC<PublicationCardProps> = ({ publication }) => {
             <div className="space-y-2 text-sm text-muted-foreground">
               <div className={`flex items-center gap-2 ${timeCategory === '¡Pronto!' ? 'bg-orange-500 text-white p-1 rounded-md' : ''}`}>
                 <Calendar className="h-4 w-4 shrink-0" />
-                <span>{new Date(publication.date).toLocaleDateString('es-ES', { dateStyle: 'long' })}</span>
+                <span>{new Date(publication.date).toLocaleDateString('es-CO', { dateStyle: 'long', timeZone: 'UTC' })}</span>
               </div>
               {publication.time && (
                 <div className={`flex items-center gap-2`}>

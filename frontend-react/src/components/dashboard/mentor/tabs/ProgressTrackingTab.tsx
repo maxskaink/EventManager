@@ -23,6 +23,7 @@ interface UserProgress {
 export const ProgressTrackingTab: React.FC<ProgressTrackingTabProps> = ({
   users,
   loadingUsers,
+  onViewProfile,
   onGenerateReport,
 }) => {
   // Memoizar memberUsers para evitar recalcular en cada render
@@ -176,6 +177,14 @@ export const ProgressTrackingTab: React.FC<ProgressTrackingTabProps> = ({
                   </div>
 
                   <div className="flex items-center gap-2 pt-2 md:pt-0 border-t md:border-t-0 mt-2 md:mt-0">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => onViewProfile(memberData)}
+                      className="h-8 text-xs"
+                    >
+                      Ver Perfil
+                    </Button>
                     <Button
                       variant="outline"
                       size="sm"

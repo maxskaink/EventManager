@@ -19,12 +19,14 @@ import { useAuthStore } from "../../stores/auth.store";
 import { HideOnScrollWrapper } from "@/components/layout/HideOnScrollWrapper";
 import { MentorPrimaryActions } from "@/components/dashboard/mentor/MentorPrimaryActions";
 import { generateTotalReport } from "../../features/pdf/pdf.generator";
+import { useNavigate } from "react-router";
 
 export function MentorDashboardPage() {
   const user = useAuthStore(s => s.user)
   const logout = useAuthStore(s => s.logout)
   const [users, setUsers] = useState<API.User[]>([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   // Estado centralizado para todos los modales
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
@@ -71,8 +73,7 @@ export function MentorDashboardPage() {
 
   // Handlers para abrir modales
   const handleViewProfile = (member: MemberProgressData) => {
-    setSelectedMember(member);
-    setIsProfileModalOpen(true);
+    navigate(`/users/${member.id}`);
   };
 
   const handleGenerateReport = (member: MemberProgressData) => {
