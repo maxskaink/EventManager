@@ -11,15 +11,6 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Add soft deletes to events table
-        Schema::table('events', function (Blueprint $table) {
-            $table->softDeletes();
-        });
-
-        // Add soft deletes to publications table
-        Schema::table('publications', function (Blueprint $table) {
-            $table->softDeletes();
-        });
 
         // Add soft deletes to participations table
         Schema::table('participations', function (Blueprint $table) {
@@ -32,15 +23,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        // Remove soft deletes from events table
-        Schema::table('events', function (Blueprint $table) {
-            $table->dropSoftDeletes();
-        });
-
-        // Remove soft deletes from publications table
-        Schema::table('publications', function (Blueprint $table) {
-            $table->dropSoftDeletes();
-        });
 
         // Remove soft deletes from participations table
         Schema::table('participations', function (Blueprint $table) {
