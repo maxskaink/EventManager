@@ -51,5 +51,15 @@ class PublicationAccessRepository implements PublicationAccessRepositoryInterfac
         return $deletedIds;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    public function deleteAllForPublication(int $pubId): int
+    {
+        return PublicationAccess::query()
+            ->where('publication_id', $pubId)
+            ->delete();
+    }
+
 
 }

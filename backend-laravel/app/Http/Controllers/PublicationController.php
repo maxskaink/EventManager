@@ -342,4 +342,27 @@ class PublicationController extends Controller
         ]);
     }
 
+    /**
+     * Soft delete a publication.
+     *
+     * @param int $id The ID of the publication to delete.
+     * @return JsonResponse The deleted publication and a success message.
+     * @throws \Illuminate\Database\Eloquent\ModelNotFoundException If the publication is not found.
+     * @throws AuthorizationException If the user is not authorized.
+     */
+    public function deletePublication(int $id): JsonResponse
+    {
+        $publication = Publication::query()->findOrFail($id);
+
+        // Authorization: check if the user can delete this publication
+        $this->authorize('delete', $publication);
+
+        $deletedPublication = $this->publicationService->deletePublication($id);
+
+        return response()->json([
+            'message' => 'Publication deleted successfully.',
+            'publication' => $deletedPublication,
+        ]);
+    }
+
 }

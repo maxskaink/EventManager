@@ -30,4 +30,12 @@ interface PublicationAccessRepositoryInterface
      * @return array
      */
     public function deleteForUsers(int $pubId, array $userIds): array;
+
+    /**
+     * Delete all access records for a publication.
+     *
+     * @param int $pubId
+     * @return int Number of deleted records
+     */
+    public function deleteAllForPublication(int $pubId): int;
 }

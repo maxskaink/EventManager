@@ -48,4 +48,12 @@ interface PublicationInterestRepositoryInterface
      * @return array
      */
     public function deleteForPublication(int $pubId, array $interestIds): array;
+
+    /**
+     * Remove all interests from a publication.
+     *
+     * @param int $pubId
+     * @return int Number of deleted records
+     */
+    public function deleteAllForPublication(int $pubId): int;
 }

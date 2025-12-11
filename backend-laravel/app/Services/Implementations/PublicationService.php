@@ -432,5 +432,47 @@ class PublicationService implements PublicationServiceInterface
         return $disk->url($path);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @throws ResourceNotFoundException
+     */
+    public function deletePublication(int $id): Publication
+    {
+        $publication = $this->publicationRepo->findById($id);
+        if (!$publication) {
+            throw new ResourceNotFoundException("Publication with ID {$id} not found.");
+        }
+
+        // Use transaction to ensure all related data is cleaned up properly
+        DB::transaction(function () use ($publication) {
+            // Delete publication interests
+            $this->interestRepo->deleteAllForPublication($publication->id);
+
+            // Delete publication access records
+            $this->accessRepo->deleteAllForPublication($publication->id);
+
+            // Delete image file if exists
+            if ($publication->image_url) {
+                $pathFromUrl = parse_url($publication->image_url, PHP_URL_PATH) ?: $publication->image_url;
+                $pathFromUrl = preg_replace('#^/storage/#', '', $pathFromUrl);
+                $pathFromUrl = ltrim($pathFromUrl, '/');
+
+                if ($pathFromUrl !== '') {
+                    /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
+                    $disk = Storage::disk('public');
+                    if ($disk->exists($pathFromUrl)) {
+                        $disk->delete($pathFromUrl);
+                    }
+                }
+            }
+
+            // Soft delete the publication
+            $publication->delete();
+        });
+
+        return $publication;
+    }
+
 
 }

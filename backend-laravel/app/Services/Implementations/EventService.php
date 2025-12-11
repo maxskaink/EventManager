@@ -57,7 +57,19 @@ class EventService implements EventServiceInterface
             throw new ResourceNotFoundException("The event with ID {$id} was not found.");
         }
 
-        $event->delete();
+        // Use transaction to ensure all related data is cleaned up properly
+        DB::transaction(function () use ($event) {
+            // Delete all participations for this event
+            // Using the participationRepository to delete all records
+            $participations = $this->participationRepository->findByEventId($event->id);
+            foreach ($participations as $participation) {
+                $participation->delete();
+            }
+
+            // Soft delete the event
+            $event->delete();
+        });
+
         return $event;
     }
 

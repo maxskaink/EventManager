@@ -15,6 +15,7 @@ Route::middleware('auth:sanctum')->prefix('publication')->group(function () {
     Route::get('/draft', [PublicationController::class, 'listDraftPublications']);
 
     Route::patch('{publicationId}', [PublicationController::class, 'updatePublication']);
+    Route::delete('{publicationId}', [PublicationController::class, 'deletePublication']);
     Route::post('{publicationId}/interests', [PublicationController::class, 'addPublicationInterests']);
     Route::delete('{publicationId}/interests', [PublicationController::class, 'removePublicationInterests']);
     Route::post('{publicationId}/image', [PublicationController::class, 'setPublicationImage']);

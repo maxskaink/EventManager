@@ -36,6 +36,12 @@ Route::middleware('auth:sanctum')->prefix('event')->group(function () {
      */
     Route::patch('/{eventId}', [EventController::class, 'updateEvent']);
 
+    /**
+     * Delete an event (mentor or coordinator only)
+     * DELETE /api/event/{eventId}
+     */
+    Route::delete('/{eventId}', [EventController::class, 'deleteEvent']);
+
 
 
     /**

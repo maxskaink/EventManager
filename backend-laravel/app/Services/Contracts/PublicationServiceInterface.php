@@ -136,4 +136,12 @@ interface PublicationServiceInterface
      * @return array
      */
     public function removePublicationInterests(int $publicationId, array $interestIds): array;
+
+    /**
+     * Soft delete a publication and clean up related data.
+     *
+     * @param int $id
+     * @return Publication
+     */
+    public function deletePublication(int $id): Publication;
 }
