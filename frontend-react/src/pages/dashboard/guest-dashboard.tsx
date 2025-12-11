@@ -8,23 +8,12 @@ import { useAuthStore } from "@/stores/auth.store";
 import { RecommendedEventsSection } from "@/components/dashboard/guest/RecommendedEventsSection";
 import { LogoutConfirmDialog } from "@/components/auth/LogoutConfirmDialog";
 import { UnifiedHeader } from "@/components/layout/UnifiedHeader";
+import { translateUserRole } from "@/features/users/users.helpers";
 
 export function GuestDashboard() {
   const user = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
-
-  const getRoleLabel = (role?: string) => {
-    const roleMap: { [key: string]: string } = {
-      guest: "Visitante",
-      interested: "Interesado",
-      member: "Miembro",
-      coordinator: "Coordinador",
-      mentor: "Mentor",
-      seed: "Semilla",
-    };
-    return roleMap[role || "guest"] || role || "Panel";
-  };
 
   const {
     data: publications,
@@ -51,7 +40,7 @@ export function GuestDashboard() {
       {/* Header Personalizado */}
       <HideOnScrollWrapper>
         <UnifiedHeader
-        title={`Panel de ${getRoleLabel(user?.role)}`}
+        title={`Panel de ${translateUserRole(user?.role ?? "")}`}
         subtitle="Explora nuestros eventos y actividades"
         user={user}
         />

@@ -4,7 +4,7 @@
  * Translates api user role to human readable string
  * @param role API user 
  */
-export const translateUserRole = (role: API.UserRole) => {
+export const translateUserRole = (role: API.UserRole | string) => {
     switch (role) {
         case "interested":
             return "Interesado";
@@ -17,6 +17,6 @@ export const translateUserRole = (role: API.UserRole) => {
         case "seed":
             return "Semilla";
         default:
-            return "No se ha definido un rol";
+            return "Visitante";
     }
 }

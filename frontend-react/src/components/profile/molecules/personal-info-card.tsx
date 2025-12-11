@@ -69,7 +69,7 @@ export const PersonalInfoCard = ({
                 className="rounded-full hover:bg-muted"
               >
                 {isEditing ? <Save className="mr-2 h-4 w-4 shrink-0" /> : <Edit className="mr-2 h-4 w-4 shrink-0" />}
-                {isEditing ? "Listo" : "Guardar"}
+                {isEditing ? "Guardar" : "Editar"}
               </Button>
             </div>
 
