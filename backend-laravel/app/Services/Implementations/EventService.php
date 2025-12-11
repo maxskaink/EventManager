@@ -235,11 +235,6 @@ class EventService implements EventServiceInterface
                     $results[$userId] = 'User not enrolled.';
                     continue;
                 }
-                // Only mark as attended if currently enrolled
-                if ($p->status !== 'inscrito') {
-                    $results[$userId] = 'Invalid status.';
-                    continue;
-                }
                 $p->update(['status' => 'asistio']);
                 $results[$userId] = 'Marked as attended.';
             }
@@ -266,11 +261,6 @@ class EventService implements EventServiceInterface
                 $p = $this->participationRepository->findByUserAndEvent($userId, $eventId);
                 if (!$p) {
                     $results[$userId] = 'User not enrolled.';
-                    continue;
-                }
-                // Only mark as absent if currently enrolled
-                if ($p->status !== 'inscrito') {
-                    $results[$userId] = 'Invalid status.';
                     continue;
                 }
                 $p->update(['status' => 'ausente']);
