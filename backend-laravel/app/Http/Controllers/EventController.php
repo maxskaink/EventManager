@@ -238,7 +238,8 @@ class EventController extends Controller
     }
 
     /**
-     * List all participations for a specific event (mentor or coordinator only).
+     * List all participations for a specific event.
+     * All roles except 'interested' can access this.
      *
      * @param int $eventId The ID of the event.
      * @return JsonResponse A list of participations for the event.
@@ -262,8 +263,7 @@ class EventController extends Controller
 
     /**
      * List all participations for a specific user.
-     * The authenticated user can view their own participations,
-     * while mentors and coordinators can view anyone’s.
+     * All roles except 'interested' can access this.
      *
      * @param int $userId The ID of the user.
      * @return JsonResponse A list of the user's participations.
@@ -271,9 +271,8 @@ class EventController extends Controller
      */
     public function listParticipationsByUser(int $userId): JsonResponse
     {
-        // Authorization: check if the user can view participations (create policy used here as proxy or specific policy needed)
-        // Note: The comment says 'create' policy is used, ensuring consistency with original code
-        $this->authorize('create', Event::class);
+        // Authorization: check if the user can view participations (all roles except interested)
+        $this->authorize('listParticipationsByUser', [Event::class, $userId]);
 
         $participations = $this->eventService->listParticipationsByUser($userId);
 

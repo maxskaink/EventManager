@@ -125,6 +125,7 @@ class EventPolicy
 
     /**
      * Determine whether the user can list participations for a specific event.
+     * All roles except 'interested' can access this.
      *
      * @param User $user
      * @param Event $event
@@ -132,11 +133,12 @@ class EventPolicy
      */
     public function listParticipationsByEvent(User $user, Event $event): bool
     {
-        return in_array($user->role, ['mentor', 'coordinator'], true);
+        return $user->role !== 'interested';
     }
 
     /**
      * Determine whether the user can list participations for a specific user.
+     * All roles except 'interested' can access this.
      *
      * @param User $authUser
      * @param string $model
@@ -145,7 +147,6 @@ class EventPolicy
      */
     public function listParticipationsByUser(User $authUser, string $model, int $userId): bool
     {
-        return $authUser->id === $userId ||
-            in_array($authUser->role, ['mentor', 'coordinator'], true);
+        return $authUser->role !== 'interested';
     }
 }

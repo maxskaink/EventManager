@@ -27,7 +27,7 @@ class UpdatePublicationRequest extends FormRequest
      */
     public function rules(): array
     {
-        $publicationId = $this->route('publication_id'); // Assumes route parameter is 'id'
+        $publicationId = $this->route('publicationId'); // Matches route parameter name
 
         return [
             'title' => [

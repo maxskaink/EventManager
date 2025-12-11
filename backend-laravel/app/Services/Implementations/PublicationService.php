@@ -382,9 +382,9 @@ class PublicationService implements PublicationServiceInterface
      */
     private function processAndStoreImage(UploadedFile $image, ?string $existingUrl = null): string
     {
-        // Validate image size (max 2MB)
-        if ($image->getSize() > 2 * 1024 * 1024) {
-            throw new \Exception("The image size must not exceed 2MB.");
+        // Validate image size (max 5MB)
+        if ($image->getSize() > 5 * 1024 * 1024) {
+            throw new \Exception("The image size must not exceed 5MB.");
         }
 
         // Validate mime type
