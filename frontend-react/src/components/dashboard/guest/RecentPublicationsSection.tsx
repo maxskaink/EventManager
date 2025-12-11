@@ -21,57 +21,48 @@ export function RecentPublicationsSection({
 
     const publicationsToShow = publications;
 
-    const sectionTitle = "Publicationes Recientes"
-
     const renderContent = () => {
         if (isLoading) return <>
-            <Card className="animate-pulse h-24" />
-            <Card className="animate-pulse h-24" />
-            <Card className="animate-pulse h-24" />
+            <Card className="animate-pulse h-24 bg-slate-200" />
+            <Card className="animate-pulse h-24 bg-slate-200" />
+            <Card className="animate-pulse h-24 bg-slate-200" />
         </>
         if (!isLoading && publicationsToShow.length === 0 && !error) return <>
-            <div className="col-span-full text-muted-foreground">
-                No hay anuncios recientes por ahora.
+            <div className="col-span-full text-center py-12">
+                <p className="text-slate-500">No hay publicaciones recientes</p>
             </div>
         </>
 
-        return <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+        return <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {publicationsToShow.map((publication) => (
                 <Card
                     key={publication.id}
-                    className="flex p-3 transition-shadow hover:shadow-md cursor-pointer"
+                    className="flex flex-col p-4 bg-white border border-slate-200 rounded-xl hover:shadow-md transition-all duration-300 cursor-pointer hover:scale-105"
                     onClick={() => navigate(`/publications/${publication.id}`)}
                 >
                     {/* Imagen/Placeholder */}
-                    <div className="flex flex-row gap-2">
+                    {publication.image_url && (
+                        <div className="w-full h-40 mb-4 rounded-lg overflow-hidden bg-gradient-to-br from-slate-200 to-slate-300">
+                            <ImageWithFallback
+                                src={publication.image_url}
+                                alt={publication.title}
+                                className="w-full h-full object-cover"
+                            />
+                        </div>
+                    )}
 
-                        {publication.image_url && (
-                            <div className="w-16 h-16 mr-4 rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center">
-                                <ImageWithFallback
-                                    src={publication.image_url}
-                                    alt={publication.title}
-                                    className="w-full h-full object-cover"
-                                />
-                            </div>
-                        )}
-
-
-                        {/* Contenido (Título y Resumen/Fecha) */}
-                        <div className="flex-1 min-w-0">
-                            <h3 className="text-base font-medium line-clamp-1">{publication.title}</h3>
-                            <div className="flex flex-row items-center gap-3 text-xs text-muted-foreground mt-1">
-                                <Badge variant="secondary" className="px-2 py-0.5 text-xs font-medium w-fit">
-                                    {publication.type}
-                                </Badge>
-                                <div className="flex flex-row items-center gap-1">
-
-                                    <div className="flex items-center gap-1">
-                                        <Calendar className="h-3 w-3" />
-                                        <span>
-                                            {new Date(publication.created_at).toLocaleDateString("es-ES")}
-                                        </span>
-                                    </div>
-                                </div>
+                    {/* Contenido */}
+                    <div className="flex-1 flex flex-col">
+                        <h3 className="text-base font-bold text-slate-900 line-clamp-2 mb-3">{publication.title}</h3>
+                        <div className="flex flex-row items-center gap-2 text-xs text-slate-600">
+                            <Badge className="bg-blue-100 text-blue-700 px-2 py-1 text-xs font-semibold">
+                                {publication.type}
+                            </Badge>
+                            <div className="flex items-center gap-1">
+                                <Calendar className="h-3 w-3" />
+                                <span>
+                                    {new Date(publication.created_at).toLocaleDateString("es-ES")}
+                                </span>
                             </div>
                         </div>
                     </div>
@@ -83,11 +74,13 @@ export function RecentPublicationsSection({
     return (
         <section className="space-y-4">
             <div className="flex items-center justify-between">
-                <h2 className="text-xl font-semibold">{sectionTitle}</h2>
+                <div>
+                    <h2 className="text-2xl font-bold text-slate-900">Publicaciones Recientes</h2>
+                    <p className="text-slate-500 text-sm mt-1">Mantente informado con las últimas novedades</p>
+                </div>
                 <Button
-                    variant="outline"
+                    className="bg-blue-600 hover:bg-blue-700 text-white"
                     onClick={() => navigate("/publications")}
-                    className="rounded-md h-9 px-4 py-2 text-sm font-medium"
                 >
                     Ver todas
                 </Button>
