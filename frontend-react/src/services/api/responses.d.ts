@@ -117,6 +117,11 @@ namespace ArticleAPI {
   type ListArticlesRes = {
     articles: API.Article[];
   }
+
+  type ListTrustedOrgsRes =  {
+    trusted_organizations: string[];
+  }
+
 }
 
 namespace PublicationAPI {

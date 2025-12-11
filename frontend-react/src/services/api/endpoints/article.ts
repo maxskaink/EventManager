@@ -37,6 +37,11 @@ async function listArticlesByDateRange(startDate: string, endDate: string) {
   return response.data.articles;
 }
 
+async function listTrustedOrganizations() {
+  const response = await axiosInstance.get<ArticleAPI.ListTrustedOrgsRes>('/article/organizations');
+  return response.data.trusted_organizations;
+}
+
 export default {
   addArticle,
   updateArticle,
@@ -45,4 +50,5 @@ export default {
   listArticlesByUser,
   listAllArticles,
   listArticlesByDateRange,
+  listTrustedOrganizations,
 };

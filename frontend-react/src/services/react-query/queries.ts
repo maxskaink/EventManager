@@ -1,5 +1,5 @@
 import { queryOptions, infiniteQueryOptions } from "@tanstack/react-query";
-import { CertificateAPI, EventAPI, ProfileAPI, PublicationAPI, UserAPI } from "../api";
+import { ArticleAPI, CertificateAPI, EventAPI, ProfileAPI, PublicationAPI, UserAPI } from "../api";
 
 export const eventQueries = {
     all: () =>
@@ -136,7 +136,17 @@ export const certificateQueries = {
         queryKey: ["certificates", "trusted-organizations"],
         queryFn: async () => {
             const data = await CertificateAPI.listTrustedOrganizations();
-            return data.trusted_organizations || [];
+            return data.trusted_organizations.sort((a, b) => a.localeCompare(b)) || [];
+        },
+    }),
+}
+
+export const articleQueries = {
+    trustedOrganizations: () => queryOptions({
+        queryKey: ["articles", "trusted-organizations"],
+        queryFn: async () => {
+            const data = await ArticleAPI.listTrustedOrganizations();
+            return data.sort((a, b) => a.localeCompare(b)) || [];
         },
     }),
 }

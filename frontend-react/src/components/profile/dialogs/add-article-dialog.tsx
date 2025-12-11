@@ -16,7 +16,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { certificateQueries } from "@/services/react-query/queries";
+import { articleQueries } from "@/services/react-query/queries";
 
 // Zod validation schema
 const articleSchema = z.object({
@@ -92,7 +92,7 @@ export const AddArticleDialog = ({ open, onOpenChange, onAddArticle, isPending =
 
     const [selectedOrg, setSelectedOrg] = useState<string>("");
 
-    const trustedOrgsQuery = useQuery(certificateQueries.trustedOrganizations());
+    const trustedOrgsQuery = useQuery(articleQueries.trustedOrganizations());
     const trustedOrganizations = trustedOrgsQuery.data ?? [];
 
     // Reset form when dialog closes
