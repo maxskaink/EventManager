@@ -4,10 +4,19 @@ import { Input } from "../../ui/input";
 import { Label } from "../../ui/label";
 import { Textarea } from "../../ui/textarea";
 import { CheckCircle2, Loader2 } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../../ui/select";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useEffect } from "react";
+import { useCallback, useEffect, useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { certificateQueries } from "@/services/react-query/queries";
 
 // Zod validation schema
 const articleSchema = z.object({
@@ -68,6 +77,9 @@ export const EditArticleDialog = ({ open, onOpenChange, onEditArticle, isPending
     handleSubmit,
     formState: { errors },
     reset,
+    setValue,
+    setError,
+    clearErrors,
   } = useForm<ArticleFormData>({
     resolver: zodResolver(articleSchema),
     defaultValues: {
@@ -79,6 +91,39 @@ export const EditArticleDialog = ({ open, onOpenChange, onEditArticle, isPending
     },
   });
 
+  const [selectedOrg, setSelectedOrg] = useState<string>("");
+
+  const trustedOrgsQuery = useQuery(certificateQueries.trustedOrganizations());
+  const trustedOrganizations = useMemo(() => trustedOrgsQuery.data ?? [], [trustedOrgsQuery.data]);
+
+  const matchSelectedOrg = useCallback((url: string) => {
+    if (!url) {
+      setSelectedOrg("");
+      return;
+    }
+    try {
+      // const urlToCheck = /^https?:\/\//i.test(url) ? url : `https://${url}`;
+      // new URL(urlToCheck);
+
+      const matched = trustedOrganizations.find((org) => url.toLowerCase().includes(org.toLowerCase()));
+
+      if (matched) {
+        setSelectedOrg(matched);
+        clearErrors("publicationUrl");
+      } else {
+        setSelectedOrg("");
+        /*
+        setError("publicationUrl", {
+          type: "manual",
+          message: "La organización no está en la lista de confianza",
+        });
+        */
+      }
+    } catch {
+      // Invalid URL, let Zod handle it
+    }
+  }, [trustedOrganizations, clearErrors]);
+
   // Update form when article changes
   useEffect(() => {
     if (article && open) {
@@ -89,8 +134,9 @@ export const EditArticleDialog = ({ open, onOpenChange, onEditArticle, isPending
         publicationDate: article.publicationDate,
         publicationUrl: article.publicationUrl,
       });
+      matchSelectedOrg(article.publicationUrl || "");
     }
-  }, [article, open, reset]);
+  }, [article, open, reset, matchSelectedOrg]);
 
   const onSubmit = (data: ArticleFormData) => {
     onEditArticle(data);
@@ -161,16 +207,49 @@ export const EditArticleDialog = ({ open, onOpenChange, onEditArticle, isPending
 
           <div>
             <Label htmlFor="edit-article-url">URL de publicación *</Label>
-            <Input
-              id="edit-article-url"
-              type="url"
-              {...register("publicationUrl")}
-              disabled={isPending}
-              className={errors.publicationUrl ? "border-destructive" : ""}
-            />
-            {errors.publicationUrl && (
-              <p className="text-sm text-destructive mt-1">{errors.publicationUrl.message}</p>
-            )}
+            <div className="mt-1 flex items-start gap-2">
+              <Select
+                value={selectedOrg}
+                onValueChange={(value) => {
+                  setSelectedOrg(value);
+                  setValue("publicationUrl", value);
+                  clearErrors("publicationUrl");
+                }}
+              >
+                <SelectTrigger className="w-[140px]">
+                  <SelectValue placeholder="Org." />
+                </SelectTrigger>
+                <SelectContent>
+                  {trustedOrganizations.map((org) => (
+                    <SelectItem key={org} value={org}>
+                      {org}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <div className="flex-1">
+                <Input
+                  id="edit-article-url"
+                  type="text"
+                  {...(() => {
+                    const { onBlur, ...rest } = register("publicationUrl");
+                    return {
+                      ...rest,
+                      onBlur: (e: React.FocusEvent<HTMLInputElement>) => {
+                        onBlur(e);
+                        matchSelectedOrg(e.target.value);
+                      },
+                    };
+                  })()}
+                  disabled={isPending}
+                  className={errors.publicationUrl ? "border-destructive" : ""}
+                  placeholder="Ej: https://ejemplo.com/articulo"
+                />
+                {errors.publicationUrl && (
+                  <p className="text-sm text-destructive mt-1">{errors.publicationUrl.message}</p>
+                )}
+              </div>
+            </div>
           </div>
 
           <div className="flex flex-col-reverse sm:flex-row gap-2 justify-end pt-4">

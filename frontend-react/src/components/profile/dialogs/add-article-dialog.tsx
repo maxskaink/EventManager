@@ -4,10 +4,19 @@ import { Input } from "../../ui/input";
 import { Label } from "../../ui/label";
 import { Textarea } from "../../ui/textarea";
 import { CheckCircle2, Loader2 } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../../ui/select";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { certificateQueries } from "@/services/react-query/queries";
 
 // Zod validation schema
 const articleSchema = z.object({
@@ -68,6 +77,9 @@ export const AddArticleDialog = ({ open, onOpenChange, onAddArticle, isPending =
         handleSubmit,
         formState: { errors },
         reset,
+        setValue,
+        setError,
+        clearErrors,
     } = useForm<ArticleFormData>({
         resolver: zodResolver(articleSchema),
         defaultValues: {
@@ -79,10 +91,16 @@ export const AddArticleDialog = ({ open, onOpenChange, onAddArticle, isPending =
         },
     });
 
+    const [selectedOrg, setSelectedOrg] = useState<string>("");
+
+    const trustedOrgsQuery = useQuery(certificateQueries.trustedOrganizations());
+    const trustedOrganizations = trustedOrgsQuery.data ?? [];
+
     // Reset form when dialog closes
     useEffect(() => {
         if (!open) {
             reset();
+            setSelectedOrg("");
         }
     }, [open, reset]);
 
@@ -153,16 +171,78 @@ export const AddArticleDialog = ({ open, onOpenChange, onAddArticle, isPending =
 
                     <div>
                         <Label htmlFor="article-url">URL de publicación</Label>
-                        <Input
-                            id="article-url"
-                            type="url"
-                            {...register("publicationUrl")}
-                            disabled={isPending}
-                            className={errors.publicationUrl ? "border-destructive" : ""}
-                        />
-                        {errors.publicationUrl && (
-                            <p className="text-sm text-destructive mt-1">{errors.publicationUrl.message}</p>
-                        )}
+                        <div className="flex gap-2 items-start mt-1">
+                            <Select
+                                value={selectedOrg}
+                                onValueChange={(value) => {
+                                    setSelectedOrg(value);
+                                    setValue("publicationUrl", value);
+                                }}
+                            >
+                                <SelectTrigger className="w-[140px]">
+                                    <SelectValue placeholder="Org." />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {trustedOrganizations.map((org) => (
+                                        <SelectItem key={org} value={org}>
+                                            {org}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <div className="flex-1">
+                                <Input
+                                    id="article-url"
+                                    type="text"
+                                    {...(() => {
+                                        const { onBlur, ...rest } = register("publicationUrl");
+                                        return {
+                                            ...rest,
+                                            onBlur: (e: React.FocusEvent<HTMLInputElement>) => {
+                                                onBlur(e);
+                                                const val = e.target.value;
+                                                
+                                                if (!val) {
+                                                    setSelectedOrg("");
+                                                    return;
+                                                }
+
+                                                try {
+                                                    // const urlToCheck = /^https?:\/\//i.test(val) ? val : `https://${val}`;
+                                                    // new URL(urlToCheck);
+                                                    
+                                                    const matched = trustedOrganizations.find((org) =>
+                                                        val.toLowerCase().includes(org.toLowerCase())
+                                                    );
+                                                    
+                                                    if (matched) {
+                                                        setSelectedOrg(matched);
+                                                        clearErrors("publicationUrl");
+                                                    } else {
+                                                        setSelectedOrg("");
+                                                        // Optional: Validate if it must be a trusted org
+                                                        /*
+                                                        setError("publicationUrl", {
+                                                            type: "manual",
+                                                            message: "La organización no está en la lista de confianza"
+                                                        });
+                                                        */
+                                                    }
+                                                } catch {
+                                                    // Invalid URL, let Zod schema handle it or ignore
+                                                }
+                                            },
+                                        };
+                                    })()}
+                                    disabled={isPending}
+                                    className={errors.publicationUrl ? "border-destructive" : ""}
+                                    placeholder="Ej: https://ejemplo.com/articulo"
+                                />
+                                {errors.publicationUrl && (
+                                    <p className="text-sm text-destructive mt-1">{errors.publicationUrl.message}</p>
+                                )}
+                            </div>
+                        </div>
                     </div>
 
                     <div className="flex flex-col-reverse sm:flex-row gap-2 justify-end pt-4">
