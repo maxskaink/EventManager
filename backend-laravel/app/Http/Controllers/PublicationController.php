@@ -102,7 +102,11 @@ class PublicationController extends Controller
      */
     public function listPublishedPublications(): JsonResponse
     {
-        $user = request()->user();
+        // Try to get authenticated user via Sanctum token
+        $user = \Laravel\Sanctum\PersonalAccessToken::findToken(
+            request()->bearerToken()
+        )?->tokenable;
+        
         $perPage = request()->input('per_page', 15);
 
         // Public endpoint — no policy needed, service handles visibility logic
@@ -119,7 +123,19 @@ class PublicationController extends Controller
      */
     public function listFilteredPublications(FilterPublicationRequest $request): JsonResponse
     {
-        $user = request()->user();
+        // Try to get authenticated user via Sanctum token
+        $user = \Laravel\Sanctum\PersonalAccessToken::findToken(
+            request()->bearerToken()
+        )?->tokenable;
+        
+        // DEBUG: Log user information
+        \Log::info('PublicationController::listFilteredPublications - User info', [
+            'user_is_null' => $user === null,
+            'user_id' => $user?->id,
+            'user_role' => $user?->role,
+            'has_auth_header' => request()->hasHeader('Authorization'),
+        ]);
+        
         $data = $request->validated();
         $perPage = $data['per_page'] ?? 15;
 
@@ -204,6 +220,21 @@ class PublicationController extends Controller
         return response()->json([
             'message' => 'Interests added successfully.',
             'interests' => $addedInterests,
+        ]);
+    }
+
+    /**
+     * Get all interests associated with a publication.
+     *
+     * @param int $publicationId The ID of the publication.
+     * @return JsonResponse A list of interests.
+     */
+    public function getPublicationInterests(int $publicationId): JsonResponse
+    {
+        $interests = $this->publicationService->getPublicationInterests($publicationId);
+
+        return response()->json([
+            'interests' => $interests,
         ]);
     }
 
@@ -365,4 +396,7 @@ class PublicationController extends Controller
         ]);
     }
 
+
+
 }
+
