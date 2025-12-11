@@ -132,7 +132,7 @@ class ArticleService implements ArticleServiceInterface
         }
 
         // Check if the domain matches a trusted organization from database
-        $trustedOrgs = TrustedOrg::trustedForPublication()->pluck('org');
+        $trustedOrgs = TrustedOrg::trustedForArticle()->pluck('org');
         $isTrusted = $trustedOrgs->contains(fn($trusted) => Str::endsWith($domain, $trusted));
 
         if (!$isTrusted) {
@@ -198,6 +198,6 @@ class ArticleService implements ArticleServiceInterface
      */
     public function getAllTrustedOrganizations(): array
     {
-        return TrustedOrg::trustedForPublication()->pluck('org')->toArray();
+        return TrustedOrg::trustedForArticle()->pluck('org')->toArray();
     }
 }
