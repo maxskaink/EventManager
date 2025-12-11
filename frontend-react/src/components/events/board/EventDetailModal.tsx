@@ -117,7 +117,7 @@ export function EventDetailModal({ isOpen, onOpenChange, item }: Props) {
 
             {/* Location / Modality */}
             {(item.location || isEvent) && (
-              <div className="flex items-start gap-3">
+              <div className="flex items-start gap-3 overflow-hidden">
                  <div className="p-2.5 bg-background rounded-lg border shadow-sm text-primary">
                    {isVirtual ? <Monitor className="h-5 w-5" /> : <MapPin className="h-5 w-5" />}
                  </div>

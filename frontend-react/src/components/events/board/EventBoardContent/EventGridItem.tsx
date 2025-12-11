@@ -99,7 +99,7 @@ const EventGridItem = ({
                   </DropdownMenuItem>
                 )}
                 {/* Share Option - Only for draft publications */}
-                {item.kind === 'publication' && item.status === 'borrador' && (
+                {item.kind === "publication" && (
                   <DropdownMenuItem onClick={() => onSharePublication(item)} className="cursor-pointer">
                     <Share2 className="h-4 w-4 mr-2" /> Compartir Acceso
                   </DropdownMenuItem>

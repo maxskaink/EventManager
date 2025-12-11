@@ -74,24 +74,11 @@ async function revokePublicationAccess(publicationId: number, userIds: number[] 
 }
 
 // MOCK: Get access list (simulated)
-async function getPublicationAccess(publicationId: number) {
-
-
-  // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 500));
-  
-  // Return fake data based on ID to be consistent but varied
-  const mockUsers = [
-    { id: 101, name: "Juan Pérez", email: "juan@example.com", role: "mentor", avatar: null as string | null },
-    { id: 102, name: "Maria Garcia", email: "maria@example.com", role: "coordinator", avatar: null as string | null },
-    { id: 103, name: "Carlos Lopez", email: "carlos@example.com", role: "member", avatar: null as string | null },
-  ];
-
-  if (publicationId % 2 === 0) {
-    return { users: mockUsers, roles: ["mentor"] };
-  } else {
-    return { users: [mockUsers[0]], roles: [] };
-  }
+async function getPublicationAccessUsers(publicationId: number) {
+  const response = await axiosInstance.get<{
+    users: API.User[];
+  }>(`/publication/${publicationId}/access/users`);
+  return response.data;
 }
 
 export default {
@@ -108,5 +95,5 @@ export default {
   removePublicationInterests,
   revokePublicationAccess,
   listPublicationsByFilters,
-  getPublicationAccess
+  getPublicationAccessUsers,
 };

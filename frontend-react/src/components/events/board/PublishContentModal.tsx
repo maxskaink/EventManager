@@ -1,12 +1,13 @@
 import React, { useState, useEffect, type FormEvent } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "../../ui/dialog";
+import { Alert, AlertDescription } from "../../ui/alert";
 import { Button } from "../../ui/button";
 import { Input } from "../../ui/input";
 import { Label } from "../../ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../ui/select";
 import { Textarea } from "../../ui/textarea";
 import { toast } from "sonner";
-import { ImagePlus, X, Loader2 } from "lucide-react";
+import { ImagePlus, X, Loader2, Info } from "lucide-react";
 // Asumiendo que ContentItem y la API están en estas rutas
 import {
   // Una lista con todos los estados de anuncio
@@ -250,6 +251,16 @@ export function PublishContentModal({ isOpen, onOpenChange, item, onPublish }: P
                     </SelectContent>
                   </Select>
                 </div>
+                {visibility === "private" && (
+                  <div className="col-span-3">
+                    <Alert className="bg-blue-50 text-blue-800 border-blue-200">
+                      <Info className="h-4 w-4" />
+                      <AlertDescription>
+                        Al establecer la visibilidad como <strong>Privada</strong>, deberá configurar los permisos de acceso en las opciones de la publicación (Compartir).
+                      </AlertDescription>
+                    </Alert>
+                  </div>
+                )}
               </div>
             </div>
           </div>

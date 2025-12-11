@@ -17,6 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ImagePlus, ArrowLeft, Info } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { getErrorMessageForToast } from "@/features/errors/error.helpers";
 
 export function CreatePublicationPage() {
@@ -179,6 +180,15 @@ export function CreatePublicationPage() {
                   </Select>
                 </div>
               </div>
+
+              {formData.visibility === "private" && (
+                <Alert className="bg-blue-50 text-blue-800 border-blue-200">
+                  <Info className="h-4 w-4" />
+                  <AlertDescription>
+                    Al establecer la visibilidad como <strong>Privada</strong>, deberá configurar los permisos de acceso en las opciones de la publicación (Compartir).
+                  </AlertDescription>
+                </Alert>
+              )}
 
               {/* Estado */}
               <div className="space-y-2">

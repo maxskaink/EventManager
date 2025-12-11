@@ -36,7 +36,7 @@ export const translatePublicationVisibility = (visibility: API.PublicationVisibi
         case "public":
             return "Público";
         case "private":
-            return "Privado";
+            return "Restringido (Por permisos)";
         case "role_based":
             return "Role-based";
         default:

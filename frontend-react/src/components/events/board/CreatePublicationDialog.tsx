@@ -4,11 +4,12 @@ import { Input } from "../../ui/input";
 import { Label } from "../../ui/label";
 import { Textarea } from "../../ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../ui/select";
-import { CheckCircle2, Loader2, ImagePlus, X } from "lucide-react";
+import { CheckCircle2, Loader2, ImagePlus, X, Info } from "lucide-react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useEffect, useState } from "react";
+import { Alert, AlertDescription } from "../../ui/alert";
 
 // Zod validation schema for simple publications (non-event)
 const publicationSchema = z.object({
@@ -52,6 +53,7 @@ export const CreatePublicationDialog = ({
     control,
     formState: { errors },
     reset,
+    watch,
   } = useForm<PublicationFormData>({
     resolver: zodResolver(publicationSchema),
     defaultValues: {
@@ -63,6 +65,8 @@ export const CreatePublicationDialog = ({
       status: "activo",
     },
   });
+
+  const visibility = watch("visibility");
 
   // Reset form when dialog closes
   useEffect(() => {
@@ -240,6 +244,15 @@ export const CreatePublicationDialog = ({
               />
             </div>
           </div>
+
+          {visibility === "private" && (
+            <Alert className="bg-blue-50 text-blue-800 border-blue-200">
+              <Info className="h-4 w-4" />
+              <AlertDescription>
+                Al establecer la visibilidad como <strong>Privada</strong>, deberá configurar los permisos de acceso en las opciones de la publicación (Compartir).
+              </AlertDescription>
+            </Alert>
+          )}
 
           <div className="w-full">
             <Label>Imagen (opcional)</Label>

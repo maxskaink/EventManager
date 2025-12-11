@@ -4,12 +4,13 @@ import { Input } from "../../ui/input";
 import { Label } from "../../ui/label";
 import { Textarea } from "../../ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../ui/select";
-import { CheckCircle2, Loader2, ImagePlus, X, AlertCircle } from "lucide-react";
+import { CheckCircle2, Loader2, ImagePlus, X, AlertCircle, Info } from "lucide-react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useEffect, useState } from "react";
 import { Alert, AlertDescription } from "../../ui/alert";
+import { PUBLICATION_VISIBILITIES, translatePublicationVisibility } from "@/features/events";
 
 const publicationSchema = z.object({
   title: z.string()
@@ -54,9 +55,12 @@ export const EditPublicationDialog = ({
     control,
     formState: { errors },
     reset,
+    watch,
   } = useForm<PublicationFormData>({
     resolver: zodResolver(publicationSchema),
   });
+
+  const visibility = watch("visibility");
 
   // Reset form when dialog opens with publication data
   useEffect(() => {
@@ -236,14 +240,23 @@ export const EditPublicationDialog = ({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="public">Pública</SelectItem>
-                    <SelectItem value="private">Privada</SelectItem>
-                    <SelectItem value="role_based">Por Rol</SelectItem>
+                    {PUBLICATION_VISIBILITIES.map(value =>(
+                      <SelectItem key={value} value={value}>{translatePublicationVisibility(value)}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               )}
             />
           </div>
+
+          {visibility === "private" && (
+            <Alert className="bg-blue-50 text-blue-800 border-blue-200">
+              <Info className="h-4 w-4" />
+              <AlertDescription>
+                Al establecer la visibilidad como <strong>Privada</strong>, deberá configurar los permisos de acceso en las opciones de la publicación (Compartir).
+              </AlertDescription>
+            </Alert>
+          )}
 
           <div className="w-full">
             <Label>Imagen (opcional)</Label>

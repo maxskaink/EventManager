@@ -136,6 +136,9 @@ export const mapPublicationsToContentItems = (
       status: pub.status,
       views: 0,
       original: pub,
+      location: pub.event?.location ?? pub.event?.virtual_url ?? "",
+      capacity: pub.event?.capacity ?? 0,
+      enrolled: pub.event?.enrolled_participants ?? 0,
       kind: 'publication' as const,
     };
   });
