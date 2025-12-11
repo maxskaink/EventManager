@@ -3,20 +3,14 @@
 use App\Http\Controllers\PublicationController;
 use Illuminate\Support\Facades\Route;
 
-// Rutas públicas sin autenticación requerida
-Route::get('publication/active', [PublicationController::class, 'listPublishedPublications']);
-Route::get('publication/filter', [PublicationController::class, 'listFilteredPublications']);
-Route::get('publication/{publicationId}/interests', [PublicationController::class, 'getPublicationInterests']);
-Route::get('publication/{publicationId}', [PublicationController::class, 'getPublicationById']);
-
-// Rutas protegidas
+// Rutas protegidas - deben ir PRIMERO para que las rutas específicas como 'all' y 'draft' no sean confundidas con parámetros
 Route::middleware('auth:sanctum')->prefix('publication')->group(function () {
     Route::post('/', [PublicationController::class, 'addPublication']);
     Route::post('/event/{eventId}', [PublicationController::class, 'addEventPublication']);
+    
+    // Rutas específicas ANTES de rutas con parámetros dinámicos
     Route::get('/all', [PublicationController::class, 'listAllPublications']);
     Route::get('/draft', [PublicationController::class, 'listDraftPublications']);
-
-
 
     Route::patch('{publicationId}', [PublicationController::class, 'updatePublication']);
     Route::delete('{publicationId}', [PublicationController::class, 'deletePublication']);
@@ -29,3 +23,10 @@ Route::middleware('auth:sanctum')->prefix('publication')->group(function () {
     Route::delete('{publicationId}/access/revoke', [PublicationController::class, 'revokePublicationAccess']);
     Route::get('{publicationId}/access/users', [PublicationController::class, 'getUsersWithAccess']);
 });
+
+// Rutas públicas sin autenticación requerida - DESPUÉS de las protegidas
+Route::get('publication/active', [PublicationController::class, 'listPublishedPublications']);
+Route::get('publication/filter', [PublicationController::class, 'listFilteredPublications']);
+Route::get('publication/{publicationId}/interests', [PublicationController::class, 'getPublicationInterests']);
+Route::get('publication/{publicationId}', [PublicationController::class, 'getPublicationById']);
+
