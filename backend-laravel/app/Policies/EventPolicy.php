@@ -133,7 +133,7 @@ class EventPolicy
      */
     public function listParticipationsByEvent(User $user, Event $event): bool
     {
-        return $user->role !== 'interested';
+        return true;
     }
 
     /**
@@ -146,6 +146,6 @@ class EventPolicy
      */
     public function listParticipationsByUser(User $authUser, int $userId): bool
     {
-        return $authUser->role !== 'interested';
+        return true;
     }
 }
