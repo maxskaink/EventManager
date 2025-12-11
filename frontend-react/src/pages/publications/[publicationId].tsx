@@ -50,10 +50,7 @@ const PublicationDetailPage = () => {
           setPublicationInterests(relevantInterests);
 
           if (pub.type === "evento" && pub.event_id) {
-            const eventData = await EventAPI.getEventById(pub.event_id);
-            setEvent(eventData);
-
-            // Check enrollment if user is logged in
+            setEvent(pub.event);
             checkEnrollement(pub);
           }
         } catch (error) {

@@ -66,7 +66,7 @@ export const publicationToContentItem = (publication: API.Publication): ContentI
         item.date = associatedEvent.start_date.split("T")[0];
         item.time = associatedEvent.start_date.split("T")[1]?.substring(0, 5);
         item.location = associatedEvent.location || associatedEvent.modality;
-        item.capacity = associatedEvent.capacity || 0;
+        item.capacity = associatedEvent.capacity ?? undefined;
         item.eventId = associatedEvent.id.toString();
         item.original = { ...publication, ...associatedEvent, image_url: publication.image_url };
     }
