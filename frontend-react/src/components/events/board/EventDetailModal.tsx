@@ -2,7 +2,6 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Button } from "../../ui/button";
 import { Badge } from "../../ui/badge";
 import { Progress } from "../../ui/progress";
-import { Separator } from "../../ui/separator";
 import { 
   Info, 
   Eye, 
@@ -51,9 +50,16 @@ export function EventDetailModal({ isOpen, onOpenChange, item }: Props) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto p-0 gap-0">
-        <DialogHeader className="p-6 pb-4 md:p-8 md:pb-6 space-y-4">
-          <div className="flex flex-wrap gap-2 items-center">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>
+            {item.title}
+          </DialogTitle>
+          <DialogDescription>
+            Detalle del evento
+          </DialogDescription>
+        </DialogHeader>
+        <div className="flex flex-wrap gap-2 items-center">
             <Badge className={cn("px-2.5 py-0.5", getTypeColor(item.type))}>
               {item.type.toUpperCase()}
             </Badge>
@@ -66,16 +72,10 @@ export function EventDetailModal({ isOpen, onOpenChange, item }: Props) {
               {getStatusLabel(item.status)}
             </Badge>
           </div>
-          <DialogTitle className="text-2xl md:text-3xl font-bold leading-tight text-foreground">
-            {item.title}
-          </DialogTitle>
-        </DialogHeader>
-        
-        <Separator />
 
-        <div className="p-6 md:p-8 space-y-8">
+        <div className="space-y-6 pt-2">
           {/* Description Section */}
-          <div className="space-y-3">
+          <div className="space-y-2">
              <div className="flex items-center gap-2 text-primary font-medium">
                <Info className="h-5 w-5" />
                <h3>Descripción</h3>
@@ -86,9 +86,9 @@ export function EventDetailModal({ isOpen, onOpenChange, item }: Props) {
           </div>
 
           {/* Details Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-5 bg-muted/40 rounded-xl border border-border/50">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-muted/40 rounded-xl border border-border/50">
             {/* Date */}
-            <div className="flex items-start gap-4">
+            <div className="flex items-start gap-3">
                <div className="p-2.5 bg-background rounded-lg border shadow-sm text-primary">
                  <CalendarDays className="h-5 w-5" />
                </div>
@@ -104,7 +104,7 @@ export function EventDetailModal({ isOpen, onOpenChange, item }: Props) {
 
             {/* Time */}
             {item.time && (
-              <div className="flex items-start gap-4">
+              <div className="flex items-start gap-3">
                  <div className="p-2.5 bg-background rounded-lg border shadow-sm text-primary">
                    <Clock className="h-5 w-5" />
                  </div>
@@ -119,7 +119,7 @@ export function EventDetailModal({ isOpen, onOpenChange, item }: Props) {
 
             {/* Location / Modality */}
             {(item.location || isEvent) && (
-              <div className="flex items-start gap-4">
+              <div className="flex items-start gap-3">
                  <div className="p-2.5 bg-background rounded-lg border shadow-sm text-primary">
                    {isVirtual ? <Monitor className="h-5 w-5" /> : <MapPin className="h-5 w-5" />}
                  </div>
@@ -141,7 +141,7 @@ export function EventDetailModal({ isOpen, onOpenChange, item }: Props) {
 
              {/* Event Specific: Capacity */}
              {isEvent && (
-              <div className="flex items-start gap-4 col-span-1 md:col-span-2">
+              <div className="flex items-start gap-3 col-span-1 md:col-span-2">
                  <div className="p-2.5 bg-background rounded-lg border shadow-sm text-primary">
                    <Users className="h-5 w-5" />
                  </div>
@@ -165,7 +165,7 @@ export function EventDetailModal({ isOpen, onOpenChange, item }: Props) {
 
             {/* Publication Specific: Views */}
             {!isEvent && item.views !== undefined && (
-              <div className="flex items-start gap-4">
+              <div className="flex items-start gap-3">
                  <div className="p-2.5 bg-background rounded-lg border shadow-sm text-primary">
                    <Eye className="h-5 w-5" />
                  </div>
@@ -193,24 +193,11 @@ export function EventDetailModal({ isOpen, onOpenChange, item }: Props) {
           </div>
         </div>
 
-        <Separator />
-
-        <DialogFooter className="p-6 md:p-8 bg-muted/20 gap-3">
-          <Button variant="outline" size="lg" onClick={() => onOpenChange(false)} className="w-full sm:w-auto">
+        <DialogFooter className="gap-2 sm:gap-0">
+          <Button variant="outline" size="default" onClick={() => onOpenChange(false)} className="w-full sm:w-auto">
             Cerrar
           </Button>
-          {isEvent && (
-            <Button
-              size="lg"
-              className="w-full sm:w-auto shadow-sm"
-              onClick={() => {
-                toast.info("Para gestionar inscripciones, ve al detalle completo del evento.");
-              }}
-              // Could link to a full edit page or enrollment management dialog here
-            >
-              Gestionar Inscripciones
-            </Button>
-          )}
+          
         </DialogFooter>
       </DialogContent>
     </Dialog>
