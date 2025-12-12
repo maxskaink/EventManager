@@ -40,24 +40,26 @@ export function GuestDashboard() {
       {/* Header Personalizado */}
       <HideOnScrollWrapper>
         <UnifiedHeader
-        leftImage
-        title={`Panel de ${translateUserRole(user?.role ?? "")}`}
-        subtitle="Explora nuestros eventos y actividades"
-        user={user}
+          leftImage
+          title={`Panel de ${translateUserRole(user?.role ?? "")}`}
+          subtitle="Explora nuestros eventos y actividades"
+          user={user}
         />
       </HideOnScrollWrapper>
 
       {/* Logout Confirmation Dialog */}
-      <LogoutConfirmDialog 
-      open={showLogoutConfirm}
-      onOpenChange={setShowLogoutConfirm}
-      onConfirm={logout}
+      <LogoutConfirmDialog
+        open={showLogoutConfirm}
+        onOpenChange={setShowLogoutConfirm}
+        onConfirm={logout}
       />
 
       <div className="mx-auto max-w-6xl space-y-8 px-4 py-8">
         {/* Welcome Banner */}
-        <div className="rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 p-8 text-white shadow-lg">
-          <h2 className="text-3xl font-bold mb-2">¡Bienvenido, {user?.name?.split(" ")[0]}!</h2>
+        <div className="rounded-xl bg-linear-to-r from-blue-600 to-blue-700 p-8 text-white shadow-lg">
+          <h2 className="text-3xl font-bold mb-2">{
+            user ? `¡Bienvenido(a), ${user.name.split(" ")[0]}!` : "¡Bienvenido(a)!"
+          }</h2>
           <p className="text-blue-100">Descubre eventos y actividades en el semillero</p>
         </div>
 
