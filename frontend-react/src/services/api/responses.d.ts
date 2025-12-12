@@ -2,23 +2,43 @@
  * @file responses.d.ts
  * This file is used to define all the responses from the api
  */
-
-// --- PAYLOADS ---
-namespace Payloads {
-  type UpdateProfile = Partial<Pick<API.Profile, 'university' | 'academic_program' | 'phone'>>;
-  type AddEvent = Omit<API.Event, 'id' | 'created_at' | 'updated_at'>;
-  type AddCertificate = Omit<API.Certificate, 'id' | 'deleted' | 'created_at' | 'updated_at'>;
-  type UpdateCertificate = Partial<Omit<AddCertificate, 'user_id'>>;
-  type AddArticle = Omit<API.Article, 'id' | 'created_at' | 'updated_at'>;
-  type UpdateArticle = Partial<AddArticle>;
+type PaginatedResponse<T> = {
+  current_page: number;
+  data: T[];
+  first_page_url: string;
+  from: number;
+  last_page: number;
+  last_page_url: string;
+  links: {
+    url: string | null;
+    label: string;
+    page: null | number;
+    active: boolean;
+  }[];
+  next_page_url: string | null;
+  path: string;
+  per_page: number;
+  prev_page_url: string | null;
+  to: number;
+  total: number;
 }
 
-
-// --- RESPONSES ---
 type MessageRes = {
   message: string;
 }
 
+interface SuccessResponse<T> {
+  data: T;
+  message?: string;
+}
+
+interface ErrorResponse {
+  message: string;
+  error?: string;
+  errors?: Record<string, string[]>; // Para errores de validación de Laravel
+}
+
+// --- RESPONSES ---
 namespace AuthAPI {
   type GoogleAuthUrlRes = {
     url: string;
@@ -34,38 +54,92 @@ namespace UserAPI {
     user: API.User;
   }
   type ListUsersRes = API.User[];
+  type ListUsersPaginatedRes = PaginatedResponse<API.User>;
+
+  type ListUsersFilters = {
+    search?: string;
+    role?: string;
+    status?: string;
+    page?: number;
+    per_page?: number;
+  }
 }
 
 namespace ProfileAPI {
-    type GetProfileRes = {
-        profile: API.Profile
-    }
-    type UpdateProfileRes = {
-        message: string;
-        profile: API.Profile
-    }
+  type GetProfileRes = {
+    profile: API.Profile
+  }
+  type UpdateProfileRes = {
+    message: string;
+    profile: API.Profile
+  }
+
+  type AddInterestRes = {
+    message: string;
+    interests: API.ProfileInterest[];
+  }
+
 }
 
 namespace EventAPI {
-    type ListEventsRes = API.Event[];
+  type ListEventsRes = API.Event[];
+
+  type MutateParticipationRes = {
+    message: string;
+    participation: API.EventParticipation;
+  }
+
+  type ListParticipationsRes = {
+    participations: API.EventParticipation[];
+  }
+
+  type MarkAttendanceRes = {
+    message: string;
+    results: { [string]: string };
+  }
 }
 
 namespace CertificateAPI {
-    type ListCertificatesRes = {
-        certificates: API.Certificate[];
-    }
-    type UpdateCertificateRes = {
-        message: string;
-        certificate: API.Certificate;
-    }
+  type ListCertificatesRes = {
+    certificates: API.Certificate[];
+  }
+  type UpdateCertificateRes = {
+    message: string;
+    certificate: API.Certificate;
+  }
 }
 
 namespace ArticleAPI {
-    type ArticleRes = {
-        message: string;
-        article: API.Article;
-    }
-    type ListArticlesRes = {
-        articles: API.Article[];
-    }
+  type ArticleRes = {
+    message: string;
+    article: API.Article;
+  }
+  type ListArticlesRes = {
+    articles: API.Article[];
+  }
+
+  type ListTrustedOrgsRes =  {
+    trusted_organizations: string[];
+  }
+
+}
+
+namespace PublicationAPI {
+  type ListPublicationsRes = {
+    publications: PaginatedResponse<API.Publication>;
+  }
+
+  type ListInterestsRes = {
+    interests: API.PublicationInterest[];
+  }
+
+  type ListPublicationsFilters = {
+    search?: string;
+    date_from?: string;
+    date_to?: string;
+    type?: API.PublicationType;
+    status?: string;
+    page?: number;
+    per_page?: number;
+  }
 }

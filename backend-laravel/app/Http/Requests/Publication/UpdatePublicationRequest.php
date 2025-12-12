@@ -1,13 +1,17 @@
 <?php
-
 namespace App\Http\Requests\Publication;
 
 use App\Models\User;
-use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdatePublicationRequest extends FormRequest
 {
+    /**
+     * Determine if the user is authorized to make this request.
+     *
+     * @return bool
+     */
     public function authorize(): bool
     {
         /** @var User|null $user */
@@ -15,36 +19,45 @@ class UpdatePublicationRequest extends FormRequest
 
         return $user && ($user->getRoleAttribute() === 'mentor' || $user->getRoleAttribute() === 'coordinator');
     }
+
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, ValidationRule|array|string>
+     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
+        $publicationId = $this->route('publicationId'); // Matches route parameter name
+
         return [
-            'author_id' => ['sometimes', 'integer', 'exists:users,id'],
-            'title' => ['sometimes', 'string', 'max:255'],
+            'title' => [
+                'sometimes',
+                'string',
+                'max:255',
+                Rule::unique('publications', 'title')->ignore($publicationId),
+            ],
             'content' => ['sometimes', 'string'],
             'type' => ['sometimes', 'string', 'in:articulo,aviso,comunicado,material,evento'],
-            'published_at' => ['sometimes', 'date'],
             'status' => ['sometimes', 'string', 'in:activo,inactivo,borrador,pendiente'],
-            'image_url' => ['nullable', 'string', 'url', 'max:255'],
             'summary' => ['nullable', 'string', 'max:1000'],
-            'visibility' => ['sometimes', 'string', 'in:public,private'],
+            'visibility' => ['sometimes', 'string', 'in:public,private']
         ];
     }
 
     /**
-     * Custom validation messages.
+     * Get custom messages for validator errors.
+     *
+     * @return array<string, string>
      */
     public function messages(): array
     {
         return [
-            'author_id.exists' => 'The selected author does not exist.',
             'status.in' => 'The status must be one of: activo, inactivo, borrador, or pendiente.',
             'visibility.in' => 'The visibility must be either public or private.',
-            'image_url.url' => 'The image URL must be a valid URL.',
+            'image.image' => 'The uploaded file must be an image.',
+            'image.mimes' => 'The image must be a file of type: jpeg, png, or webp.',
+            'image.max' => 'The image size must not exceed 2MB.',
+            'title.unique' => 'The title provided already exists.',
         ];
     }
 }

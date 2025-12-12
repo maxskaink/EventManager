@@ -52,32 +52,20 @@ return Application::configure(basePath: dirname(__DIR__))
             );
         });
 
-        $exceptions->render(function (
-            InvalidActionException $e,
-            Request $request,
-        ) {
-            // ✅ Added
-            return response()->json(
-                [
-                    "error" => class_basename($e),
-                    "message" => $e->getMessage(),
-                ],
-                400,
-            );
+        $exceptions->render(function (InvalidActionException $e, Request $request) { // ✅ Added
+            return response()->json([
+                'error' => class_basename($e),
+                'message' => $e->getMessage(),
+            ], 409);
         });
 
-        $exceptions->render(function (
-            ValidationException $e,
-            Request $request,
-        ) {
-            return response()->json(
-                [
-                    "error" => class_basename($e),
-                    "message" => $e->getMessage(),
-                    "errors" => $e->errors(),
-                ],
-                422,
-            );
+
+        $exceptions->render(function (ValidationException $e, Request $request) {
+            return response()->json([
+                'error' => class_basename($e),
+                'message' => $e->getMessage(),
+                'errors' => $e->errors(),
+            ], 422);
         });
 
         $exceptions->render(function (

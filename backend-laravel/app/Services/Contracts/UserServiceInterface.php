@@ -3,6 +3,7 @@
 namespace App\Services\Contracts;
 
 use App\Models\User;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 
 interface UserServiceInterface
@@ -17,32 +18,34 @@ interface UserServiceInterface
     public function toggleRole(int $userID, string $newRole): string;
 
     /**
+     * List users based on filters.
+     *
+     * @param array $filters
+     * @param int $perPage
+     * @return LengthAwarePaginator<int, User>
+     */
+    public function listFilteredUsers(array $filters, int $perPage = 15): LengthAwarePaginator;
+
+    /**
+     * List inactive (soft-deleted) users.
+     *
+     * @param int $perPage
+     * @return LengthAwarePaginator<int, User>
+     */
+    public function listInactiveUsers(int $perPage = 15): LengthAwarePaginator;
+
+    /**
+     * List all active users.
+     *
      * @return Collection<int, User>
      */
     public function listActiveUsers(): Collection;
 
     /**
-     * @return Collection<int, User>
+     * Get a specific user by ID.
+     *
+     * @param int $userId
+     * @return User
      */
-    public function listActiveInterested(): Collection;
-
-    /**
-     * @return Collection<int, User>
-     */
-    public function listActiveMembers(): Collection;
-
-    /**
-     * @return Collection<int, User>
-     */
-    public function listActiveCoordinators(): Collection;
-
-    /**
-     * @return Collection<int, User>
-     */
-    public function listActiveMentors(): Collection;
-
-    /**
-     * @return Collection<int, User>
-     */
-    public function listInactiveUsers(): Collection;
+    public function getUserById(int $userId): User;
 }

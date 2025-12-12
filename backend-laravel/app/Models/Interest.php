@@ -40,6 +40,8 @@ class Interest extends Model
 
     /**
      * Get a string representation of this interest.
+     *
+     * @return string
      */
     public function __toString(): string
     {

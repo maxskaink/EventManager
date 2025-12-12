@@ -4,23 +4,31 @@ namespace App\Services\Implementations;
 
 use App\Exceptions\DuplicatedResourceException;
 use App\Models\Article;
+use App\Models\TrustedOrg;
 use App\Models\User;
+use App\Repositories\Contracts\ArticleRepositoryInterface;
 use App\Services\Contracts\ArticleServiceInterface;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Str;
 use InvalidArgumentException;
 
 class ArticleService implements ArticleServiceInterface
 {
+    protected ArticleRepositoryInterface $articleRepository;
+
+    public function __construct(ArticleRepositoryInterface $articleRepository)
+    {
+        $this->articleRepository = $articleRepository;
+    }
+
     /**
-     * Create and store a new article for a user.
-     *
-     * @param array $data
-     * @return Article
+     * {@inheritDoc}
      *
      * @throws DuplicatedResourceException
      * @throws ModelNotFoundException
+     * @throws InvalidArgumentException
      */
     public function addArticle(array $data): Article
     {
@@ -30,11 +38,10 @@ class ArticleService implements ArticleServiceInterface
             throw new ModelNotFoundException('The specified user does not exist.');
         }
 
-        // Check if an article with the same title already exists for this user
-        $existingArticle = Article::query()
-            ->where('user_id', $data['user_id'])
-            ->where('title', $data['title'])
-            ->first();
+        // Check for duplicate title within the same user
+        $existingArticle = $this->articleRepository
+            ->findByUserId($data['user_id'])
+            ->firstWhere('title', $data['title']);
 
         if ($existingArticle) {
             throw new DuplicatedResourceException(
@@ -42,32 +49,38 @@ class ArticleService implements ArticleServiceInterface
             );
         }
 
-        $article = new Article();
-        $article->fill($data);
-        $article->save();
+        // Validate publication URL if provided
+        if (!empty($data['publication_url'])) {
+            $this->validatePublicationUrl($data['publication_url']);
+        }
 
-        return $article;
+        // Validate publication date
+        if (!empty($data['publication_date'])) {
+            $publicationDate = Carbon::parse($data['publication_date']);
+            if ($publicationDate->isFuture()) {
+                throw new InvalidArgumentException('The publication date cannot be in the future.');
+            }
+        }
+
+        // Create the article
+        return $this->articleRepository->create($data);
     }
 
     /**
-     * Update an existing article.
-     *
-     * @param int $articleId
-     * @param array $data
-     * @return Article
+     * {@inheritDoc}
      *
      * @throws ModelNotFoundException
      * @throws DuplicatedResourceException
+     * @throws InvalidArgumentException
      */
     public function updateArticle(int $articleId, array $data): Article
     {
-        // Find the article
-        $article = Article::query()->find($articleId);
+        $article = $this->articleRepository->findById($articleId);
         if (!$article) {
             throw new ModelNotFoundException('The specified article does not exist.');
         }
 
-        // If user_id is being changed, verify existence
+        // Validate new user_id if changed
         if (isset($data['user_id'])) {
             $newUser = User::query()->find($data['user_id']);
             if (!$newUser) {
@@ -75,63 +88,81 @@ class ArticleService implements ArticleServiceInterface
             }
         }
 
-        // Check for duplicate title if it was modified
+        // Check for duplicate title
         if (isset($data['title'])) {
-            $duplicate = Article::query()
-                ->where('user_id', $data['user_id'] ?? $article->user_id)
-                ->where('title', $data['title'])
-                ->where('id', '!=', $articleId)
-                ->first();
+            $duplicate = $this->articleRepository
+                ->findByUserId($data['user_id'] ?? $article->user_id)
+                ->firstWhere('title', $data['title']);
 
-            if ($duplicate) {
+            if ($duplicate && $duplicate->id !== $articleId) {
                 throw new DuplicatedResourceException(
                     "An article titled '{$data['title']}' already exists for this user."
                 );
             }
         }
 
-        // Update fields safely
-        $article->fill($data);
-        $article->save();
+        // Validate publication URL if updated
+        if (!empty($data['publication_url'])) {
+            $this->validatePublicationUrl($data['publication_url']);
+        }
 
-        return $article;
+        // Validate publication date
+        if (!empty($data['publication_date'])) {
+            $publicationDate = Carbon::parse($data['publication_date']);
+            if ($publicationDate->isFuture()) {
+                throw new InvalidArgumentException('The publication date cannot be in the future.');
+            }
+        }
+
+        return $this->articleRepository->update($articleId, $data);
     }
 
+    /**
+     * Validate that the publication URL belongs to a trusted organization
+     * and that the link is accessible.
+     *
+     * @param string $url
+     * @throws InvalidArgumentException
+     */
+    private function validatePublicationUrl(string $url): void
+    {
+        $domain = parse_url($url, PHP_URL_HOST);
+        if (!$domain) {
+            throw new InvalidArgumentException('The provided publication URL is invalid.');
+        }
+
+        // Check if the domain matches a trusted organization from database
+        $trustedOrgs = TrustedOrg::trustedForArticle()->pluck('org');
+        $isTrusted = $trustedOrgs->contains(fn($trusted) => Str::endsWith($domain, $trusted));
+
+        if (!$isTrusted) {
+            throw new InvalidArgumentException(
+                "The publication domain '{$domain}' is not from a trusted source."
+            );
+        }
+
+        // Note: We could add an HTTP check here similar to other services if required,
+        // but for now we only validate the domain against the trusted list.
+    }
 
     /**
-     * Get all articles of a specific user.
-     *
-     * @param int $userId
-     * @return Collection<int, Article>
+     * {@inheritDoc}
      */
     public function getArticlesByUser(int $userId): Collection
     {
-        return Article::query()
-            ->where('user_id', $userId)
-            ->orderByDesc('publication_date')
-            ->get();
+        return $this->articleRepository->findByUserId($userId);
     }
 
-    
-
     /**
-     * Get all articles in the system.
-     *
-     * @return Collection<int, Article>
+     * {@inheritDoc}
      */
     public function getAllArticles(): Collection
     {
-        return Article::query()
-            ->orderByDesc('publication_date')
-            ->get();
+        return $this->articleRepository->findAll();
     }
 
     /**
-     * Get all articles published within a specific date range.
-     *
-     * @param string $startDate  (format: Y-m-d)
-     * @param string $endDate    (format: Y-m-d)
-     * @return Collection<int, Article>
+     * {@inheritDoc}
      *
      * @throws InvalidArgumentException
      */
@@ -144,28 +175,29 @@ class ArticleService implements ArticleServiceInterface
             throw new InvalidArgumentException('The end date cannot be earlier than the start date.');
         }
 
-        return Article::query()
-            ->whereBetween('publication_date', [$start, $end])
-            ->orderBy('publication_date')
-            ->get();
+        return $this->articleRepository->findByDateRange($start->toDateString(), $end->toDateString());
     }
 
     /**
-     * Delete an existing article.
-     *
-     * @param int $articleId
-     * @return void
+     * {@inheritDoc}
      *
      * @throws ModelNotFoundException
      */
     public function deleteArticle(int $articleId): void
     {
-        // Find the article
-        $article = Article::query()->find($articleId);
+        $article = $this->articleRepository->findById($articleId);
         if (!$article) {
             throw new ModelNotFoundException('The specified article does not exist.');
         }
-        // Delete the article
-        $article->delete();
+
+        $this->articleRepository->delete($articleId);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getAllTrustedOrganizations(): array
+    {
+        return TrustedOrg::trustedForArticle()->pluck('org')->toArray();
     }
 }

@@ -1,14 +1,12 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardHeader } from '../ui/card';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Textarea } from '../ui/textarea';
 import { Badge } from '../ui/badge';
-import { useApp } from '../context/AppContext';
 import {
   ArrowLeft,
-  Save,
   Eye,
   Send,
   FileText,
@@ -20,10 +18,10 @@ import { useAuthStore } from '../../stores/auth.store';
 import { ArticleAPI } from '../../services/api';
 import { toast } from 'sonner';
 import { getDashboardRouteFromRole } from '../../services/navigation/redirects';
+import { getErrorMessageForToast } from '@/features/errors/error.helpers';
 
-export function CreatePublicationScreen() {
+export function CreateArticleScreen() {
   const navigate = useNavigate()
-  const { user } = useApp();
   const authUser = useAuthStore(s => s.user);
   const [loading, setLoading] = useState(false);
 
@@ -37,14 +35,14 @@ export function CreatePublicationScreen() {
 
   const [preview, setPreview] = useState(false);
 
-  const handleInputChange = (field: string, value: any) => {
+  const handleInputChange = (field: string, value: unknown) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
     }));
   };
 
-  const handleSave = async (isDraft: boolean = false) => {
+  const handleSave = async () => {
     // Validaciones
     if (!formData.title.trim()) {
       toast.error('El título es obligatorio');
@@ -55,19 +53,19 @@ export function CreatePublicationScreen() {
       return;
     }
     if (!formData.publication_date) {
-      toast.error('La fecha de publicación es obligatoria');
+      toast.error('La fecha de articulo es obligatoria');
       return;
     }
 
     if (!authUser?.id) {
-      toast.error('Debe estar autenticado para crear una publicación');
+      toast.error('Debe estar autenticado para crear un articulo');
       return;
     }
 
     try {
       setLoading(true);
 
-      const articleData: Payloads.AddArticle = {
+      const articleData: APIPayloads.AddArticle = {
         user_id: authUser.id,
         title: formData.title,
         description: formData.description || null,
@@ -78,13 +76,12 @@ export function CreatePublicationScreen() {
 
       await ArticleAPI.addArticle(articleData);
       
-      toast.success(isDraft ? '✅ Artículo guardado como borrador' : '🎉 Artículo publicado exitosamente');
+      toast.success('🎉 Artículo creado exitosamente');
       
       // Navegar de vuelta
       navigate(getDashboardRouteFromRole(authUser?.role || ''));
-    } catch (error: any) {
-      console.error('Error creating article:', error);
-      const message = error.response?.data?.message || 'Error al crear el artículo';
+    } catch (error) {
+      const message = getErrorMessageForToast(error);
       toast.error(message);
     } finally {
       setLoading(false);
@@ -94,9 +91,9 @@ export function CreatePublicationScreen() {
 
   if (preview) {
     return (
-      <div className="min-h-screen bg-background pb-20">
+      <div className="min-h-screen pb-20">
         {/* Header */}
-        <div className="bg-primary text-primary-foreground p-4">
+        <div className="bg-[#0a2740] p-4 shadow-sm text-white">
           <div className="max-w-4xl mx-auto flex items-center gap-4">
             <Button
               variant="ghost"
@@ -107,13 +104,9 @@ export function CreatePublicationScreen() {
             </Button>
             <h1>Vista Previa</h1>
             <div className="ml-auto flex gap-2">
-              <Button variant="secondary" onClick={() => handleSave(true)} disabled={loading}>
-                <Save className="h-4 w-4 mr-2" />
-                Guardar Borrador
-              </Button>
-              <Button variant="secondary" onClick={() => handleSave(false)} disabled={loading}>
+              <Button variant="secondary" onClick={() => handleSave()} disabled={loading}>
                 <Send className="h-4 w-4 mr-2" />
-                Publicar
+                Crear Artículo
               </Button>
             </div>
           </div>
@@ -165,9 +158,9 @@ export function CreatePublicationScreen() {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <div className="min-h-screen pb-20">
       {/* Header */}
-      <div className="bg-primary text-primary-foreground p-4">
+      <div className="bg-[#0a2740] p-4 shadow-sm text-white">
         <div className="max-w-4xl mx-auto flex items-center gap-4">
             <Button
               variant="ghost"
@@ -176,15 +169,11 @@ export function CreatePublicationScreen() {
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
-            <h1>Nuevo Artículo / Publicación</h1>
+            <h1>Nuevo Artículo</h1>
             <div className="ml-auto flex gap-2">
               <Button variant="secondary" onClick={() => setPreview(true)}>
                 <Eye className="h-4 w-4 mr-2" />
                 Vista Previa
-              </Button>
-              <Button variant="secondary" onClick={() => handleSave(true)} disabled={loading}>
-                <Save className="h-4 w-4 mr-2" />
-                Guardar
               </Button>
             </div>
         </div>
@@ -223,7 +212,7 @@ export function CreatePublicationScreen() {
             </div>
 
             <div>
-              <Label htmlFor="publication_date">Fecha de Publicación *</Label>
+              <Label htmlFor="publication_date">Fecha de Anuncio *</Label>
               <Input
                 id="publication_date"
                 type="date"
@@ -249,7 +238,7 @@ export function CreatePublicationScreen() {
             </div>
 
             <div>
-              <Label htmlFor="publication_url">URL de Publicación (opcional)</Label>
+              <Label htmlFor="publication_url">URL del Articulo (opcional)</Label>
               <Input
                 id="publication_url"
                 type="url"
@@ -274,46 +263,17 @@ export function CreatePublicationScreen() {
             Cancelar
           </Button>
           <Button 
-            variant="outline" 
-            onClick={() => handleSave(true)}
-            disabled={loading}
-          >
-            <Save className="h-4 w-4 mr-2" />
-            Guardar como Borrador
-          </Button>
-          <Button 
-            onClick={() => handleSave(false)}
+            onClick={() => handleSave()}
             disabled={loading}
           >
             <Send className="h-4 w-4 mr-2" />
-            Publicar Artículo
+            Crear Artículo
           </Button>
         </div>
       </div>
-
-      {/* Navigation Bar */}
-      <div className="fixed bottom-0 left-0 right-0 bg-background border-t p-4">
-        <div className="max-w-4xl mx-auto flex justify-around">
-          <Button variant="ghost" onClick={() => navigate('/dashboard-coordinator')}>
-            Dashboard
-          </Button>
-          <Button variant="ghost" onClick={() => navigate('/events')}>
-            Eventos
-          </Button>
-          <Button variant="ghost" onClick={() => navigate('/publications')}>
-            Publicaciones
-          </Button>
-          <Button variant="ghost" onClick={() => navigate('/reports')}>
-            Reportes
-          </Button>
-          <Button variant="ghost" onClick={() => navigate('/profile')}>
-            Perfil
-          </Button>
-        </div>
-      </div>
-
+      
       {/* Navigation bar */}
-      <BottomNavbarWrapper />
+      <BottomNavbarWrapper role={authUser?.role ?? ""} />
 
     </div>
   );

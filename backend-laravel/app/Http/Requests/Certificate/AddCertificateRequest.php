@@ -9,6 +9,8 @@ class AddCertificateRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
+     *
+     * @return bool
      */
     public function authorize(): bool
     {
@@ -18,22 +20,26 @@ class AddCertificateRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, ValidationRule|array|string>
+     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
         return [
             'user_id' => ['required', 'integer', 'exists:users,id'],
             'name' => ['required', 'string', 'max:255'],
-            'description' => ['required', 'string', 'max:1000'],
+            'issuing_organization' => ['required', 'string', 'max:255'],
             'issue_date' => ['required', 'date', 'before_or_equal:today'],
-            'document_url' => ['nullable', 'url', 'max:255'],
-            'comment' => ['nullable', 'string', 'max:500']
+            'expiration_date' => ['nullable', 'date', 'after_or_equal:issue_date'],
+            'credential_id' => ['nullable', 'string', 'max:255'],
+            'credential_url' => ['nullable', 'url', 'max:255'],
+            'does_not_expire' => ['boolean']
         ];
     }
 
     /**
-     * Custom validation messages (optional)
+     * Get custom messages for validator errors.
+     *
+     * @return array<string, string>
      */
     public function messages(): array
     {
@@ -41,9 +47,11 @@ class AddCertificateRequest extends FormRequest
             'user_id.required' => 'The user ID is required.',
             'user_id.exists' => 'The specified user does not exist.',
             'name.required' => 'The certificate name is required.',
-            'description.required' => 'The certificate description is required.',
+            'issuing_organization.required' => 'The issuing organization is required.',
+            'issue_date.required' => 'The issue date is required.',
             'issue_date.before_or_equal' => 'The issue date cannot be in the future.',
-            'document_url.url' => 'The document URL must be a valid URL.'
+            'expiration_date.after_or_equal' => 'The expiration date cannot be earlier than the issue date.',
+            'credential_url.url' => 'The credential URL must be a valid URL.',
         ];
     }
 }

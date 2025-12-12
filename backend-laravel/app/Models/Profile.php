@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Carbon;
 
 /**
@@ -68,12 +69,19 @@ class Profile extends Model
 
     /**
      * Get the user that owns this profile.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
     }
 
+    /**
+     * Get a string representation of the profile.
+     *
+     * @return string
+     */
     public function __toString(): string
     {
         return sprintf(
@@ -81,6 +89,21 @@ class Profile extends Model
             $this->user_id,
             $this->user?->name ?? 'Unknown user',
             $this->academic_program ?? $this->university ?? 'No academic info'
+        );
+    }
+
+    /**
+     * The interests that belong to the profile.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     */
+    public function interests(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            Interest::class,
+            'profile_interests',   // pivot
+            'user_id',             // este fk en pivot refiere a profiles.user_id
+            'interest_id'          // este fk en pivot refiere a interests.id
         );
     }
 }

@@ -1,0 +1,1 @@
+export const USER_ROLES: API.UserRole[] = ["mentor", "coordinator",  "active-member", "seed","interested"];

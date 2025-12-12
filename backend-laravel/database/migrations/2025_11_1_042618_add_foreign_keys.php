@@ -5,6 +5,13 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration {
+    /**
+     * Run the migrations.
+     *
+     * Adds all foreign key constraints to establish relationships between tables.
+     *
+     * @return void
+     */
     public function up(): void
     {
         // Certificate → User
@@ -67,23 +74,28 @@ return new class extends Migration {
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
 
-        // External Event → User
+        //  Event → Publication
         Schema::table('events', function (Blueprint $table) {
             $table->foreign('publication_id')->references('id')->on('publications')->onDelete('cascade');
         });
 
-        // Notification → Profile
-        Schema::table('notifications', function (Blueprint $table) {
-            $table->foreign('profile_id')->references('user_id')->on('profiles')->onDelete('cascade');
+        //  Event → Publication
+        Schema::table('publications', function (Blueprint $table) {
+            $table->foreign('event_id')->references('id')->on('events')->onDelete('cascade');
         });
+
     }
 
+    /**
+     * Reverse the migrations.
+     *
+     * Drops all foreign key constraints in reverse order.
+     *
+     * @return void
+     */
     public function down(): void
     {
         // Drop foreign keys in reverse order
-        Schema::table('notifications', function (Blueprint $table) {
-            $table->dropForeign(['profile_id']);
-        });
 
         Schema::table('articles', function (Blueprint $table) {
             $table->dropForeign(['user_id']);

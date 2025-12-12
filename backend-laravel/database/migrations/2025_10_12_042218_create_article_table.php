@@ -4,14 +4,21 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
-    public function up(): void {
+return new class extends Migration {
+    /**
+     * Run the migrations.
+     *
+     * Creates the articles table to store user-submitted academic articles and publications.
+     *
+     * @return void
+     */
+    public function up(): void
+    {
         Schema::create('articles', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('user_id');
             $table->string('title')->nullable();
-            $table->string('description')->nullable();
+            $table->text('description')->nullable();
             $table->date('publication_date')->nullable();
             $table->string('authors')->nullable();
             $table->string('publication_url')->nullable();
@@ -19,7 +26,13 @@ return new class extends Migration
         });
     }
 
-    public function down(): void {
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
+    public function down(): void
+    {
         Schema::dropIfExists('articles');
     }
 };

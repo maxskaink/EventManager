@@ -6,13 +6,43 @@ async function getProfile() {
   return response.data.profile;
 }
 
-async function updateProfile(data: Payloads.UpdateProfile) {
+async function updateProfile(data: APIPayloads.UpdateProfile) {
   const response = await axiosInstance.patch<ProfileAPI.UpdateProfileRes>('/profile', data);
   // Devolver el perfil para que React Query pueda actualizar la caché
+  return response.data.profile;
+}
+
+async function getInterests() {
+  const response = await axiosInstance.get<{ interests: API.ProfileInterest[] }>('/profile/interests');
+  return response.data.interests;
+}
+
+async function addInterest(data: APIPayloads.AddProfileInterest) {
+  const response = await axiosInstance.post<ProfileAPI.AddInterestRes>("/profile/interests", data);
+  return response.data;
+}
+
+async function deleteInterest(interest_id: number) {
+  const response = await axiosInstance.delete<MessageRes>(`/profile/interests/${interest_id}`);
+  return response.data;
+}
+
+async function getAllProfiles() {
+  const response = await axiosInstance.get<{ profiles: API.Profile[] }>("/profile/all");
+  return response.data.profiles;
+}
+
+async function getProfileById(id: number) {
+  const response = await axiosInstance.get<{ profile: API.Profile }>(`/profile/${id}`);
   return response.data.profile;
 }
 
 export default {
   getProfile,
   updateProfile,
+  getInterests,
+  addInterest,
+  deleteInterest,
+  getAllProfiles,
+  getProfileById,
 };

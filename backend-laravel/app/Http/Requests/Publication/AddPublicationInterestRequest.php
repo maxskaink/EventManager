@@ -8,6 +8,8 @@ class AddPublicationInterestRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
+     *
+     * @return bool
      */
     public function authorize(): bool
     {
@@ -19,6 +21,8 @@ class AddPublicationInterestRequest extends FormRequest
      * Get the validation rules that apply to the request.
      *
      * You can allow either a single interest_id or a list of interest_ids.
+     *
+     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
@@ -30,14 +34,16 @@ class AddPublicationInterestRequest extends FormRequest
     }
 
     /**
-     * Custom messages for validation errors.
+     * Get custom messages for validator errors.
+     *
+     * @return array<string, string>
      */
     public function messages(): array
     {
         return [
-            'interests.required' => 'At least one interest must be provided.',
+            'interests.required' => 'At least one valid interest must be provided.',
             'interests.array' => 'The interests field must be an array.',
-            'interests.min' => 'You must provide at least one interest.',
+            'interests.min' => 'You must provide at least one valid interest.',
             'interests.*.integer' => 'Each interest ID must be an integer.',
             'interests.*.exists' => 'Some provided interests do not exist.',
         ];

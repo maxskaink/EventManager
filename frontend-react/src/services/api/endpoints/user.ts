@@ -49,6 +49,16 @@ async function listInactiveUsers() {
   return response.data;
 }
 
+async function listUsersByFilters(filters: UserAPI.ListUsersFilters) {
+  const response = await axiosInstance.get<UserAPI.ListUsersPaginatedRes>('/user/filter', { params: filters });
+  return response.data;
+}
+
+async function getUserById(userId: number) {
+  const response = await axiosInstance.get<UserAPI.GetUserRes>(`/user/${userId}`);
+  return response.data.user;
+}
+
 export default {
   getUser,
   createUser,
@@ -58,5 +68,7 @@ export default {
   listActiveInterested,
   listActiveCoordinators,
   listActiveMentors,
-  listInactiveUsers
+  listInactiveUsers,
+  listUsersByFilters,
+  getUserById,
 };

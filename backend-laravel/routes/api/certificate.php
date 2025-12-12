@@ -8,7 +8,11 @@ Route::middleware('auth:sanctum')->prefix('certificate')->group(function () {
     Route::patch('{certificateId}', [CertificateController::class, 'updateCertificate']);
     Route::delete('{certificateId}', [CertificateController::class, 'deleteCertificate']);
     Route::get('/my', [CertificateController::class, 'listMyCertificates']);
-    Route::get('/user/{userId}', [CertificateController::class, 'listCertificatesByUser']);
     Route::get('/all', [CertificateController::class, 'listAllCertificates']);
     Route::get('/date-range', [CertificateController::class, 'listCertificatesByDateRange']);
+    Route::get('/organizations', [CertificateController::class, 'getAllTrustedOrganizations']);
+});
+
+Route::prefix('certificate')->group(function () {
+    Route::get('/user/{userId}', [CertificateController::class, 'listCertificatesByUser']);
 });

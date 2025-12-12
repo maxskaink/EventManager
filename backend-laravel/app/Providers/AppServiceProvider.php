@@ -2,41 +2,100 @@
 
 namespace App\Providers;
 
-use App\Services\Contracts\ArticleServiceInterface;
-use App\Services\Contracts\AuthServiceInterface;
-use App\Services\Contracts\CertificateServiceInterface;
-use App\Services\Contracts\EventServiceInterface;
-use App\Services\Contracts\ExternalEventServiceInterface;
-use App\Services\Contracts\InterestServiceInterface;
-use App\Services\Contracts\ProfileServiceInterface;
-use App\Services\Contracts\PublicationServiceInterface;
-use App\Services\Contracts\UserServiceInterface;
-use App\Services\Implementations\ArticleService;
-use App\Services\Implementations\AuthService;
-use App\Services\Implementations\CertificateService;
-use App\Services\Implementations\EventService;
-use App\Services\Implementations\ExternalEventService;
-use App\Services\Implementations\InterestService;
-use App\Services\Implementations\ProfileService;
-use App\Services\Implementations\PublicationService;
-use App\Services\Implementations\UserService;
 use Illuminate\Support\Facades\Config;
-use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Gate;
-use App\Models\Article;
-use App\Models\Certificate;
-use App\Models\Event;
-use App\Models\ExternalEvent;
-use App\Models\Publication;
-use App\Models\Profile;
-use App\Models\User;
-use App\Policies\ArticlePolicy;
-use App\Policies\CertificatePolicy;
-use App\Policies\EventPolicy;
-use App\Policies\ExternalEventPolicy;
-use App\Policies\PublicationPolicy;
-use App\Policies\ProfilePolicy;
-use App\Policies\UserPolicy;
+use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\URL;
+
+
+// MODELS
+use App\Models\{
+    Article,
+    Certificate,
+    Event,
+    ExternalEvent,
+    Publication,
+    Profile,
+    User,
+    Notification,
+    TrustedOrg
+};
+
+// POLICIES
+use App\Policies\{
+    ArticlePolicy,
+    CertificatePolicy,
+    EventPolicy,
+    ExternalEventPolicy,
+    PublicationPolicy,
+    ProfilePolicy,
+    UserPolicy,
+    NotificationPolicy,
+    TrustedOrgPolicy
+};
+
+// SERVICES
+use App\Services\Contracts\{
+    ArticleServiceInterface,
+    AuthServiceInterface,
+    CertificateServiceInterface,
+    EventServiceInterface,
+    ExternalEventServiceInterface,
+    InterestServiceInterface,
+    NotificationServiceInterface,
+    ProfileServiceInterface,
+    PublicationServiceInterface,
+    UserServiceInterface,
+    TrustedOrgServiceInterface
+};
+use App\Services\Implementations\{
+    ArticleService,
+    AuthService,
+    CertificateService,
+    EventService,
+    ExternalEventService,
+    InterestService,
+    NotificationService,
+    ProfileService,
+    PublicationService,
+    UserService,
+    TrustedOrgService
+};
+
+// REPOSITORIES
+use App\Repositories\Contracts\{
+    ArticleRepositoryInterface,
+    AuthRepositoryInterface,
+    CertificateRepositoryInterface,
+    EventRepositoryInterface,
+    ExternalEventRepositoryInterface,
+    InterestRepositoryInterface,
+    NotificationRepositoryInterface,
+    ParticipationRepositoryInterface,
+    ProfileRepositoryInterface,
+    PublicationRepositoryInterface,
+    PublicationInterestRepositoryInterface,
+    PublicationAccessRepositoryInterface,
+    UserRepositoryInterface,
+    TrustedOrgRepositoryInterface
+};
+use App\Repositories\Implementations\{
+    ArticleRepository,
+    AuthRepository,
+    CertificateRepository,
+    EventRepository,
+    ExternalEventRepository,
+    InterestRepository,
+    NotificationRepository,
+    ParticipationRepository,
+    ProfileRepository,
+    PublicationRepository,
+    PublicationInterestRepository,
+    PublicationAccessRepository,
+    UserRepository,
+    TrustedOrgRepository
+};
+
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -45,16 +104,40 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-    // Bind service interfaces to implementations for dependency injection
-    $this->app->bind(ArticleServiceInterface::class, ArticleService::class);
-    $this->app->bind(AuthServiceInterface::class, AuthService::class);
-    $this->app->bind(CertificateServiceInterface::class, CertificateService::class);
-    $this->app->bind(EventServiceInterface::class, EventService::class);
-    $this->app->bind(ExternalEventServiceInterface::class, ExternalEventService::class);
-    $this->app->bind(InterestServiceInterface::class, InterestService::class);
-    $this->app->bind(ProfileServiceInterface::class, ProfileService::class);
-    $this->app->bind(PublicationServiceInterface::class, PublicationService::class);
-    $this->app->bind(UserServiceInterface::class, UserService::class);
+        /**
+         * SERVICES
+         */
+        $this->app->bind(ArticleServiceInterface::class, ArticleService::class);
+        $this->app->bind(AuthServiceInterface::class, AuthService::class);
+        $this->app->bind(CertificateServiceInterface::class, CertificateService::class);
+        $this->app->bind(EventServiceInterface::class, EventService::class);
+        $this->app->bind(ExternalEventServiceInterface::class, ExternalEventService::class);
+        $this->app->bind(InterestServiceInterface::class, InterestService::class);
+        $this->app->bind(ProfileServiceInterface::class, ProfileService::class);
+        $this->app->bind(PublicationServiceInterface::class, PublicationService::class);
+        $this->app->bind(UserServiceInterface::class, UserService::class);
+        $this->app->bind(NotificationServiceInterface::class, NotificationService::class);
+        $this->app->bind(TrustedOrgServiceInterface::class, TrustedOrgService::class);
+
+        /**
+         * REPOSITORIES
+         */
+        $this->app->bind(ArticleRepositoryInterface::class, ArticleRepository::class);
+        $this->app->bind(AuthRepositoryInterface::class, AuthRepository::class);
+        $this->app->bind(CertificateRepositoryInterface::class, CertificateRepository::class);
+        $this->app->bind(EventRepositoryInterface::class, EventRepository::class);
+        $this->app->bind(ExternalEventRepositoryInterface::class, ExternalEventRepository::class);
+        $this->app->bind(InterestRepositoryInterface::class, InterestRepository::class);
+        $this->app->bind(NotificationRepositoryInterface::class, NotificationRepository::class);
+        $this->app->bind(ParticipationRepositoryInterface::class, ParticipationRepository::class);
+        $this->app->bind(ProfileRepositoryInterface::class, ProfileRepository::class);
+        $this->app->bind(PublicationRepositoryInterface::class, PublicationRepository::class);
+        $this->app->bind(PublicationInterestRepositoryInterface::class, PublicationInterestRepository::class);
+        $this->app->bind(PublicationAccessRepositoryInterface::class, PublicationAccessRepository::class);
+        $this->app->bind(UserRepositoryInterface::class, UserRepository::class);
+        $this->app->bind(TrustedOrgRepositoryInterface::class, TrustedOrgRepository::class);
+
+
     }
 
     /**
@@ -63,14 +146,27 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         // Register model policies
-    Gate::policy(Article::class, ArticlePolicy::class);
-    Gate::policy(Certificate::class, CertificatePolicy::class);
-    Gate::policy(Event::class, EventPolicy::class);
-    Gate::policy(ExternalEvent::class, ExternalEventPolicy::class);
-    Gate::policy(Publication::class, PublicationPolicy::class);
-    Gate::policy(Profile::class, ProfilePolicy::class);
-    Gate::policy(User::class, UserPolicy::class);
-        Config::set('cors.allowed_origins', ['http://localhost:5173']);
+        Gate::policy(Article::class, ArticlePolicy::class);
+        Gate::policy(Certificate::class, CertificatePolicy::class);
+        Gate::policy(Event::class, EventPolicy::class);
+        Gate::policy(ExternalEvent::class, ExternalEventPolicy::class);
+        Gate::policy(Publication::class, PublicationPolicy::class);
+        Gate::policy(Profile::class, ProfilePolicy::class);
+        Gate::policy(User::class, UserPolicy::class);
+        Gate::policy(Notification::class, NotificationPolicy::class);
+        Gate::policy(TrustedOrg::class, TrustedOrgPolicy::class);
+
+        // CORS override (you will change this later)
+
         Config::set('cors.supports_credentials', true);
+
+        // Force HTTPS in production
+        if ($this->app->environment('production')) {
+            URL::forceScheme('https');
+            Config::set('cors.allowed_origins', ['https://cdatosunicauca.org', 'https://www.cdatosunicauca.org']);
+        } else {
+            Config::set('cors.allowed_origins', ['http://localhost:5173']);
+        }
     }
+
 }

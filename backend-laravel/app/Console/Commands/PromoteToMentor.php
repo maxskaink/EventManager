@@ -19,7 +19,7 @@ class PromoteToMentor extends Command
      *
      * @var string
      */
-    protected $description = 'Promote a user to a specific role (mentor, coordinator, member, interested)';
+    protected $description = 'Promote a user to a specific role (mentor, coordinator, member, seed, interested)';
 
     /**
      * Execute the console command.
@@ -30,8 +30,8 @@ class PromoteToMentor extends Command
         $role = $this->argument('role');
 
         // Validate role
-        if (!in_array($role, ['interested', 'member', 'coordinator', 'mentor'])) {
-            $this->error("Invalid role: {$role}. Must be one of: interested, member, coordinator, mentor");
+        if (!in_array($role, ['interested', 'member', 'coordinator', 'mentor', 'seed', 'active-member'])) {
+            $this->error("Invalid role: {$role}. Must be one of: interested, member, seed, active-member, coordinator, mentor");
             return Command::FAILURE;
         }
 

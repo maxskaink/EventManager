@@ -2,48 +2,43 @@ import {
   LayoutDashboard,
   CalendarDays,
   User,
+  Users,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { Button } from "./button";
+import { useNavigate, useLocation } from "react-router-dom";
+import { ResponsiveBottomNav, type NavItem } from "./responsive-bottom-nav";
 
 const BNavBarMentor = () => {
   const navigate = useNavigate();
+  const location = useLocation();
 
-  return (
-    <div className="fixed bottom-0 left-0 right-0 border-t bg-background p-4">
-      <div className="mx-auto flex max-w-4xl justify-around">
-        {/* Botón de Dashboard */}
-        <Button
-          variant="ghost"
-          onClick={() => navigate("/dashboard-mentor")}
-          className="flex h-auto flex-col items-center gap-1 py-2"
-        >
-          <LayoutDashboard className="h-5 w-5" />
-          <span className="text-xs">Dashboard</span>
-        </Button>
+  const navItems: NavItem[] = [
+    {
+      icon: LayoutDashboard,
+      label: "Dashboard",
+      onClick: () => navigate("/dashboard-mentor"),
+      isActive: location.pathname === "/dashboard-mentor",
+    },
+    {
+      icon: CalendarDays,
+      label: "Anuncios",
+      onClick: () => navigate("/publications"),
+      isActive: location.pathname === "/publications",
+    },
+    {
+      icon: Users,
+      label: "Usuarios",
+      onClick: () => navigate("/users"),
+      isActive: location.pathname === "/users",
+    },
+    {
+      icon: User,
+      label: "Perfil",
+      onClick: () => navigate("/profile"),
+      isActive: location.pathname === "/profile",
+    },
+  ];
 
-        {/* Botón de Eventos */}
-        <Button
-          variant="ghost"
-          onClick={() => navigate("/events")}
-          className="flex h-auto flex-col items-center gap-1 py-2"
-        >
-          <CalendarDays className="h-5 w-5" />
-          <span className="text-xs">Eventos</span>
-        </Button>
-
-        {/* Botón de Perfil */}
-        <Button
-          variant="ghost"
-          onClick={() => navigate("/profile")}
-          className="flex h-auto flex-col items-center gap-1 py-2"
-        >
-          <User className="h-5 w-5" />
-          <span className="text-xs">Perfil</span>
-        </Button>
-      </div>
-    </div>
-  );
+  return <ResponsiveBottomNav items={navItems} />;
 };
 
 export { BNavBarMentor };

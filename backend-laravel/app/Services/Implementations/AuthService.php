@@ -2,10 +2,11 @@
 
 namespace App\Services\Implementations;
 
-use App\Models\Profile;
 use App\Models\User;
+use App\Repositories\Contracts\AuthRepositoryInterface;
 use App\Services\Contracts\AuthServiceInterface;
-use Exception;
+use Illuminate\Auth\AuthenticationException;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Http;
 use Laravel\Socialite\Contracts\User as SocialiteUser;
@@ -14,10 +15,15 @@ use Laravel\Socialite\Two\GoogleProvider;
 
 class AuthService implements AuthServiceInterface
 {
+    protected AuthRepositoryInterface $authRepository;
+
+    public function __construct(AuthRepositoryInterface $authRepository)
+    {
+        $this->authRepository = $authRepository;
+    }
+
     /**
-     * Generate a stateless Google OAuth redirect URL.
-     *
-     * @return string The Google authentication URL.
+     * {@inheritDoc}
      */
     public function getGoogleAuthUrl(): string
     {
@@ -31,12 +37,16 @@ class AuthService implements AuthServiceInterface
     }
 
     /**
-     * Handle Google OAuth2 callback and authenticate user.
+     * {@inheritDoc}
      *
-     * @param string $code The authorization code from Google.
-     * @return array An array containing the user and access token.
+     * @throws ConnectionException|RequestException
+     * @throws AuthenticationException
+     */
+    /**
+     * {@inheritDoc}
      *
-     * @throws Exception If any step of the process fails.
+     * @throws ConnectionException|RequestException
+     * @throws AuthenticationException
      */
     public function handleGoogleCallback(string $code): array
     {
@@ -44,6 +54,7 @@ class AuthService implements AuthServiceInterface
         $googleProvider = Socialite::driver('google');
 
         // Step 1: Exchange authorization code for access token
+        // We manually request the token to handle potential errors more gracefully
         $tokenResponse = Http::asForm()->post('https://oauth2.googleapis.com/token', [
             'code' => $code,
             'client_id' => config('services.google.client_id'),
@@ -60,46 +71,26 @@ class AuthService implements AuthServiceInterface
             throw new RequestException($tokenResponse);
         }
 
-        $accessToken = $tokenResponse->json()['access_token'] ?? null;
+        \Log::info('Google OAuth token exchange success');
 
+        $accessToken = $tokenResponse->json()['access_token'] ?? null;
         if (!$accessToken) {
-            throw new Exception('Failed to obtain access token from Google');
+            throw new AuthenticationException('Failed to obtain access token from Google');
         }
 
-        // Step 2: Retrieve user info from Google
+        // Step 2: Retrieve user info from Google using the access token
         /** @var SocialiteUser $googleUser */
         $googleUser = $googleProvider->stateless()->userFromToken($accessToken);
 
-        // Step 3: Create or retrieve the user
-        $user = User::query()->firstOrCreate(
-            [
-                'email' => $googleUser->getEmail(),
-            ],
-            [
-                'email_verified_at' => now(),
-                'name' => $googleUser->getName(),
-                'google_id' => $googleUser->getId(),
-                'avatar' => $googleUser->getAvatar(),
-                'role' => 'interested',
-            ]
-        );
+        // Step 3: Use repository to create or retrieve user based on Google info
+        $user = $this->authRepository->findOrCreateUser($googleUser);
 
-        // Step 3.1: Ensure the user has a profile
-        if (!$user->profile) {
-            Profile::query()->create([
-                'user_id' => $user->id,
-                'university' => null,
-                'academic_program' => null,
-                'phone' => null,
-            ]);
-        }
+        // Step 3.1: Ensure profile exists and update last login timestamp
+        $this->authRepository->ensureUserProfile($user);
+        $this->authRepository->updateLastLogin($user);
 
-        #Step 3.1: Update last login timestamp
-        $user->last_login_at = now();
-        $user->save();
-
-        // Step 4: Create a Sanctum token
-        $token = $user->createToken('access_token')->plainTextToken;
+        // Step 4: Create Sanctum token for API authentication
+        $token = $this->authRepository->createToken($user);
 
         return [
             'user' => $user,
@@ -108,23 +99,10 @@ class AuthService implements AuthServiceInterface
     }
 
     /**
-     * Revoke the user's current Sanctum token.
-     *
-     * @param User|null $user
-     * @return void
-     *
-     * @throws Exception If user is null or unauthenticated.
+     * {@inheritDoc}
      */
     public function logout(?User $user): void
     {
-        if (!$user) {
-            throw new Exception('User not authenticated');
-        }
-
-        $token = $user->currentAccessToken();
-
-        if ($token && method_exists($token, 'delete')) {
-            $token->delete();
-        }
+        $this->authRepository->revokeToken($user);
     }
 }

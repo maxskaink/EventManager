@@ -60,6 +60,8 @@ class PublicationAccess extends Model
 
     /**
      * Get the profile associated with this access record.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function profile(): BelongsTo
     {
@@ -68,12 +70,19 @@ class PublicationAccess extends Model
 
     /**
      * Get the publication associated with this access record.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function publication(): BelongsTo
     {
         return $this->belongsTo(Publication::class);
     }
 
+    /**
+     * Get a string representation of the publication access.
+     *
+     * @return string
+     */
     public function __toString(): string
     {
         return sprintf(

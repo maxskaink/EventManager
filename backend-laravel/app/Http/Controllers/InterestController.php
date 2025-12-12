@@ -12,6 +12,11 @@ class InterestController extends Controller
 {
     protected InterestServiceInterface $interestService;
 
+    /**
+     * Create a new instance of InterestController.
+     *
+     * @param InterestServiceInterface $interestService The service to handle interest logic.
+     */
     public function __construct(InterestServiceInterface $interestService)
     {
         $this->interestService = $interestService;
@@ -20,10 +25,13 @@ class InterestController extends Controller
     /**
      * Create a new interest.
      *
-     * @throws AuthorizationException
+     * @param AddInterestRequest $request The request containing interest data.
+     * @return JsonResponse The created interest and a success message.
+     * @throws AuthorizationException If the user is not authorized.
      */
     public function addInterest(AddInterestRequest $request): JsonResponse
     {
+        // Authorization: check if the user can create interests
         $this->authorize('create', Interest::class);
 
         $data = $request->validated();
@@ -32,18 +40,17 @@ class InterestController extends Controller
         return response()->json([
             'message' => "Interest created successfully.",
             'interest' => $newInterest,
-        ]);
+        ], 201);
     }
 
     /**
      * List all interests.
      *
-     * @throws AuthorizationException
+     * @return JsonResponse A list of all interests.
+     * @throws AuthorizationException If the user is not authorized.
      */
     public function listAllInterests(): JsonResponse
     {
-        $this->authorize('viewAny', Interest::class);
-
         $interests = $this->interestService->getAllInterests();
 
         return response()->json([
@@ -54,10 +61,13 @@ class InterestController extends Controller
     /**
      * Delete an existing interest.
      *
-     * @throws AuthorizationException
+     * @param int $interestId The ID of the interest to delete.
+     * @return JsonResponse A success message.
+     * @throws AuthorizationException If the user is not authorized.
      */
     public function deleteInterest(int $interestId): JsonResponse
     {
+        // Authorization: check if the user can delete interests
         $this->authorize('delete', Interest::class);
 
         $this->interestService->deleteInterest($interestId);

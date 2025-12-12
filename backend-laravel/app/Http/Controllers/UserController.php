@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\User\CreateUserRequest;
+use App\Http\Requests\User\FilterUserRequest;
 use App\Http\Requests\User\ToggleRoleRequest;
 use App\Models\User;
 use App\Services\Contracts\UserServiceInterface;
@@ -14,6 +14,11 @@ class UserController extends Controller
 {
     protected UserServiceInterface $userService;
 
+    /**
+     * Create a new instance of UserController.
+     *
+     * @param UserServiceInterface $userService The service to handle user logic.
+     */
     public function __construct(UserServiceInterface $userService)
     {
         $this->userService = $userService;
@@ -40,12 +45,17 @@ class UserController extends Controller
 
      /** Change a user's role.
      *
-     * @throws AuthorizationException
+     * @param ToggleRoleRequest $request The request containing the new role.
+     * @param int $userId The ID of the user whose role to change.
+     * @return JsonResponse A success message with the updated role.
+     * @throws \Illuminate\Database\Eloquent\ModelNotFoundException If the user is not found.
+     * @throws AuthorizationException If the user is not authorized.
      */
     public function toggleRole(ToggleRoleRequest $request, int $userId): JsonResponse
     {
         $targetUser = User::query()->findOrFail($userId);
 
+        // Authorization: check if the user can change the role of the target user
         $this->authorize('changeRole', $targetUser);
 
         $data = $request->validated();
@@ -60,68 +70,52 @@ class UserController extends Controller
 
 
     /**
-     * List all active interested users.
+     * List users with filters.
      *
-     * @throws AuthorizationException
+     * @param FilterUserRequest $request The request containing filters.
+     * @return JsonResponse A list of filtered users.
      */
-    public function listActiveInterested(): JsonResponse
+    public function listFilteredUsers(FilterUserRequest $request): JsonResponse
     {
-        $this->authorize('viewAny', Auth::user());
-        return response()->json($this->userService->listActiveInterested());
-    }
+        $data = $request->validated();
+        $perPage = $data['per_page'] ?? 15;
 
-    /**
-     * List all active members.
-     *
-     * @throws AuthorizationException
-     */
-    public function listActiveMembers(): JsonResponse
-    {
-        $this->authorize('viewAny', Auth::user());
-        return response()->json($this->userService->listActiveMembers());
-    }
+        $filters = [
+            'role' => $data['role'] ?? null,
+            'search' => $data['search'] ?? null,
+        ];
 
-    /**
-     * List all active coordinators.
-     *
-     * @throws AuthorizationException
-     */
-    public function listActiveCoordinators(): JsonResponse
-    {
-        $this->authorize('viewAny', Auth::user());
-        return response()->json($this->userService->listActiveCoordinators());
-    }
-
-    /**
-     * List all active mentors.
-     *
-     * @throws AuthorizationException
-     */
-    public function listActiveMentors(): JsonResponse
-    {
-        $this->authorize('viewAny', Auth::user());
-        return response()->json($this->userService->listActiveMentors());
+        return response()->json($this->userService->listFilteredUsers($filters, $perPage));
     }
 
     /**
      * List all inactive users.
      *
-     * @throws AuthorizationException
+     * @return JsonResponse A list of inactive users.
+     * @throws AuthorizationException If the user is not authorized.
      */
     public function listInactiveUsers(): JsonResponse
     {
+        // Authorization: check if the user can view inactive users (admin only)
         $this->authorize('viewAny', Auth::user());
-        return response()->json($this->userService->listInactiveUsers());
+
+        $perPage = request()->input('per_page', 15);
+        return response()->json($this->userService->listInactiveUsers($perPage));
     }
 
     /**
-     * List all active users.
+     * Get a user by ID.
      *
-     * @throws AuthorizationException
+     * @param int $userId The ID of the user.
+     * @return JsonResponse The user data.
      */
-    public function listActiveUsers(): JsonResponse
+    public function getUserById(int $userId): JsonResponse
     {
-        $this->authorize('viewAny', Auth::user());
-        return response()->json($this->userService->listActiveUsers());
+        $user = $this->userService->getUserById($userId);
+
+        return response()->json([
+            'user' => $user,
+        ]);
     }
+
 }

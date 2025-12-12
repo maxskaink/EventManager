@@ -12,6 +12,8 @@ class PublicationAccessRequest extends FormRequest
      * Authorize the user to manage publication access.
      *
      * Only mentors or coordinators can grant or revoke special access.
+     *
+     * @return bool
      */
     public function authorize(): bool
     {
@@ -26,7 +28,7 @@ class PublicationAccessRequest extends FormRequest
      *
      * Used by both grant and revoke actions.
      *
-     * @return array<string, ValidationRule|array|string>
+     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
@@ -36,7 +38,7 @@ class PublicationAccessRequest extends FormRequest
             'user_ids.*' => ['integer', 'exists:users,id'],
 
             'roles' => ['required_without:user_ids', 'array', 'min:1'],
-            'roles.*' => ['string', 'in:interested,member'], //All publications are visible to mentors and coordinators
+            'roles.*' => ['string', 'in:interested,seed,active-member'], //All publications are visible to mentors and coordinators
         ];
     }
 
@@ -57,7 +59,7 @@ class PublicationAccessRequest extends FormRequest
             'roles.required_without' => 'You must provide either roles or user_ids.',
             'roles.array' => 'The roles field must be an array.',
             'roles.min' => 'You must provide at least one role.',
-            'roles.*.in' => 'Each role must be one of: interested, member, coordinator, or mentor.',
+            'roles.*.in' => 'Each role must be one of: interested, seed or active-member',
         ];
     }
 }

@@ -24,11 +24,11 @@ const BNavBarInterested = () => {
         </Button>
         <Button
           variant="ghost"
-          onClick={() => navigate("/events")}
-          className="flex flex-col items-center gap-1 h-auto py-2"
+          onClick={() => navigate("/publications")}
+          className="flex h-auto flex-col items-center gap-1 py-2"
         >
           <CalendarDays className="h-5 w-5" />
-          <span className="text-xs">Eventos</span>
+          <span className="text-xs">Anuncios</span>
         </Button>
         <Button
           variant="ghost"

@@ -53,12 +53,19 @@ class Article extends Model
 
     /**
      * Get the user who owns this article.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * Get a string representation of the article.
+     *
+     * @return string
+     */
     public function __toString(): string
     {
         return sprintf(
@@ -69,5 +76,4 @@ class Article extends Model
             $this->publication_date?->format('Y-m-d') ?? 'No date'
         );
     }
-
 }

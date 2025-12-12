@@ -8,6 +8,11 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class AddEventRequest extends FormRequest
 {
+    /**
+     * Determine if the user is authorized to make this request.
+     *
+     * @return bool
+     */
     public function authorize(): bool
     {
         /** @var User|null $user */
@@ -19,7 +24,7 @@ class AddEventRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, ValidationRule|array|string>
+     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
@@ -28,16 +33,19 @@ class AddEventRequest extends FormRequest
             'description' => ['required', 'string', 'max:1000'],
             'start_date' => ['required', 'date', 'before_or_equal:end_date'],
             'end_date' => ['required', 'date', 'after_or_equal:start_date'],
-            'event_type' => ['required', 'string', 'in:charla,curso,convocatoria'],
+            'event_type' => ['required', 'string', 'in:charla,curso,convocatoria,taller,conferencia'],
             'modality' => ['required', 'string', 'in:presencial,virtual,mixta'],
             'location' => ['nullable', 'string', 'max:255'],
+            'virtual_url' => ['nullable', 'url'],
             'status' => ['required', 'string', 'max:50', 'in:activo,inactivo,pendiente,cancelado'],
             'capacity' => ['nullable', 'integer', 'min:1'],
         ];
     }
 
     /**
-     * Custom validation messages (optional)
+     * Get custom messages for validator errors.
+     *
+     * @return array<string, string>
      */
     public function messages(): array
     {
@@ -46,6 +54,7 @@ class AddEventRequest extends FormRequest
             'end_date.after_or_equal' => 'The end date must be after or equal to the start date.',
             'modality.in' => 'The modality must be one of: presencial, virtual, or mixta.',
             'status.in' => 'The status must be one of: activo, inactivo, pendiente, or cancelado.',
+            'virtual_url.url' => 'The virtual URL must be a valid URL format.',
         ];
     }
 }

@@ -15,6 +15,11 @@ class ExternalEventController extends Controller
 {
     protected ExternalEventServiceInterface $externalEventService;
 
+    /**
+     * Create a new instance of ExternalEventController.
+     *
+     * @param ExternalEventServiceInterface $externalEventService The service to handle external event logic.
+     */
     public function __construct(ExternalEventServiceInterface $externalEventService)
     {
         $this->externalEventService = $externalEventService;
@@ -23,24 +28,39 @@ class ExternalEventController extends Controller
     /**
      * Create a new external event.
      *
-     * @throws AuthorizationException
+     * @param AddExternalEventRequest $request The request containing external event data.
+     * @return JsonResponse The created external event and a success message.
+     * @throws AuthorizationException If the user is not authorized.
      */
     public function addExternalEvent(AddExternalEventRequest $request): JsonResponse
     {
-        $this->authorize('create', ExternalEvent::class);
-
         $data = $request->validated();
+
+        // Find target user for authorization
+        $targetUser = \App\Models\User::query()->find($data['user_id']);
+        if (!$targetUser) {
+            throw new NotFoundHttpException('The specified user does not exist.');
+        }
+
+        // Authorization: check if the user can create external events for the target user
+        $this->authorize('create', [ExternalEvent::class, $targetUser]);
+
         $newEvent = $this->externalEventService->addExternalEvent($data);
 
         return response()->json([
-            'message' => "External event created successfully: {$newEvent}"
-        ]);
+            'message' => 'External event created successfully.',
+            'external_event' => $newEvent,
+        ], 201);
     }
 
     /**
      * Update an existing external event.
      *
-     * @throws AuthorizationException
+     * @param UpdateExternalEventRequest $request The request containing updated external event data.
+     * @param int $eventId The ID of the external event to update.
+     * @return JsonResponse The updated external event and a success message.
+     * @throws NotFoundHttpException If the external event is not found.
+     * @throws AuthorizationException If the user is not authorized.
      */
     public function updateExternalEvent(UpdateExternalEventRequest $request, int $eventId): JsonResponse
     {
@@ -49,9 +69,20 @@ class ExternalEventController extends Controller
             throw new NotFoundHttpException('External event not found.');
         }
 
+        // Authorization: check if the user can update this external event
         $this->authorize('update', $event);
 
         $data = $request->validated();
+
+        // If reassigning user, check authorization for that too
+        if (isset($data['user_id']) && $data['user_id'] !== $event->user_id) {
+            $newUser = \App\Models\User::query()->find($data['user_id']);
+            if (!$newUser) {
+                throw new NotFoundHttpException('The specified new user does not exist.');
+            }
+            $this->authorize('create', [ExternalEvent::class, $newUser]);
+        }
+
         $updatedEvent = $this->externalEventService->updateExternalEvent($eventId, $data);
 
         return response()->json([
@@ -63,7 +94,10 @@ class ExternalEventController extends Controller
     /**
      * Delete an existing external event.
      *
-     * @throws AuthorizationException
+     * @param int $eventId The ID of the external event to delete.
+     * @return JsonResponse A success message.
+     * @throws NotFoundHttpException If the external event is not found.
+     * @throws AuthorizationException If the user is not authorized.
      */
     public function deleteExternalEvent(int $eventId): JsonResponse
     {
@@ -72,6 +106,7 @@ class ExternalEventController extends Controller
             throw new NotFoundHttpException('External event not found.');
         }
 
+        // Authorization: check if the user can delete this external event
         $this->authorize('delete', $event);
 
         $this->externalEventService->deleteExternalEvent($eventId);
@@ -83,6 +118,8 @@ class ExternalEventController extends Controller
 
     /**
      * List all external events of the authenticated user.
+     *
+     * @return JsonResponse A list of the user's external events.
      */
     public function listMyExternalEvents(): JsonResponse
     {
@@ -96,12 +133,11 @@ class ExternalEventController extends Controller
     /**
      * List all external events of a specific user.
      *
-     * @throws AuthorizationException
+     * @param int $userId The ID of the user whose external events to list.
+     * @return JsonResponse A list of the user's external events.
      */
     public function listExternalEventsByUser(int $userId): JsonResponse
     {
-        $this->authorize('viewByUser', [ExternalEvent::class, $userId]);
-
         $events = $this->externalEventService->getExternalEventsByUser($userId);
 
         return response()->json([
@@ -112,10 +148,12 @@ class ExternalEventController extends Controller
     /**
      * List all external events in the system (mentor/admin only).
      *
-     * @throws AuthorizationException
+     * @return JsonResponse A list of all external events.
+     * @throws AuthorizationException If the user is not authorized.
      */
     public function listAllExternalEvents(): JsonResponse
     {
+        // Authorization: only mentors or admins can view all external events
         $this->authorize('viewAny', ExternalEvent::class);
 
         $events = $this->externalEventService->getAllExternalEvents();
@@ -128,10 +166,13 @@ class ExternalEventController extends Controller
     /**
      * List external events within a specific date range (mentor/admin only).
      *
-     * @throws AuthorizationException
+     * @param ListExternalEventsByDateRangeRequest $request The request containing start and end dates.
+     * @return JsonResponse A list of external events within the date range.
+     * @throws AuthorizationException If the user is not authorized.
      */
     public function listExternalEventsByDateRange(ListExternalEventsByDateRangeRequest $request): JsonResponse
     {
+        // Authorization: only mentors or admins can filter external events by date
         $this->authorize('filterByDateRange', ExternalEvent::class);
 
         $data = $request->validated();
@@ -142,6 +183,21 @@ class ExternalEventController extends Controller
 
         return response()->json([
             'external_events' => $events,
+        ]);
+    }
+
+
+    /**
+     * Get all trusted organizations (public endpoint).
+     *
+     * @return JsonResponse A list of trusted organizations.
+     */
+    public function getAllTrustedOrganizations(): JsonResponse
+    {
+        $trustedOrganizations = $this->externalEventService->getAllTrustedOrganizations();
+
+        return response()->json([
+            'trusted_organizations' => $trustedOrganizations,
         ]);
     }
 }

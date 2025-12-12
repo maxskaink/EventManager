@@ -3,16 +3,29 @@
 use App\Http\Controllers\PublicationController;
 use Illuminate\Support\Facades\Route;
 
+// Rutas públicas sin autenticación requerida
+Route::get('publication/active', [PublicationController::class, 'listPublishedPublications']);
+Route::get('publication/filter', [PublicationController::class, 'listFilteredPublications']);
+Route::get('publication/{publicationId}/interests', [PublicationController::class, 'getPublicationInterests']);
+Route::get('publication/{publicationId}', [PublicationController::class, 'getPublicationById']);
+
+// Rutas protegidas
 Route::middleware('auth:sanctum')->prefix('publication')->group(function () {
     Route::post('/', [PublicationController::class, 'addPublication']);
-    Route::post('{eventId}', [PublicationController::class, 'addEventPublication']);
+    Route::post('/event/{eventId}', [PublicationController::class, 'addEventPublication']);
     Route::get('/all', [PublicationController::class, 'listAllPublications']);
-    Route::get('/active', [PublicationController::class, 'listPublishedPublications']);
-    Route::get('/archived', [PublicationController::class, 'listDraftPublications']);
+    Route::get('/draft', [PublicationController::class, 'listDraftPublications']);
+
+
+
     Route::patch('{publicationId}', [PublicationController::class, 'updatePublication']);
+    Route::delete('{publicationId}', [PublicationController::class, 'deletePublication']);
     Route::post('{publicationId}/interests', [PublicationController::class, 'addPublicationInterests']);
+    Route::delete('{publicationId}/interests', [PublicationController::class, 'removePublicationInterests']);
+    Route::post('{publicationId}/image', [PublicationController::class, 'setPublicationImage']);
 
     // Access routes
     Route::post('{publicationId}/access/grant', [PublicationController::class, 'grantPublicationAccess']);
     Route::delete('{publicationId}/access/revoke', [PublicationController::class, 'revokePublicationAccess']);
+    Route::get('{publicationId}/access/users', [PublicationController::class, 'getUsersWithAccess']);
 });

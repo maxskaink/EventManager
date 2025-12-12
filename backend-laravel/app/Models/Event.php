@@ -1,15 +1,15 @@
 <?php
-
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
- * @property int|null $publication_id
+ * @property int $publication_id
  * @property string $name
  * @property string $description
  * @property Carbon $start_date
@@ -17,14 +17,17 @@ use Illuminate\Support\Carbon;
  * @property string $event_type
  * @property string $modality
  * @property string|null $location
+ * @property string|null $virtual_url
  * @property string $status
  * @property int|null $capacity
+ * @property int $enrolled_participants
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
+ * @property Carbon|null $deleted_at
  */
 class Event extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -40,12 +43,14 @@ class Event extends Model
         'event_type',
         'modality',
         'location',
+        'virtual_url',
         'status',
         'capacity',
+        'enrolled_participants',
     ];
 
     /**
-     * The attributes that should be cast to native types.
+     * The attributes that should be cast.
      *
      * @return array<string, string>
      */
@@ -55,12 +60,19 @@ class Event extends Model
             'start_date' => 'datetime',
             'end_date' => 'datetime',
             'capacity' => 'integer',
+            'enrolled_participants' => 'integer',
             'publication_id' => 'integer',
+            'virtual_url' => 'string',
             'created_at' => 'datetime',
-            'updated_at' => 'datetime',
+            'updated_at' => 'datetime'
         ];
     }
 
+    /**
+     * Get a string representation of the event.
+     *
+     * @return string
+     */
     public function __toString(): string
     {
         return sprintf(
@@ -73,7 +85,9 @@ class Event extends Model
     }
 
     /**
-     * Relationship: each event belongs to a publication (optional).
+     * Get the publication associated with the event.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function publication(): BelongsTo
     {

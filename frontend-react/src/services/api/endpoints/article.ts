@@ -1,11 +1,11 @@
 import axiosInstance from "../axios-instance";
 
-async function addArticle(data: Payloads.AddArticle) {
+async function addArticle(data: APIPayloads.AddArticle) {
   const response = await axiosInstance.post<ArticleAPI.ArticleRes>('/article', data);
   return response.data;
 }
 
-async function updateArticle(articleId: number, data: Payloads.UpdateArticle) {
+async function updateArticle(articleId: number, data: APIPayloads.UpdateArticle) {
   const response = await axiosInstance.patch<ArticleAPI.ArticleRes>(`/article/${articleId}`, data);
   return response.data;
 }
@@ -37,6 +37,11 @@ async function listArticlesByDateRange(startDate: string, endDate: string) {
   return response.data.articles;
 }
 
+async function listTrustedOrganizations() {
+  const response = await axiosInstance.get<ArticleAPI.ListTrustedOrgsRes>('/article/organizations');
+  return response.data.trusted_organizations;
+}
+
 export default {
   addArticle,
   updateArticle,
@@ -45,4 +50,5 @@ export default {
   listArticlesByUser,
   listAllArticles,
   listArticlesByDateRange,
+  listTrustedOrganizations,
 };

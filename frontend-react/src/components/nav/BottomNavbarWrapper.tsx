@@ -13,7 +13,8 @@ interface Props {
 export default function BottomNavbarWrapper({ role }: Props) {
   switch (role) {
     case "coordinator": return <BNavBarCoordinator />
-    case "member": return <BNavBarMember />
+    case "member":
+    case "active-member": return <BNavBarMember />
     case "mentor": return <BNavBarMentor />
     case "interested": return <BNavBarInterested />
     default: return <BNavBarInterested />

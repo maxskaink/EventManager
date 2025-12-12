@@ -1,17 +1,105 @@
 import axiosInstance from "../axios-instance";
 
-async function listAllPublications() {
-  const response = await axiosInstance.get<{ publications: any[] }>('/publication/all');
+// GET
+async function getPublicationById(id: number) {
+  const respnose = await axiosInstance.get(`/publication/${id}`);
+  return respnose.data.publication;
+}
+
+async function listAllPublications(params: { page?: number, per_page?: number}) {
+  const response = await axiosInstance.get<PublicationAPI.ListPublicationsRes>('/publication/all', { params });
+  return response.data.publications;
+}
+
+async function listPublicationsByFilters(filters: PublicationAPI.ListPublicationsFilters) {
+  const response = await axiosInstance.get<PublicationAPI.ListPublicationsRes>('/publication/filter', { params: filters });
   return response.data.publications;
 }
 
 async function listPublishedPublications() {
-  const response = await axiosInstance.get<{ publications: any[] }>('/publication/active');
+  const response = await axiosInstance.get<PublicationAPI.ListPublicationsRes>('/publication/active');
   return response.data.publications;
+}
+
+async function listDraftPublications() {
+  const response = await axiosInstance.get<PublicationAPI.ListPublicationsRes>('/publication/draft');
+  return response.data.publications;
+}
+
+async function listPublicationInterests(publication_id: number) {
+  const response = await axiosInstance.get<PublicationAPI.ListInterestsRes>(`/publication/${publication_id}/interests`);
+  return response.data.interests;
+}
+
+// POST
+async function createPublication(publication: APIPayloads.CreatePublication) {
+
+  const response = await axiosInstance.postForm<{ publication: API.Publication }>('/publication', publication);
+  return response.data.publication;
+}
+
+async function addEventPublication(eventId: number, publication: APIPayloads.CreatePublication) {
+  const response = await axiosInstance.postForm<{ publication: API.Publication }>(`/publication/event/${eventId}`, publication);
+  return response.data.publication;
+}
+
+async function addPublicationInterests(publicationId: number, interests: number[]) {
+  const response = await axiosInstance.post(`/publication/${publicationId}/interests`, { interests });
+  return response.data;
+}
+
+async function setPublicationImage(publicationId: number, image: File) {
+  const formData = new FormData();
+  formData.append('image', image);
+  const response = await axiosInstance.postForm(`/publication/${publicationId}/image`, formData);
+  return response.data.publication;
+}
+
+async function grantPublicationAccess(publicationId: number, userIds: number[] | undefined, roles: string[] | undefined) {
+  const response = await axiosInstance.post(`/publication/${publicationId}/access/grant`, { user_ids: userIds, roles });
+  return response.data;
+}
+
+
+// PATCH
+async function updatePublication(publicationId: number, publication: APIPayloads.UpdatePublication) {
+  const response = await axiosInstance.patch<{ publication: API.Publication }>(`/publication/${publicationId}`, publication);
+  return response.data.publication;
+}
+
+// DELETE
+async function removePublicationInterests(publicationId: number, interests: number[]) {
+  const response = await axiosInstance.delete(`/publication/${publicationId}/interests`, { data: { interests } });
+  return response.data;
+}
+
+async function revokePublicationAccess(publicationId: number, userIds: number[] | undefined, roles: string[] | undefined) {
+  const response = await axiosInstance.delete(`/publication/${publicationId}/access/revoke`, { data: { user_ids: userIds, roles } });
+  return response.data;
+}
+
+// MOCK: Get access list (simulated)
+async function getPublicationAccessUsers(publicationId: number) {
+  const response = await axiosInstance.get<{
+    users: API.User[];
+  }>(`/publication/${publicationId}/access/users`);
+  return response.data;
 }
 
 export default {
   listAllPublications,
   listPublishedPublications,
+  listDraftPublications,
+  getPublicationById,
+  createPublication,
+  addEventPublication,
+  addPublicationInterests,
+  setPublicationImage,
+  grantPublicationAccess,
+  updatePublication,
+  removePublicationInterests,
+  revokePublicationAccess,
+  listPublicationsByFilters,
+  getPublicationAccessUsers,
+  listPublicationInterests
 };
-

@@ -1,8 +1,8 @@
 import axiosInstance from "../axios-instance";
 
-async function addEvent(data: Payloads.AddEvent) {
-  const response = await axiosInstance.post<MessageRes>('/event', data);
-  return response.data;
+async function addEvent(data: APIPayloads.AddEvent) {
+  const response = await axiosInstance.post<{ message: string; event: API.Event }>('/event', data);
+  return response.data.event;
 }
 
 async function listAllEvents() {
@@ -25,10 +25,75 @@ async function getEventById(eventId: number) {
   return response.data.event;
 }
 
+async function updateEvent(eventId: number, data: Partial<APIPayloads.AddEvent>) {
+  const response = await axiosInstance.patch<{ message: string; event: API.Event }>(`/event/${eventId}`, data);
+  return response.data.event;
+}
+
+// Backend no soporta DELETE /event/{id}; usar PATCH para actualizar estado
+async function deleteEvent(eventId: number) {
+  const response = await axiosInstance.patch<{ message: string; event: API.Event }>(`/event/${eventId}`, {
+    status: "cancelado",
+  });
+  return response.data;
+}
+
+// ------ PARTICIPATIONS ----------
+async function enroll(eventId: number) {
+  const response = await axiosInstance.post<EventAPI.MutateParticipationRes>(`/event/${eventId}/participation`);
+  return response.data;
+}
+
+async function cancelEnrollment(eventId: number) {
+  const response = await axiosInstance.delete<EventAPI.MutateParticipationRes>(`/event/${eventId}/participation`);
+  return response.data;
+}
+
+/*
+async function listEnrollments(eventId: number) {
+  const response = await axiosInstance.get<EventAPI.ListParticipationsRes>(`/event/${eventId}/participation`);
+  return response.data.participations;
+}
+*/
+
+async function listAllEnrollements() {
+  const response = await axiosInstance.get<EventAPI.ListParticipationsRes>(`/event/participation`);
+  return response.data.participations;
+}
+
+async function listEnrollmentsByEvent(eventId: number) {
+  const response = await axiosInstance.get<EventAPI.ListParticipationsRes>(`/event/${eventId}/participations`);
+  return response.data.participations;
+}
+
+async function listEnrollmentsByUser(userId: number) {
+  const response = await axiosInstance.get<EventAPI.ListParticipationsRes>(`/event/participations/user/${userId}`);
+  return response.data.participations;
+}
+
+async function markAttendance(eventId: number, userIds: number[]) {
+  const response = await axiosInstance.patch<EventAPI.MarkAttendanceRes>(`/event/${eventId}/participation/attend`, { users: userIds });
+  return response.data;
+}
+
+async function markAbscense(eventId: number, userIds: number[]) {
+  const response = await axiosInstance.patch<EventAPI.MarkAttendanceRes>(`/event/${eventId}/participation/absent`, { users: userIds });
+  return response.data;
+}
+
 export default {
   addEvent,
   listAllEvents,
   listUpcomingEvents,
   listPastEvents,
   getEventById,
+  updateEvent,
+  deleteEvent,
+  enroll,
+  cancelEnrollment,
+  listAllEnrollements,
+  listEnrollmentsByEvent,
+  listEnrollmentsByUser,
+  markAttendance,
+  markAbscense,
 };

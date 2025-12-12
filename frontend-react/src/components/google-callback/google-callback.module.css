@@ -1,0 +1,93 @@
+/*
+ * Contenedor principal para centrar el contenido.
+ * Utiliza los colores base del proyecto.
+ */
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 90vh;
+  background-color: #f6f6f6; /* Fondo principal */
+  color: #013950; /* Texto principal */
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  padding: 1.5rem;
+}
+
+/*
+ * Spinner de Carga
+ * Creado con CSS puro, usando el color primario del proyecto.
+ */
+.spinner {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: 5px solid rgba(1, 57, 80, 0.2); /* Color primario suave */
+  border-top-color: #013950; /* Color primario sólido */
+  animation: rotate 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+.loadingText {
+  font-size: 1.125rem;
+  font-weight: 300;
+}
+
+/* Animación de rotación para el spinner */
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/*
+ * Tarjeta de Error
+ * Contenedor estilizado para mostrar errores de forma clara.
+ */
+.errorCard {
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  padding: 2.5rem;
+  text-align: center;
+  max-width: 450px;
+  width: 100%;
+  /* Un borde superior rojo para denotar error */
+  border-top: 4px solid #e53e3e; 
+}
+
+.errorTitle {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #013950; /* Color de texto principal */
+  margin: 0 0 0.75rem 0;
+}
+
+.errorMessage {
+  font-size: 1rem;
+  color: #333; /* Gris oscuro para legibilidad */
+  margin-bottom: 1.75rem;
+  line-height: 1.5;
+}
+
+/*
+ * Enlace de retorno
+ * Estilizado como un botón usando los colores del proyecto.
+ */
+.backLink {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  background-color: #013950; /* Color primario */
+  color: #ffffff; /* Texto blanco */
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+}
+
+.backLink:hover {
+  background-color: #012a3d; /* Tono más oscuro de la primaria */
+}

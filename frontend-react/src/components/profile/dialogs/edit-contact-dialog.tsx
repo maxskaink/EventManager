@@ -27,13 +27,16 @@ export const EditContactDialog = ({ open, onOpenChange, initialData, onSave }: E
 
   const handleSave = (e?: FormEvent<HTMLFormElement>) => {
     e?.preventDefault();
-    onSave(formData);
+    onSave({
+      ...formData,
+      university: "Universidad del Cauca",
+    });
     onOpenChange(false);
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md pt-10">
         <DialogHeader>
           <DialogTitle>Editar Información de Perfil</DialogTitle>
           <DialogDescription>Actualiza tu información de contacto personal.</DialogDescription>
@@ -45,10 +48,6 @@ export const EditContactDialog = ({ open, onOpenChange, initialData, onSave }: E
           </div>
           {/*<div><label className="text-sm">Dirección</label><Input name="address" value={formData.address} onChange={handleChange} /></div>*/}
           {/*<div><label className="text-sm">Ciudad</label><Input name="city" value={formData.city} onChange={handleChange} /></div>*/}
-          <div>
-            <label className="text-sm">Universidad</label>
-            <Input name="university" value={formData.university ?? ""} onChange={handleChange} />
-          </div>
           <div>
             <label className="text-sm">Programa Académico</label>
             <Input name="academic_program" value={formData.academic_program ?? ""} onChange={handleChange} />

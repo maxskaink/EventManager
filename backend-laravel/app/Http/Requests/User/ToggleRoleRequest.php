@@ -7,6 +7,11 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class ToggleRoleRequest extends FormRequest
 {
+    /**
+     * Determine if the user is authorized to make this request.
+     *
+     * @return bool
+     */
     public function authorize(): bool
     {
         /** @var User|null $user */
@@ -15,13 +20,23 @@ class ToggleRoleRequest extends FormRequest
         return $user && $user->getRoleAttribute() === 'mentor';
     }
 
+    /**
+     * Get the validation rules that apply to the request.
+     *
+     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     */
     public function rules(): array
     {
         return [
-            'new_role' => 'required|string|in:interested,member,coordinator,mentor',
+            'new_role' => 'required|string|in:interested,active-member,seed,coordinator,mentor',
         ];
     }
 
+    /**
+     * Get custom messages for validator errors.
+     *
+     * @return array<string, string>
+     */
     public function messages(): array
     {
         return [
