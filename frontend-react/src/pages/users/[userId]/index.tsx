@@ -1,4 +1,5 @@
 import { useParams, useNavigate } from "react-router";
+import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { UnifiedHeader } from "../../../components/layout/UnifiedHeader";
 import { Avatar, AvatarFallback, AvatarImage } from "../../../components/ui/avatar";
@@ -17,7 +18,13 @@ import {
   AlertDialogTrigger,
 } from "../../../components/ui/alert-dialog";
 import { Button } from "../../../components/ui/button";
-import { User, Award, CalendarDays, FileText, ExternalLink, Trash2 } from "lucide-react";
+import { User, Award, CalendarDays, FileText, ExternalLink, Trash2, Plus, Pencil } from "lucide-react";
+import { AddExternalEventDialog } from "../../../components/profile/dialogs/add-external-event-dialog";
+import { EditExternalEventDialog } from "../../../components/profile/dialogs/edit-external-event-dialog";
+import { AddArticleDialog } from "../../../components/profile/dialogs/add-article-dialog";
+import { EditArticleDialog } from "../../../components/profile/dialogs/edit-article-dialog";
+import { AddCertificateDialog } from "../../../components/profile/dialogs/add-certificate-dialog";
+import { EditCertificateDialog } from "../../../components/profile/dialogs/edit-certificate-dialog";
 import userAPI from "../../../services/api/endpoints/user";
 import certificateAPI from "../../../services/api/endpoints/certificate";
 import externalEventAPI from "../../../services/api/endpoints/external-events";
@@ -103,6 +110,83 @@ export const UserDetailScreen = () => {
     },
   });
 
+  // Dialog States
+  const [isAddCertificateOpen, setIsAddCertificateOpen] = useState(false);
+  const [editingCertificate, setEditingCertificate] = useState<API.Certificate | null>(null);
+
+  const [isAddExternalEventOpen, setIsAddExternalEventOpen] = useState(false);
+  const [editingExternalEvent, setEditingExternalEvent] = useState<API.ExternalEvent | null>(null);
+
+  const [isAddArticleOpen, setIsAddArticleOpen] = useState(false);
+  const [editingArticle, setEditingArticle] = useState<API.Article | null>(null);
+
+
+  // Certificate Mutations
+  const createCertificateMutation = useMutation({
+    mutationFn: (data: any) => certificateAPI.addCertificate({ ...data, user_id: id }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["certificates", id] });
+      setIsAddCertificateOpen(false);
+      toast.success("Certificado agregado correctamente");
+    },
+  });
+
+  const updateCertificateMutation = useMutation({
+    mutationFn: (data: any) => {
+      if (!editingCertificate) throw new Error("No certificate selected");
+      return certificateAPI.updateCertificate(editingCertificate.id, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["certificates", id] });
+      setEditingCertificate(null);
+      toast.success("Certificado actualizado correctamente");
+    },
+  });
+
+  // External Event Mutations
+  const createExternalEventMutation = useMutation({
+    mutationFn: (data: any) => externalEventAPI.createExternalEvent({ ...data, user_id: id }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["externalEvents", id] });
+      setIsAddExternalEventOpen(false);
+      toast.success("Evento externo agregado correctamente");
+    },
+  });
+
+  const updateExternalEventMutation = useMutation({
+    mutationFn: (data: any) => {
+        if (!editingExternalEvent) throw new Error("No event selected");
+        return externalEventAPI.patchExternalEvent(editingExternalEvent.id, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["externalEvents", id] });
+      setEditingExternalEvent(null);
+      toast.success("Evento externo actualizado correctamente");
+    },
+  });
+
+  // Article Mutations
+  const createArticleMutation = useMutation({
+    mutationFn: (data: any) => articleAPI.addArticle({ ...data, user_id: id }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["articles", id] });
+      setIsAddArticleOpen(false);
+      toast.success("Artículo agregado correctamente");
+    },
+  });
+
+  const updateArticleMutation = useMutation({
+    mutationFn: (data: any) => {
+        if (!editingArticle) throw new Error("No article selected");
+        return articleAPI.updateArticle(editingArticle.id, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["articles", id] });
+      setEditingArticle(null);
+      toast.success("Artículo actualizado correctamente");
+    },
+  });
+
   if (isLoadingUser) {
     return (
       <div className="bg-background flex min-h-screen items-center justify-center pb-20">
@@ -160,6 +244,13 @@ export const UserDetailScreen = () => {
           </TabsList>
 
           <TabsContent value="certificates" className="mt-6 space-y-4 sm:mt-4">
+            {isMentor && (
+              <div className="flex justify-end">
+                <Button size="sm" onClick={() => setIsAddCertificateOpen(true)}>
+                  <Plus className="mr-2 h-4 w-4" /> Agregar Certificado
+                </Button>
+              </div>
+            )}
             {certificates.length === 0 ? (
               <p className="text-muted-foreground py-4 text-center">No hay certificados.</p>
             ) : (
@@ -169,12 +260,20 @@ export const UserDetailScreen = () => {
                   certificate={cert}
                   isMentor={isMentor}
                   onDelete={() => deleteCertificateMutation.mutate(cert.id)}
+                  onEdit={() => setEditingCertificate(cert)}
                 />
               ))
             )}
           </TabsContent>
 
           <TabsContent value="external" className="mt-6 space-y-4 sm:mt-4">
+            {isMentor && (
+              <div className="flex justify-end">
+                <Button size="sm" onClick={() => setIsAddExternalEventOpen(true)}>
+                  <Plus className="mr-2 h-4 w-4" /> Agregar Evento Externo
+                </Button>
+              </div>
+            )}
             {externalEvents.length === 0 ? (
               <p className="text-muted-foreground py-4 text-center">No hay eventos externos.</p>
             ) : (
@@ -184,6 +283,7 @@ export const UserDetailScreen = () => {
                   event={event}
                   isMentor={isMentor}
                   onDelete={() => deleteExternalEventMutation.mutate(event.id)}
+                  onEdit={() => setEditingExternalEvent(event)}
                 />
               ))
             )}
@@ -198,6 +298,13 @@ export const UserDetailScreen = () => {
           </TabsContent>
 
           <TabsContent value="articles" className="mt-6 space-y-4 sm:mt-4">
+            {isMentor && (
+              <div className="flex justify-end">
+                <Button size="sm" onClick={() => setIsAddArticleOpen(true)}>
+                  <Plus className="mr-2 h-4 w-4" /> Agregar Artículo
+                </Button>
+              </div>
+            )}
             {!articles || articles.length === 0 ? (
               <p className="text-muted-foreground py-4 text-center">No hay artículos.</p>
             ) : (
@@ -207,25 +314,72 @@ export const UserDetailScreen = () => {
                   article={article}
                   isMentor={isMentor}
                   onDelete={() => deleteArticleMutation.mutate(article.id)}
+                  onEdit={() => setEditingArticle(article)}
                 />
               ))
             )}
           </TabsContent>
         </Tabs>
       </div>
+      
+      {/* Dialogs */}
+      <AddCertificateDialog
+        open={isAddCertificateOpen}
+        onOpenChange={setIsAddCertificateOpen}
+        onAddCertificate={createCertificateMutation.mutate}
+        isPending={createCertificateMutation.isPending}
+      />
+      <EditCertificateDialog
+        open={!!editingCertificate}
+        onOpenChange={(open) => !open && setEditingCertificate(null)}
+        certificate={editingCertificate}
+        onEditCertificate={updateCertificateMutation.mutate}
+        isPending={updateCertificateMutation.isPending}
+      />
+
+      <AddExternalEventDialog
+        open={isAddExternalEventOpen}
+        onOpenChange={setIsAddExternalEventOpen}
+        onAddEvent={createExternalEventMutation.mutate}
+        isPending={createExternalEventMutation.isPending}
+      />
+      <EditExternalEventDialog
+        open={!!editingExternalEvent}
+        onOpenChange={(open) => !open && setEditingExternalEvent(null)}
+        event={editingExternalEvent}
+        onEditEvent={updateExternalEventMutation.mutate}
+        isPending={updateExternalEventMutation.isPending}
+      />
+
+      <AddArticleDialog
+        open={isAddArticleOpen}
+        onOpenChange={setIsAddArticleOpen}
+        onAddArticle={createArticleMutation.mutate}
+        isPending={createArticleMutation.isPending}
+      />
+      <EditArticleDialog
+        open={!!editingArticle}
+        onOpenChange={(open) => !open && setEditingArticle(null)}
+        article={editingArticle ? {
+             id: String(editingArticle.id),
+             title: editingArticle!.title,
+             description: editingArticle!.description || "",
+             authors: editingArticle!.authors,
+             publicationDate: editingArticle!.publication_date,
+             publicationUrl: editingArticle!.publication_url || ""
+        } : null}
+        onEditArticle={updateArticleMutation.mutate}
+        isPending={updateArticleMutation.isPending}
+      />
     </div>
   );
 };
 
-interface DeleteProps {
-  isMentor: boolean;
-  onDelete: () => void;
-  itemName: string;
-}
 
-const DeleteButton = ({ isMentor, onDelete, itemName }: DeleteProps) => {
+
+const DeleteButton = ({ isMentor, onDelete, title }: { isMentor: boolean; onDelete: () => void; title: string }) => {
   if (!isMentor) return null;
-
+  
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
@@ -235,7 +389,7 @@ const DeleteButton = ({ isMentor, onDelete, itemName }: DeleteProps) => {
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>¿Eliminar {itemName}?</AlertDialogTitle>
+          <AlertDialogTitle>¿Eliminar {title}?</AlertDialogTitle>
           <AlertDialogDescription>
             Esta acción no se puede deshacer. Se eliminará permanentemente de la lista del usuario.
           </AlertDialogDescription>
@@ -251,14 +405,36 @@ const DeleteButton = ({ isMentor, onDelete, itemName }: DeleteProps) => {
   );
 };
 
+interface ActionButtonsProps {
+  isMentor: boolean;
+  onDelete: () => void;
+  onEdit: () => void;
+  itemName: string;
+}
+
+const ActionButtons = ({ isMentor, onDelete, onEdit, itemName }: ActionButtonsProps) => {
+    if (!isMentor) return null;
+
+    return (
+        <div className="flex items-center gap-1">
+            <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-600 hover:bg-blue-50" onClick={onEdit}>
+                <Pencil className="h-4 w-4" />
+            </Button>
+            <DeleteButton isMentor={isMentor} onDelete={onDelete} title={itemName} />
+        </div>
+    );
+};
+
 const CertificateCard = ({
   certificate,
   isMentor,
   onDelete,
+  onEdit,
 }: {
   certificate: API.Certificate;
   isMentor: boolean;
   onDelete: () => void;
+  onEdit: () => void;
 }) => (
   <Card key={certificate.id}>
     <CardHeader className="pb-2">
@@ -267,7 +443,7 @@ const CertificateCard = ({
           <Award className="text-primary h-4 w-4" />
           {certificate.name}
         </CardTitle>
-        <DeleteButton isMentor={isMentor} onDelete={onDelete} itemName="certificado" />
+        <ActionButtons isMentor={isMentor} onDelete={onDelete} onEdit={onEdit} itemName="certificado" />
       </div>
     </CardHeader>
     <CardContent>
@@ -311,10 +487,12 @@ const ExternalEventCard = ({
   event,
   isMentor,
   onDelete,
+  onEdit,
 }: {
   event: API.ExternalEvent;
   isMentor: boolean;
   onDelete: () => void;
+  onEdit: () => void;
 }) => (
   <Card key={event.id}>
     <CardHeader className="pb-2">
@@ -323,7 +501,7 @@ const ExternalEventCard = ({
           <ExternalLink className="text-primary h-4 w-4" />
           {event.name}
         </CardTitle>
-        <DeleteButton isMentor={isMentor} onDelete={onDelete} itemName="evento externo" />
+        <ActionButtons isMentor={isMentor} onDelete={onDelete} onEdit={onEdit} itemName="evento externo" />
       </div>
     </CardHeader>
     <CardContent>
@@ -337,10 +515,12 @@ const ArticleCard = ({
   article,
   isMentor,
   onDelete,
+  onEdit,
 }: {
   article: API.Article;
   isMentor: boolean;
   onDelete: () => void;
+  onEdit: () => void;
 }) => (
   <Card key={article.id}>
     <CardHeader className="pb-2">
@@ -349,7 +529,7 @@ const ArticleCard = ({
           <FileText className="text-primary h-4 w-4" />
           {article.title}
         </CardTitle>
-        <DeleteButton isMentor={isMentor} onDelete={onDelete} itemName="artículo" />
+        <ActionButtons isMentor={isMentor} onDelete={onDelete} onEdit={onEdit} itemName="artículo" />
       </div>
     </CardHeader>
     <CardContent>
